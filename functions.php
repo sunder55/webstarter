@@ -1,4 +1,20 @@
 <?php
+/**
+ * Functions and definitions
+ *
+ * @link https://developer.wordpress.org/themes/basics/theme-functions/
+ *
+ * @package webstarter
+ * @since 1.0.0
+ */
+
+/**
+ * Enqueue the CSS files.
+ *
+ * @since 1.0.0
+ *
+ * @return void
+ */
 
 add_action('admin_enqueue_scripts', 'wstr_enqueue_admin_scripts');
 function wstr_enqueue_admin_scripts()
@@ -36,7 +52,7 @@ include(get_stylesheet_directory() . '/includes/wstr_post_meta_boxes.php');
 
 
 /**
- * 
+ * For removing block editor from domain post type
  */
 
 add_filter('use_block_editor_for_post_type', 'prefix_disable_gutenberg', 10, 2);
@@ -45,4 +61,20 @@ function prefix_disable_gutenberg($current_status, $post_type)
     // Use your post type key instead of 'product'
     if ($post_type === 'domain') return false;
     return $current_status;
+}
+
+
+/*
+ * This action hook allows to add a new empty column
+ */
+add_filter('manage_domain_posts_columns', 'misha_featured_image_column');
+function misha_featured_image_column( $column_array ) {
+
+    // I want to add my column at the beginning, so I use array_slice()
+    // in other cases $column_array['featured_image'] = 'Featured Image' will be enough
+    $column_array = array_slice( $column_array, 0, 1, true )
+    + array('featured_image' => 'Featured Image') // our new column for featured images
+    + array_slice( $column_array, 1, NULL, true );
+
+    return $column_array;
 }
