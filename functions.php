@@ -25,7 +25,7 @@ function wstr_enqueue_admin_scripts()
 
     // Enqueue admin JS
     wp_enqueue_script('wstr-admin-js', get_template_directory_uri() . '/assets/admin/js/wstr_script.js', array('jquery'), time(), true);
-   
+
     wp_enqueue_script('wstr-js', get_template_directory_uri() . '/script.js', array('jquery'), time(), true);
 
     // localize ajax
@@ -44,7 +44,7 @@ function wstr_enqueue_scripts()
 
     // Enqueue public JS
     wp_enqueue_script('wstr-public-js', get_template_directory_uri() . '/assets/public/js/wstr_script.js', array('jquery'), time(), true);
-   
+
     wp_enqueue_script('wstr-js', get_template_directory_uri() . '/script.js', array('jquery'), time(), true);
 
     //Localize ajax
@@ -157,4 +157,29 @@ function enqueue_webstarter_mega_menu_assets()
 }
 add_action('enqueue_block_assets', 'enqueue_webstarter_mega_menu_assets');
 
+/**
+ * Function for adding custom use role
+ */
+add_action('init', 'wstr_add_custom_user_roles');
+function wstr_add_custom_user_roles()
+{
+    // Add Buyer role
+    add_role('buyer', __('Buyer', 'webstarter'), array(
+        'read'         => true,
+        'edit_posts'   => false,
+        'delete_posts' => false,
+        // Add any other capabilities 
+    ));
 
+    // Add Seller role
+    add_role('seller', __('Seller', 'webstarter'), array(
+        'read'                 => true,
+        'edit_posts'           => true,
+        'delete_posts'         => true,
+        'publish_posts'        => true,
+        'upload_files'         => true,
+        'edit_others_posts'    => false,
+        'delete_others_posts'  => false,
+        // Add any other capabilities you need
+    ));
+}
