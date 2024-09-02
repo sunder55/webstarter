@@ -1,5 +1,5 @@
 <?php
-class wstr_domain_post_type
+class wstr_post_types
 {
     // Constructor to initialize the custom post type.
     public function __construct()
@@ -7,6 +7,7 @@ class wstr_domain_post_type
         // Hook into the 'init' action to register the custom post type.
         add_action('init', array($this, 'register_domain_post_type'));
         add_action('init', array($this, 'register_domain_taxonomies'));
+        add_action('init',  array($this, 'create_domain_order_post_type'));
 
         // Hook into the 'domain_industry_add_form_fields' and 'domain_industry_edit_form_fields' actions to add image field.
         add_action('domain_industry_add_form_fields', array($this, 'add_taxonomy_image_field'));
@@ -25,6 +26,12 @@ class wstr_domain_post_type
     }
 
     // Method to register the custom post type.
+
+    /**
+     * 
+     * function for registering domain post type.
+     * @return void
+     */
     public function register_domain_post_type()
     {
         // Labels array for the post type.
@@ -75,6 +82,10 @@ class wstr_domain_post_type
         register_post_type('domain', $args);
     }
 
+    /**
+     * Function for regestring taxonomy for domain post type
+     * @return void
+     */
     public function register_domain_taxonomies()
     {
         // Labels for the "Industries" taxonomy.
@@ -129,6 +140,7 @@ class wstr_domain_post_type
             'show_admin_column' => true,
             'query_var'         => true,
             'rewrite'           => array('slug' => 'domain-cat'),
+            'show_in_rest'      => true
         );
 
         // Register the "Categories" taxonomy.
@@ -155,12 +167,18 @@ class wstr_domain_post_type
             'show_admin_column' => true,
             'query_var'         => true,
             'rewrite'           => array('slug' => 'domain-tag'),
+            'show_in_rest'      => true
         );
 
         // Register the "Tags" taxonomy.
         register_taxonomy('domain_tag', array('domain'), $tags);
     }
-    // Method to add the image field to the "Add New" taxonomy form.
+
+    /**
+     * Method to add image field to the  industry and category taxonomy.
+     * @param mixed $taxonomy
+     * @return void
+     */
     public function add_taxonomy_image_field($taxonomy)
     {
 ?>
@@ -202,7 +220,9 @@ class wstr_domain_post_type
 <?php
     }
 
-    // Method to save the image field for the taxonomy.
+    /**
+     * Method for saving taxonomy
+     */
     public function save_taxonomy_image($term_id, $tt_id)
     {
         if (isset($_POST['taxonomy-image-id']) && '' !== $_POST['taxonomy-image-id']) {
@@ -212,7 +232,45 @@ class wstr_domain_post_type
             delete_term_meta($term_id, 'taxonomy-image-id');
         }
     }
-}
 
+    function create_domain_order_post_type()
+    {
+        $labels = array(
+            'name'               => _x('Domain Orders', 'post type general name', 'webstarter'),
+            'singular_name'      => _x('Domain Order', 'post type singular name', 'webstarter'),
+            'menu_name'          => _x('Domain Orders', 'admin menu', 'webstarter'),
+            'name_admin_bar'     => _x('Domain Order', 'add new on admin bar', 'webstarter'),
+            'add_new'            => _x('Add New', 'domain_order', 'webstarter'),
+            'add_new_item'       => __('Add New Order', 'webstarter'),
+            'new_item'           => __('New Domain Order', 'webstarter'),
+            'edit_item'          => __('Edit Domain Order', 'webstarter'),
+            'view_item'          => __('View Domain Order', 'webstarter'),
+            'all_items'          => __('All Orders', 'webstarter'),
+            'search_items'       => __('Search Domain Orders', 'webstarter'),
+            'parent_item_colon'  => __('Parent Domain Orders:', 'webstarter'),
+            'not_found'          => __('No domain orders found.', 'webstarter'),
+            'not_found_in_trash' => __('No domain orders found in Trash.', 'webstarter')
+        );
+
+        $args = array(
+            'labels'             => $labels,
+            'public'             => false,
+            'publicly_queryable' => false,
+            'show_ui'            => true,
+            'show_in_menu'       => true,
+            'query_var'          => true,
+            'rewrite'            => array('slug' => 'domain_order'),
+            'capability_type'    => 'post',
+            'has_archive'        => false,
+            'hierarchical'       => false,
+            'menu_position'      => 58,
+            'supports'           => array('title'),
+            'menu_icon'          => 'dashicons-admin-post',  // You can change this to a different icon if needed
+            'show_in_rest'      => true
+        );
+
+        register_post_type('domain_order', $args);
+    }
+}
 // Instantiate the class to create the post type.
-new wstr_domain_post_type();
+new wstr_post_types();

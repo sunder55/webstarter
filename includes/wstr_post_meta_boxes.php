@@ -152,7 +152,7 @@ class wstr_domain_meta_boxes
                 <span class="wstr-help-tip" tabindex="0" aria-label="Enable this option to enable the 'Make Offer' buttons and form display in the shop."></span>
             </div>
         </div>
-<?php
+    <?php
     }
 
     public function save_domain_meta_boxes($post_id)
@@ -219,3 +219,366 @@ class wstr_domain_meta_boxes
 }
 
 new wstr_domain_meta_boxes();
+
+
+class wstr_domain_order_meta_boxes
+{
+
+    function __construct()
+    {
+        add_action('add_meta_boxes', array($this, 'add_domain_order_meta_boxes'));
+        add_action('save_post', array($this, 'save_domain_order_meta_box'));
+
+        add_action('add_meta_boxes', array($this, 'add_domain_meta_box'));
+    }
+    public function add_domain_order_meta_boxes()
+    {
+        add_meta_box(
+            'domain_order_details',
+            __('Domain Order Details', 'webstarter'),
+            array($this, 'render_domain_order_meta_box'),
+            'domain_order',
+            'normal',
+            'high'
+        );
+    }
+
+    function add_domain_meta_box()
+    {
+        add_meta_box(
+            'add_domain_meta_box',       // Unique ID
+            'Add Domain',          // Box title
+            array($this, 'render_domain_meta_box'), // Content callback
+            'domain_order',             // Post type
+            'normal',                   // Context (side, normal, advanced)
+            'default'                 // Priority (default, low, high)
+        );
+    }
+
+    public function render_domain_order_meta_box($post)
+    {
+        // Add nonce for security and authentication.
+        wp_nonce_field('domain_order_nonce_action', 'domain_order_nonce');
+
+        // Retrieve current data if exists
+        // $domain_name = get_post_meta($post->ID, '_domain_name', true);
+        $customer_id = get_post_meta($post->ID, '_customer', true);
+        $order_status = get_post_meta($post->ID, '_order_status', true);
+        $date_created = get_post_meta($post->ID, '_date_created', true);
+
+        // Retrieve current data if exists
+        $billing_first_name = get_post_meta($post->ID, '_billing_first_name', true);
+        $billing_last_name = get_post_meta($post->ID, '_billing_last_name', true);
+        $billing_company = get_post_meta($post->ID, '_billing_company', true);
+        $billing_address_1 = get_post_meta($post->ID, '_billing_address_1', true);
+        $billing_address_2 = get_post_meta($post->ID, '_billing_address_2', true);
+        $billing_city = get_post_meta($post->ID, '_billing_city', true);
+        $billing_postcode = get_post_meta($post->ID, '_billing_postcode', true);
+        $billing_country = get_post_meta($post->ID, '_billing_country', true);
+        $billing_state = get_post_meta($post->ID, '_billing_state', true);
+        $billing_email = get_post_meta($post->ID, '_billing_email', true);
+        $billing_phone = get_post_meta($post->ID, '_billing_phone', true);
+
+        $shipping_first_name = get_post_meta($post->ID, '_shipping_first_name', true);
+        $shipping_last_name = get_post_meta($post->ID, '_shipping_last_name', true);
+        $shipping_company = get_post_meta($post->ID, '_shipping_company', true);
+        $shipping_address_1 = get_post_meta($post->ID, '_shipping_address_1', true);
+        $shipping_address_2 = get_post_meta($post->ID, '_shipping_address_2', true);
+        $shipping_city = get_post_meta($post->ID, '_shipping_city', true);
+        $shipping_postcode = get_post_meta($post->ID, '_shipping_postcode', true);
+        $shipping_country = get_post_meta($post->ID, '_shipping_country', true);
+        $shipping_state = get_post_meta($post->ID, '_shipping_state', true);
+        $shipping_email = get_post_meta($post->ID, '_shipping_email', true);
+        $shipping_phone = get_post_meta($post->ID, '_shipping_phone', true);
+
+        $payment_method = get_post_meta($post->ID, '_payment_method', true);
+        $transaction_id = get_post_meta($post->ID, '_transaction_id', true);
+        $customer_note = get_post_meta($post->ID, '_customer_note', true);
+
+        // HTML for meta box
+    ?>
+        <div class="orderGeneralInfo">
+            <h4><?php _e(' General', 'webstarter'); ?></h4>
+            <p>
+                <label for="date_created"><?php _e('Date Created', 'webstarter'); ?></label>
+                <input type="date" id="date_created" name="date_created" value="<?php echo esc_attr($date_created); ?>" class="widefat">
+            </p>
+
+            <?php
+            $users = get_users(array(
+                'orderby' => 'id',
+                'order' => 'ASC'
+            ));
+
+            // Get the saved customer ID from post meta
+            ?>
+
+            <p>
+                <label for="customerName"><?php _e('Customer Name', 'webstarter'); ?></label>
+                <select name="customer" id="customerName" class="widefat">
+                    <option></option> <!-- Default empty option -->
+                    <?php foreach ($users as $user) : ?>
+                        <option value="<?php echo esc_attr($user->ID); ?>" <?php selected($user->ID, $customer_id); ?>>
+                            <?php echo esc_html($user->user_login . ' (' . $user->user_email . ')'); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </p>
+            <p>
+                <label for="order_status"><?php _e('Order Status', 'webstarter'); ?></label>
+                <select id="order_status" name="order_status" class="widefat">
+                    <option value="pending" <?php selected($order_status, 'pending'); ?>><?php _e('Pending', 'webstarter'); ?></option>
+                    <option value="processing" <?php selected($order_status, 'processing'); ?>><?php _e('Processing', 'webstarter'); ?></option>
+                    <option value="completed" <?php selected($order_status, 'completed'); ?>><?php _e('Completed', 'webstarter'); ?></option>
+                    <option value="cancelled" <?php selected($order_status, 'cancelled'); ?>><?php _e('Cancelled', 'webstarter'); ?></option>
+                </select>
+            </p>
+        </div>
+        <div class="orderBilling_info">
+            <h4><?php _e('Billing Information', 'webstarter'); ?></h4>
+            <p>
+                <label for="billing_first_name"><?php _e('First Name', 'webstarter'); ?></label>
+                <input type="text" id="billing_first_name" name="billing_first_name" value="<?php echo esc_attr($billing_first_name); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="billing_last_name"><?php _e('Last Name', 'webstarter'); ?></label>
+                <input type="text" id="billing_last_name" name="billing_last_name" value="<?php echo esc_attr($billing_last_name); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="billing_company"><?php _e('Company', 'webstarter'); ?></label>
+                <input type="text" id="billing_company" name="billing_company" value="<?php echo esc_attr($billing_company); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="billing_address_1"><?php _e('Address Line 1', 'webstarter'); ?></label>
+                <input type="text" id="billing_address_1" name="billing_address_1" value="<?php echo esc_attr($billing_address_1); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="billing_address_2"><?php _e('Address Line 2', 'webstarter'); ?></label>
+                <input type="text" id="billing_address_2" name="billing_address_2" value="<?php echo esc_attr($billing_address_2); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="billing_city"><?php _e('City', 'webstarter'); ?></label>
+                <input type="text" id="billing_city" name="billing_city" value="<?php echo esc_attr($billing_city); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="billing_postcode"><?php _e('Postcode', 'webstarter'); ?></label>
+                <input type="text" id="billing_postcode" name="billing_postcode" value="<?php echo esc_attr($billing_postcode); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="billing_country"><?php _e('Country', 'webstarter'); ?></label>
+                <input type="text" id="billing_country" name="billing_country" value="<?php echo esc_attr($billing_country); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="billing_state"><?php _e('State', 'webstarter'); ?></label>
+                <input type="text" id="billing_state" name="billing_state" value="<?php echo esc_attr($billing_state); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="billing_email"><?php _e('Email', 'webstarter'); ?></label>
+                <input type="email" id="billing_email" name="billing_email" value="<?php echo esc_attr($billing_email); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="billing_phone"><?php _e('Phone', 'webstarter'); ?></label>
+                <input type="text" id="billing_phone" name="billing_phone" value="<?php echo esc_attr($billing_phone); ?>" class="widefat">
+            </p>
+            <h4><?php _e('Payment Information', 'webstarter'); ?></h4>
+            <p>
+                <label for="payment_method"><?php _e('Payment Method', 'webstarter'); ?></label>
+                <input type="text" id="payment_method" name="payment_method" value="<?php echo esc_attr($payment_method); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="transaction_id"><?php _e('Transaction ID', 'webstarter'); ?></label>
+                <input type="text" id="transaction_id" name="transaction_id" value="<?php echo esc_attr($transaction_id); ?>" class="widefat">
+            </p>
+        </div>
+        <div class="orderShippingInfo">
+            <h4><?php _e('Shipping Information', 'webstarter'); ?></h4>
+            <p>
+                <label for="shipping_first_name"><?php _e('First Name', 'webstarter'); ?></label>
+                <input type="text" id="shipping_first_name" name="shipping_first_name" value="<?php echo esc_attr($shipping_first_name); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="shipping_last_name"><?php _e('Last Name', 'webstarter'); ?></label>
+                <input type="text" id="shipping_last_name" name="shipping_last_name" value="<?php echo esc_attr($shipping_last_name); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="shipping_company"><?php _e('Company', 'webstarter'); ?></label>
+                <input type="text" id="shipping_company" name="shipping_company" value="<?php echo esc_attr($shipping_company); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="shipping_address_1"><?php _e('Address Line 1', 'webstarter'); ?></label>
+                <input type="text" id="shipping_address_1" name="shipping_address_1" value="<?php echo esc_attr($shipping_address_1); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="shipping_address_2"><?php _e('Address Line 2', 'webstarter'); ?></label>
+                <input type="text" id="shipping_address_2" name="shipping_address_2" value="<?php echo esc_attr($shipping_address_2); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="shipping_city"><?php _e('City', 'webstarter'); ?></label>
+                <input type="text" id="shipping_city" name="shipping_city" value="<?php echo esc_attr($shipping_city); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="shipping_postcode"><?php _e('Postcode', 'webstarter'); ?></label>
+                <input type="text" id="shipping_postcode" name="shipping_postcode" value="<?php echo esc_attr($shipping_postcode); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="shipping_country"><?php _e('Country', 'webstarter'); ?></label>
+                <input type="text" id="shipping_country" name="shipping_country" value="<?php echo esc_attr($shipping_country); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="shipping_state"><?php _e('State', 'webstarter'); ?></label>
+                <input type="text" id="shipping_state" name="shipping_state" value="<?php echo esc_attr($shipping_state); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="shipping_email"><?php _e('Email', 'webstarter'); ?></label>
+                <input type="email" id="shipping_email" name="shipping_email" value="<?php echo esc_attr($shipping_email); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="shipping_phone"><?php _e('Phone', 'webstarter'); ?></label>
+                <input type="text" id="shipping_phone" name="shipping_phone" value="<?php echo esc_attr($shipping_phone); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="customer_note"><?php _e('Customer Note', 'webstarter'); ?></label>
+                <textarea id="customer_note" name="customer_note" class="widefat"><?php echo esc_textarea($customer_note); ?></textarea>
+            </p>
+        </div>
+    <?php
+    }
+    public function render_domain_meta_box($post)
+    {
+        // Get the saved customer ID from post meta
+    ?>
+        <div class="addDomainMain">
+            <p>
+                <label for="Domain"><?php _e('Customer Name', 'webstarter'); ?></label>
+                <select name="domain_id" id="domainId" class="widefat">
+                    <option></option> <!-- Default empty option -->
+                </select>
+            </p>
+            <input type="button" id="addDomain" value="Add domain">
+        </div>
+
+        <?php
+        $saved_domains = get_post_meta($post->ID, '_domain_ids', true);
+        $saved_domains = is_array($saved_domains) ? $saved_domains : array();
+        ?>
+        <div class="domainDetails">
+            <?php foreach ($saved_domains as $domain_id): ?>
+                <?php $domain_post = get_post($domain_id); ?>
+                <div class="domainDetail" data-id="<?php echo esc_attr($domain_id); ?>">
+                    <p>Domain Name: <?php echo esc_html($domain_post->post_title); ?></p>
+                    <input type="hidden" name="domain_ids[]" value="<?php echo esc_attr($domain_id); ?>">
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <?php
+    }
+
+    public function save_domain_order_meta_box($post_id)
+    {
+        // Check if nonce is set
+        if (!isset($_POST['domain_order_nonce'])) {
+            return $post_id;
+        }
+
+        // Verify nonce
+        $nonce = $_POST['domain_order_nonce'];
+        if (!wp_verify_nonce($nonce, 'domain_order_nonce_action')) {
+            return $post_id;
+        }
+
+        // Autosave check
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return $post_id;
+        }
+        // Check user's permissions.
+        if (!current_user_can('edit_post', $post_id)) {
+            return $post_id;
+        }
+
+        $customer = sanitize_text_field($_POST['customer']);
+        update_post_meta($post_id, '_customer', $customer);
+
+        // Sanitize and save the data
+        $date_created = sanitize_text_field($_POST['date_created']);
+        update_post_meta($post_id, '_date_created', $date_created);
+
+        // for billing details 
+        $billing_first_name = sanitize_text_field($_POST['billing_first_name']);
+        update_post_meta($post_id, '_billing_first_name', $billing_first_name);
+
+        $billing_last_name = sanitize_text_field($_POST['billing_last_name']);
+        update_post_meta($post_id, '_billing_last_name', $billing_last_name);
+
+        $billing_company = sanitize_text_field($_POST['billing_company']);
+        update_post_meta($post_id, '_billing_company', $billing_company);
+
+        $billing_address_1 = sanitize_text_field($_POST['billing_address_1']);
+        update_post_meta($post_id, '_billing_address_1', $billing_address_1);
+
+        $billing_address_2 = sanitize_text_field($_POST['billing_address_2']);
+        update_post_meta($post_id, '_billing_address_2', $billing_address_2);
+
+        $billing_city = sanitize_text_field($_POST['billing_city']);
+        update_post_meta($post_id, '_billing_city', $billing_city);
+
+        $billing_postcode = sanitize_text_field($_POST['billing_postcode']);
+        update_post_meta($post_id, '_billing_postcode', $billing_postcode);
+
+        $billing_country = sanitize_text_field($_POST['billing_country']);
+        update_post_meta($post_id, '_billing_country', $billing_country);
+
+        $billing_state = sanitize_text_field($_POST['billing_state']);
+        update_post_meta($post_id, '_billing_state', $billing_state);
+
+        $billing_email = sanitize_email($_POST['billing_email']);
+        update_post_meta($post_id, '_billing_email', $billing_email);
+
+        $billing_phone = sanitize_text_field($_POST['billing_phone']);
+        update_post_meta($post_id, '_billing_phone', $billing_phone);
+
+        // for shipping details 
+        $shipping_first_name = sanitize_text_field($_POST['shipping_first_name']);
+        update_post_meta($post_id, '_shipping_first_name', $shipping_first_name);
+
+        $shipping_last_name = sanitize_text_field($_POST['shipping_last_name']);
+        update_post_meta($post_id, '_shipping_last_name', $shipping_last_name);
+
+        $shipping_company = sanitize_text_field($_POST['shipping_company']);
+        update_post_meta($post_id, '_shipping_company', $shipping_company);
+
+        $shipping_address_1 = sanitize_text_field($_POST['shipping_address_1']);
+        update_post_meta($post_id, '_shipping_address_1', $shipping_address_1);
+
+        $shipping_address_2 = sanitize_text_field($_POST['shipping_address_2']);
+        update_post_meta($post_id, '_shipping_address_2', $shipping_address_2);
+
+        $shipping_city = sanitize_text_field($_POST['shipping_city']);
+        update_post_meta($post_id, '_shipping_city', $shipping_city);
+
+        $shipping_postcode = sanitize_text_field($_POST['shipping_postcode']);
+        update_post_meta($post_id, '_shipping_postcode', $shipping_postcode);
+
+        $shipping_country = sanitize_text_field($_POST['shipping_country']);
+        update_post_meta($post_id, '_shipping_country', $shipping_country);
+
+        $shipping_state = sanitize_text_field($_POST['shipping_state']);
+        update_post_meta($post_id, '_shipping_state', $shipping_state);
+
+        $shipping_email = sanitize_email($_POST['shipping_email']);
+        update_post_meta($post_id, '_shipping_email', $shipping_email);
+
+        $shipping_phone = sanitize_text_field($_POST['shipping_phone']);
+        update_post_meta($post_id, '_shipping_phone', $shipping_phone);
+
+        $payment_method = sanitize_text_field($_POST['payment_method']);
+        update_post_meta($post_id, '_payment_method', $payment_method);
+
+        $transaction_id = sanitize_text_field($_POST['transaction_id']);
+        update_post_meta($post_id, '_transaction_id', $transaction_id);
+
+        $customer_note = sanitize_textarea_field($_POST['customer_note']);
+        update_post_meta($post_id, '_customer_note', $customer_note);
+    }
+}
+new wstr_domain_order_meta_boxes();

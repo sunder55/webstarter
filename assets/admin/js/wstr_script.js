@@ -112,5 +112,151 @@ jQuery(document).ready(function ($) {
     }
   });
 
- 
+  // for order customer name starts
+  $("#customerName").select2({
+    language: {
+      inputTooShort: function () {
+        return "Please enter 3 or more character."; // Customize this message
+      },
+    },
+    minimumInputLength: 3, // This defines when the message will appear
+    placeholder: "Guest",
+  });
+
+  $("#customerName").on("select2:open", function () {
+    // Get the search input field within the select2 dropdown
+    let searchField = $(".select2-search__field");
+
+    // Attach an event listener to capture input value as the user types
+    searchField.on("input", function () {
+      let searchValue = $(this).val();
+      if (searchValue.length >= 3) {
+        $.ajax({
+          url: cpmAjax.ajax_url,
+          method: "POST",
+          data: {
+            action: "search_users",
+            search: searchValue, // Send the search value to the server
+          },
+          success: function (data) {
+            let results = $.map(data, function (user) {
+              return {
+                id: user.id,
+                text: user.username + " (" + user.email + ")",
+              };
+            });
+
+            // Clear the Select2 dropdown
+            let $select = $("#customerName");
+            $select.find("option").remove(); // Clear existing options
+
+            // Add new options to the Select2
+            $.each(results, function (index, item) {
+              let newOption = new Option(item.text, item.id, false, false);
+              $select.append(newOption);
+            });
+
+            // Reinitialize Select2 to show new options
+            $select.trigger("change");
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.error("AJAX request failed: ", textStatus, errorThrown);
+          },
+        });
+      }
+    });
+  });
+  // for order customer name ends
+
+  // for adding domain on order create starts
+  $("#domainId").select2({
+    language: {
+      inputTooShort: function () {
+        return "Please enter 3 or more character."; // Customize this message
+      },
+    },
+    minimumInputLength: 3, // This defines when the message will appear
+    placeholder: "Guest",
+  });
+  $("#domainId").on("select2:open", function () {
+    // Get the search input field within the select2 dropdown
+    let searchField = $(".select2-search__field");
+
+    // Attach an event listener to capture input value as the domain
+    searchField.on("input", function () {
+      let searchValue = $(this).val();
+      if (searchValue.length >= 3) {
+        $.ajax({
+          url: cpmAjax.ajax_url,
+          method: "POST",
+          data: {
+            action: "get_domains_list",
+            search: searchValue, // Send the search value to the server
+          },
+          success: function (data) {
+            let results = $.map(data, function (doamin) {
+              return {
+                id: doamin.id,
+                text: doamin.name + " (" + doamin.id + ")",
+              };
+            });
+
+            // Clear the Select2 dropdown
+            let $select = $("#domainId");
+            $select.find("option").remove(); // Clear existing options
+
+            // Add new options to the Select2
+            $.each(results, function (index, item) {
+              let newOption = new Option(item.text, item.id, false, false);
+              $select.append(newOption);
+            });
+
+            // Reinitialize Select2 to show new options
+            $select.trigger("change");
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.error("AJAX request failed: ", textStatus, errorThrown);
+          },
+        });
+      }
+    });
+  });
+
+  $("#addDomain").click(function () {
+    var domainId = $("#domainId").find(":selected").val();
+    if (domainId) {
+      $.ajax({
+        url: cpmAjax.ajax_url,
+        method: "POST",
+        data: {
+          action: "get_domain_details",
+          domain_id: domainId, // Send the search value to the server
+        },
+        success: function (data) {
+          // if (Array.isArray(data) && data.length > 0) {
+          // var domain = data[0]; // Get the first item from the array
+
+          var domainDetail =
+            '<div class="domainDetail" data-id="' +
+            data.id +
+            '">' +
+            "<p>Domain Name: " +
+            data.name +
+            "</p>" +
+            '<input type="hidden" name="domain_ids[]" value="' +
+            data.id +
+            '">' +
+            "</div>";
+
+          // Append the domain details to the .domainDetails div
+          $(".domainDetails").append(domainDetail);
+          // }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          console.error("AJAX request failed: ", textStatus, errorThrown);
+        },
+      });
+    }
+  });
+  // for adding domain on order create ends
 });
