@@ -25,6 +25,11 @@ function wstr_enqueue_admin_scripts()
 
     // Enqueue admin JS
     wp_enqueue_script('wstr-admin-js', get_template_directory_uri() . '/assets/admin/js/wstr_script.js', array('jquery'), time(), true);
+   
+    wp_enqueue_script('wstr-js', get_template_directory_uri() . '/script.js', array('jquery'), time(), true);
+
+    // localize ajax
+    wp_localize_script('wstr-admin-js', 'cpmAjax', array('ajax_url' => admin_url('admin-ajax.php')));
 
     if (function_exists('wp_enqueue_media')) {
         wp_enqueue_media();
@@ -35,10 +40,15 @@ add_action('wp_enqueue_scripts', 'wstr_enqueue_scripts');
 function wstr_enqueue_scripts()
 {
     // Enqueue public CSS
-    wp_enqueue_style('wstr-admin-css', get_template_directory_uri() . '/assets/public/css/wstr_style.css', array(), true, 'all');
+    wp_enqueue_style('wstr-public-css', get_template_directory_uri() . '/assets/public/css/wstr_style.css', array(), true, 'all');
 
     // Enqueue public JS
-    wp_enqueue_script('wstr-admin-js', get_template_directory_uri() . '/assets/public/js/wstr_script.js', array('jquery'), time(), true);
+    wp_enqueue_script('wstr-public-js', get_template_directory_uri() . '/assets/public/js/wstr_script.js', array('jquery'), time(), true);
+   
+    wp_enqueue_script('wstr-js', get_template_directory_uri() . '/script.js', array('jquery'), time(), true);
+
+    //Localize ajax
+    wp_localize_script('wstr-public-js', 'cpmAjax', array('ajax_url' => admin_url('admin-ajax.php')));
 
     // Enqueue public media
     if (function_exists('wp_enqueue_media')) {
@@ -50,6 +60,7 @@ function wstr_enqueue_scripts()
 
 include(get_stylesheet_directory() . '/includes/wstr_post_type.php');
 include(get_stylesheet_directory() . '/includes/wstr_post_meta_boxes.php');
+include(get_stylesheet_directory() . '/includes/wstr_api_field_data.php');
 
 
 /**
@@ -60,13 +71,14 @@ add_filter('use_block_editor_for_post_type', 'prefix_disable_gutenberg', 10, 2);
 function prefix_disable_gutenberg($current_status, $post_type)
 {
     // Use your post type key instead of 'product'
-    if ($post_type === 'domain') return false;
+    if ($post_type === 'domain')
+        return false;
     return $current_status;
 }
 
 
 /*
- * This action hook allows to add a new empty column
+ * For adding featured image column to the domain list in backend
  */
 add_filter('manage_domain_posts_columns', 'misha_featured_image_column');
 function misha_featured_image_column($column_array)
@@ -81,8 +93,14 @@ function misha_featured_image_column($column_array)
     return $column_array;
 }
 
-/*
- * This hook will fill our column with data
+/**
+ * Display the featured image in the custom column of the posts list table.
+ *
+ * Hooked to the 'manage_posts_custom_column' action to customize the display
+ * of columns in the WordPress admin post list.
+ *
+ * @param string $column_name The name of the column being rendered.
+ * @param int    $post_id     The ID of the current post.
  */
 add_action('manage_posts_custom_column', 'misha_render_the_column', 10, 2);
 function misha_render_the_column($column_name, $post_id)
@@ -94,13 +112,49 @@ function misha_render_the_column($column_name, $post_id)
         if (has_post_thumbnail($post_id)) {
 
             $thumb_id = get_post_thumbnail_id($post_id);
-           
+
             echo '<img data-id="' . $thumb_id . '" src="' . wp_get_attachment_url($thumb_id) . '" style="width:40px; height:40px;" />';
-        } 
-         else {
+        } else {
 
             // // data-id should be "-1" I will explain below
             // echo '<img data-id="-1" src="' . get_stylesheet_directory_uri() . '/assets/image/wstr-placeholder.webp" />';
         }
     }
 }
+
+// font awesome
+function enqueue_font_awesome()
+{
+    wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+}
+add_action('wp_enqueue_scripts', 'enqueue_font_awesome');
+
+// megamenu block
+
+function enqueue_webstarter_mega_menu_assets()
+{
+    wp_enqueue_script(
+        'mega-menu-block-editor',
+        get_template_directory_uri() . '/blocks/mega-menu/index.js',
+        array('wp-blocks', 'wp-element', 'wp-editor', 'wp-block-editor'),
+        filemtime(get_template_directory() . '/blocks/mega-menu/index.js'),
+        true
+    );
+
+    wp_enqueue_style(
+        'mega-menu-block-style',
+        get_template_directory_uri() . '/blocks/mega-menu/style.css',
+        array(),
+        filemtime(get_template_directory() . '/blocks/mega-menu/style.css')
+    );
+
+    wp_enqueue_style(
+        'mega-menu-block-editor-style',
+        get_template_directory_uri() . '/blocks/mega-menu/editor.css',
+        array(),
+        filemtime(get_template_directory() . '/blocks/mega-menu/editor.css')
+    );
+}
+add_action('enqueue_block_assets', 'enqueue_webstarter_mega_menu_assets');
+
+

@@ -87,6 +87,7 @@ jQuery(document).ready(function ($) {
 
   // product logo and audion ends
 
+  // for displaying error msg when sale price is greater than regular price
   $(".domainSalePrice input").on("keyup", function () {
     regularPrice = parseFloat($(".domainRegularPrice input").val());
     salePrice = parseFloat($(".domainSalePrice input").val());
@@ -101,6 +102,7 @@ jQuery(document).ready(function ($) {
     }
   });
 
+  // for displaying error message if rating is greater that 5.
   $(".domainSeo input").on("keyup", function () {
     if ($(this).val() > 5) {
       $(".wstr-error-msg").show();
@@ -109,4 +111,6 @@ jQuery(document).ready(function ($) {
       $(".wstr-error-msg").hide();
     }
   });
+
+ 
 });

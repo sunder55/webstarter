@@ -69,13 +69,13 @@ class wstr_domain_meta_boxes
             </div>
             <div class="domainAge">
                 <label><?php _e('Age'); ?></label>
-                <input type="text" name="age" class="widefat" value="<?php echo esc_attr($age); ?>">
+                <input type="text" name="age" id="domainAge" class="widefat" value="<?php echo esc_attr($age); ?>">
             </div>
             <div class="domainLength">
                 <label class="wstr-mandatory"><?php _e('Length'); ?></label>
-                <input type="number" name="length" class="widefat" value="<?php echo esc_attr($length); ?>">
+                <input type="number" name="length" id="domainLength" class="widefat" value="<?php echo esc_attr($length); ?>">
             </div>
-            <div class="domainTld">
+            <div id="domainTld">
                 <label><?php _e('TLD'); ?></label>
                 <select name="tld" class="widefat">
                     <option value=".com" <?php selected($domain_tld, '.com'); ?>><?php _e('.com'); ?></option>
@@ -90,7 +90,7 @@ class wstr_domain_meta_boxes
             </div>
             <div class="domainDaPa">
                 <label><?php _e('DA / PA Ranking (optional)'); ?></label>
-                <input type="text" name="da_pa" class="widefat" value="<?php echo esc_attr($da_pa); ?>">
+                <input type="text" name="da_pa" class="widefat" id="domainDaPa" value="<?php echo esc_attr($da_pa); ?>">
             </div>
             <div class="domainSeo">
                 <label><?php _e('SEO Rating (optional)'); ?></label>
