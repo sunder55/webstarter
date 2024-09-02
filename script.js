@@ -39,6 +39,11 @@ jQuery(document).ready(function ($) {
       },
     });
     getTLD(domainName);
+
+    var domainLength = getDomainLength(domainName);
+    if (domainLength) {
+      $("#domainLength").val(domainLength);
+    }
   });
 
   /**
@@ -65,5 +70,23 @@ jQuery(document).ready(function ($) {
       // Trigger the change event
       productTld.trigger("change");
     }
+  }
+
+  /**
+   * function for getting domain length
+   */
+  function getDomainLength(domain) {
+    // Split the domain by the dot
+    var parts = domain.split(".");
+
+    // If there are more than two parts, we assume the last part is the TLD
+    if (parts.length > 1) {
+      // Remove the last part (TLD)
+      parts.pop();
+    }
+
+    // Join the remaining parts and get the length
+    var domainWithoutTLD = parts.join(".");
+    return domainWithoutTLD.length;
   }
 });
