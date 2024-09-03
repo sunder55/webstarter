@@ -331,6 +331,8 @@ class wstr_domain_order_meta_boxes
                     <option value="processing" <?php selected($order_status, 'processing'); ?>><?php _e('Processing', 'webstarter'); ?></option>
                     <option value="completed" <?php selected($order_status, 'completed'); ?>><?php _e('Completed', 'webstarter'); ?></option>
                     <option value="cancelled" <?php selected($order_status, 'cancelled'); ?>><?php _e('Cancelled', 'webstarter'); ?></option>
+                    <option value="onhold" <?php selected($order_status, 'onhold'); ?>><?php _e('On hold', 'webstarter'); ?></option>
+                    <option value="refunded" <?php selected($order_status, 'refunded'); ?>><?php _e('Refunded', 'webstarter'); ?></option>
                 </select>
             </p>
         </div>
@@ -441,37 +443,98 @@ class wstr_domain_order_meta_boxes
                 <textarea id="customer_note" name="customer_note" class="widefat"><?php echo esc_textarea($customer_note); ?></textarea>
             </p>
         </div>
-    <?php
+        <?php
     }
     public function render_domain_meta_box($post)
     {
         // Get the saved customer ID from post meta
-    ?>
-        <div class="addDomainMain">
-            <p>
-                <label for="Domain"><?php _e('Customer Name', 'webstarter'); ?></label>
-                <select name="domain_id" id="domainId" class="widefat">
-                    <option></option> <!-- Default empty option -->
-                </select>
-            </p>
-            <input type="button" id="addDomain" value="Add domain">
-        </div>
+        $order_status = get_post_meta($post->ID, '_order_status', true);
+        if ($order_status == 'pending' || $order_status == 'onhold' || $order_status == '') {
+        ?>
+            <!-- pending / on-hold -->
+
+            <div class="addDomainMain">
+                <p>
+                    <label for="Domain"><?php _e('Domanis', 'webstarter'); ?></label>
+                    <select name="domain_id" id="domainId" class="widefat">
+                        <option></option> <!-- Default empty option -->
+                    </select>
+                </p>
+                <input type="button" class="addDomain" id="<?php echo $post->ID; ?>" value="Add domain">
+            </div>
 
         <?php
+        } else {
+        ?>
+            <p>This Order is no longer editable</p>
+        <?php
+        }
         $saved_domains = get_post_meta($post->ID, '_domain_ids', true);
         $saved_domains = is_array($saved_domains) ? $saved_domains : array();
+        $subtotal = (float)get_post_meta($post->ID, '_order_subtotal', true);
+        $total = (float)get_post_meta($post->ID, '_order_total', true);
+
         ?>
         <div class="domainDetails">
-            <?php foreach ($saved_domains as $domain_id): ?>
-                <?php $domain_post = get_post($domain_id); ?>
-                <div class="domainDetail" data-id="<?php echo esc_attr($domain_id); ?>">
-                    <p>Domain Name: <?php echo esc_html($domain_post->post_title); ?></p>
-                    <input type="hidden" name="domain_ids[]" value="<?php echo esc_attr($domain_id); ?>">
-                </div>
-            <?php endforeach; ?>
+            <table class="widefat">
+                <thead>
+                    <th>Image </th>
+                    <th> Name </th>
+                    <th>Total</th>
+                </thead>
+                <tbody>
+                    <?php foreach ($saved_domains as $domain_id): ?>
+                        <?php $domain_post = get_post($domain_id); ?>
+                        <?php if ($domain_post):
+                            $price = get_post_meta($domain_post->ID, '_sale_price', true);
+                            if (!$price) {
+                                $price = get_post_meta($domain_post->ID, '_regular_price', true);
+                            }
+                            // $subtotal += (float) $price; // Add the price to the subtotal
+                        ?>
+
+                            <tr class="domainDetail" data-id="<?php echo esc_attr($domain_id); ?>">
+                                <td>
+                                    <?php
+                                    $image_url = get_the_post_thumbnail_url($domain_id, 'thumbnail');
+                                    if ($image_url): ?>
+                                        <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($domain_post->post_title); ?>" style="max-width: 50px;">
+
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo esc_html($domain_post->post_title); ?></td>
+                                <td><?php echo $price; ?></td>
+                                <td class="deleteOrderItem"> <a href="javascript:void(0);" id="<?php echo $domain_post->ID ?>"><i class="fa fa-times" aria-hidden="true"></i></a></td>
+
+                                <input type="hidden" name="domain_ids[]" value="<?php echo esc_attr($domain_id); ?>">
+                                <!-- You could add more actions here like edit or remove if needed -->
+
+                                <input type="hidden" class="orderId" value="<?php echo $post->ID ?>">
+
+                            </tr>
+
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+        </div>
+        <div class="orderAmountDetails">
+            <div class="orderSubtotal">
+                <label>Subtotal:</label>
+                <input type="text" name="order_subtotal" value=" <?php echo esc_html(number_format($subtotal, 2)); ?>" readonly>
+            </div>
+            <div class="orderTotal">
+                <label>Total:</label>
+                <input type="text" name="order_total" value=" <?php echo esc_html(number_format($total, 2)); ?>" readonly>
+            </div>
+            <!-- <p><strong>Subtotal:</strong> <?php //echo esc_html(number_format($subtotal, 2)); 
+                                                ?></p>
+            <p><strong>Total:</strong> <?php //echo esc_html(number_format($total, 2)); 
+                                        ?></p> -->
         </div>
 
-        <?php
+<?php
     }
 
     public function save_domain_order_meta_box($post_id)
@@ -495,6 +558,18 @@ class wstr_domain_order_meta_boxes
         if (!current_user_can('edit_post', $post_id)) {
             return $post_id;
         }
+
+        // $subtotal = sanitize_text_field($_POST['order_subtotal']);
+        // update_post_meta($post_id, '_order_subtotal', $subtotal);
+
+        // $total = sanitize_text_field($_POST['order_total']);
+        // update_post_meta($post_id, '_order_total', $total);
+
+        if (isset($_POST['order_status'])) {
+            $order_status = sanitize_text_field($_POST['order_status']);
+            update_post_meta($post_id, '_order_status', $order_status);
+        }
+
 
         $customer = sanitize_text_field($_POST['customer']);
         update_post_meta($post_id, '_customer', $customer);
@@ -579,6 +654,31 @@ class wstr_domain_order_meta_boxes
 
         $customer_note = sanitize_textarea_field($_POST['customer_note']);
         update_post_meta($post_id, '_customer_note', $customer_note);
+
+        // save product
+        if (isset($_POST['domain_ids'])) {
+
+            $domain_ids = array_map('sanitize_text_field', $_POST['domain_ids']);
+            update_post_meta($post_id, '_domain_ids', $domain_ids);
+        }
+
+        $get_domain_ids = get_post_meta($post_id, '_domain_ids', true);
+
+        $get_order_status = get_post_meta($post_id, '_order_status', true);
+        
+        if ($get_order_status == 'completed' || $get_order_status == 'processing') {
+            // Loop through each domain ID
+            foreach ($get_domain_ids as $domain_id) {
+                // Update the stock status to 'instock'
+                update_post_meta($domain_id, '_stock_status', 'outofstock');
+            }
+        } else if ($get_order_status == 'refunded' || $get_order_status == 'cancelled') {
+            // Loop through each domain ID
+            foreach ($get_domain_ids as $domain_id) {
+                // Update the stock status to 'outofstock'
+                update_post_meta($domain_id, '_stock_status', 'instock');
+            }
+        }
     }
 }
 new wstr_domain_order_meta_boxes();

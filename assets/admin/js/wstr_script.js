@@ -176,7 +176,7 @@ jQuery(document).ready(function ($) {
       },
     },
     minimumInputLength: 3, // This defines when the message will appear
-    placeholder: "Guest",
+    placeholder: "Domain",
   });
   $("#domainId").on("select2:open", function () {
     // Get the search input field within the select2 dropdown
@@ -222,8 +222,10 @@ jQuery(document).ready(function ($) {
     });
   });
 
-  $("#addDomain").click(function () {
+  $(".addDomain").click(function () {
     var domainId = $("#domainId").find(":selected").val();
+    var orderId = this.id;
+    console.log(orderId);
     if (domainId) {
       $.ajax({
         url: cpmAjax.ajax_url,
@@ -231,6 +233,7 @@ jQuery(document).ready(function ($) {
         data: {
           action: "get_domain_details",
           domain_id: domainId, // Send the search value to the server
+          order_id: orderId,
         },
         success: function (data) {
           // if (Array.isArray(data) && data.length > 0) {
@@ -248,8 +251,39 @@ jQuery(document).ready(function ($) {
             '">' +
             "</div>";
 
+          var domainDetails =
+            "<tr class='domainDetail' data-id='" +
+            data.id +
+            "'>" +
+            "<td><img src='" +
+            data.image +
+            "' style='max-width: 50px;'></td>" +
+            "<td>" +
+            data.name +
+            "</td>" +
+            "<td>" +
+            data.amount +
+            "</td>" +
+            "<td class='deleteOrderItem'> " +
+            '<a href="javascript:void(0);" id="' +
+            data.id +
+            '">' +
+            '<i class="fa fa-times" aria-hidden="true"></i></a></td>' +
+            "<input type='hidden' name='domain_ids[]' value='" +
+            data.id +
+            "'>" +
+            " <input type='hidden' class='orderId' value='" +
+            data.order_id +
+            "'>" +
+            "</tr>";
+
           // Append the domain details to the .domainDetails div
-          $(".domainDetails").append(domainDetail);
+          // $(".domainDetails").append(domainDetail);
+          $(".domainDetails table tbody").append(domainDetails);
+
+          // Update subtotal and total
+          $(".orderSubtotal input").val(data.subtotal);
+          $(".orderTotal input").val(data.total);
           // }
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -258,5 +292,45 @@ jQuery(document).ready(function ($) {
       });
     }
   });
+
   // for adding domain on order create ends
+
+  // for removing domains on order create page
+  $(document).on("click", ".deleteOrderItem a", function () {
+    var domainId = this.id;
+    var orderId = $(".orderId").val();
+    if (!orderId) {
+      $("tr[data-id='" + domainId + "']").remove();
+    }
+    // Confirm deletion
+    if (confirm("Are you sure you want to remove this domain?")) {
+      if (domainId) {
+        $.ajax({
+          url: cpmAjax.ajax_url,
+          method: "POST",
+          data: {
+            action: "remove_domain_from_order",
+            domain_id: domainId, // Send the search value to the server
+            order_id: orderId,
+          },
+          success: function (data) {
+            var domain_id = data.data.id;
+            $("tr[data-id='" + domain_id + "']").remove();
+
+            // Update subtotal and total
+            console.log(data.data.subtotal);
+            console.log(data.data.total);
+            $(".orderSubtotal input").val(data.data.subtotal);
+            $(".orderTotal input").val(data.data.total);
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.error("AJAX request failed: ", textStatus, errorThrown);
+          },
+        });
+      }
+    }
+  });
+  $(".test").click(function () {
+    console.log("clicked");
+  });
 });
