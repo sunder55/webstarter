@@ -8,6 +8,8 @@ class wstr_post_types
         add_action('init', array($this, 'register_domain_post_type'));
         add_action('init', array($this, 'register_domain_taxonomies'));
         add_action('init',  array($this, 'create_domain_order_post_type'));
+        add_action('init', array($this, 'create_faq_post_type'));
+        add_action('init',  array($this,'create_faq_cat_taxonomy'));
 
         // Hook into the 'domain_industry_add_form_fields' and 'domain_industry_edit_form_fields' actions to add image field.
         add_action('domain_industry_add_form_fields', array($this, 'add_taxonomy_image_field'));
@@ -270,6 +272,73 @@ class wstr_post_types
         );
 
         register_post_type('domain_order', $args);
+    }
+
+
+    // Adding post type faq 
+    function create_faq_post_type()
+    {
+        $labels = array(
+            'name'               => _x('FAQs', 'Post Type General Name', 'webstarter'),
+            'singular_name'      => _x('FAQ', 'Post Type Singular Name', 'webstarter'),
+            'menu_name'          => __('FAQs', 'webstarter'),
+            'name_admin_bar'     => __('FAQ', 'webstarter'),
+            'add_new_item'       => __('Add New FAQ', 'webstarter'),
+            'new_item'           => __('New FAQ', 'webstarter'),
+            'edit_item'          => __('Edit FAQ', 'webstarter'),
+            'view_item'          => __('View FAQ', 'webstarter'),
+            'all_items'          => __('All FAQs', 'webstarter'),
+            'search_items'       => __('Search FAQs', 'webstarter'),
+            'not_found'          => __('No FAQs found.', 'webstarter'),
+            'not_found_in_trash' => __('No FAQs found in Trash.', 'webstarter'),
+        );
+
+        $args = array(
+            'labels'             => $labels,
+            'public'             => true,
+            'publicly_queryable' => true,
+            'show_ui'            => true,
+            'show_in_menu'       => true,
+            'query_var'          => true,
+            'rewrite'            => array('slug' => 'faq'),
+            'capability_type'    => 'post',
+            'has_archive'        => true,
+            'hierarchical'       => false,
+            'menu_position'      => null,
+            'supports'           => array('title', 'editor'),
+            'show_in_rest' => true,
+        );
+
+        register_post_type('faq', $args);
+    }
+
+    function create_faq_cat_taxonomy()
+    {
+        $labels = array(
+            'name'              => _x('FAQ Categories', 'taxonomy general name', 'webstarter'),
+            'singular_name'     => _x('FAQ Category', 'taxonomy singular name', 'webstarter'),
+            'search_items'      => __('Search FAQ Categories', 'webstarter'),
+            'all_items'         => __('All FAQ Categories', 'webstarter'),
+            'parent_item'       => __('Parent FAQ Category', 'webstarter'),
+            'parent_item_colon' => __('Parent FAQ Category:', 'webstarter'),
+            'edit_item'         => __('Edit FAQ Category', 'webstarter'),
+            'update_item'       => __('Update FAQ Category', 'webstarter'),
+            'add_new_item'      => __('Add New FAQ Category', 'webstarter'),
+            'new_item_name'     => __('New FAQ Category Name', 'webstarter'),
+            'menu_name'         => __('FAQ Categories', 'webstarter'),
+        );
+
+        $args = array(
+            'labels'            => $labels,
+            'hierarchical'      => true, // Like categories
+            'show_ui'           => true,
+            'show_admin_column' => true,
+            'query_var'         => true,
+            'rewrite'           => array('slug' => 'faq-category'),
+            'show_in_rest'   => true,
+        );
+
+        register_taxonomy('faq_cat', array('faq'), $args);
     }
 }
 // Instantiate the class to create the post type.
