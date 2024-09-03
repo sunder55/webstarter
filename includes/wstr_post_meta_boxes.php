@@ -220,7 +220,9 @@ class wstr_domain_meta_boxes
 
 new wstr_domain_meta_boxes();
 
-
+/**
+ * For adding meta field to the post type domain order
+ */
 class wstr_domain_order_meta_boxes
 {
 
@@ -255,6 +257,11 @@ class wstr_domain_order_meta_boxes
         );
     }
 
+    /**
+     *  For adding meta box
+     * @param mixed $post
+     * @return void
+     */
     public function render_domain_order_meta_box($post)
     {
         // Add nonce for security and authentication.
@@ -445,6 +452,13 @@ class wstr_domain_order_meta_boxes
         </div>
         <?php
     }
+
+    /**
+     * 
+     * For addig add domain meta box
+     * @param mixed $post
+     * @return void
+     */
     public function render_domain_meta_box($post)
     {
         // Get the saved customer ID from post meta
@@ -537,6 +551,11 @@ class wstr_domain_order_meta_boxes
 <?php
     }
 
+    /**
+     * For saving meta data to the data base 
+     * @param mixed $post_id
+     * @return mixed
+     */
     public function save_domain_order_meta_box($post_id)
     {
         // Check if nonce is set
@@ -665,7 +684,7 @@ class wstr_domain_order_meta_boxes
         $get_domain_ids = get_post_meta($post_id, '_domain_ids', true);
 
         $get_order_status = get_post_meta($post_id, '_order_status', true);
-        
+
         if ($get_order_status == 'completed' || $get_order_status == 'processing') {
             // Loop through each domain ID
             foreach ($get_domain_ids as $domain_id) {

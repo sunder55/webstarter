@@ -295,7 +295,7 @@ jQuery(document).ready(function ($) {
 
   // for adding domain on order create ends
 
-  // for removing domains on order create page
+  // for removing domains on order create page starts 
   $(document).on("click", ".deleteOrderItem a", function () {
     var domainId = this.id;
     var orderId = $(".orderId").val();
@@ -330,7 +330,5 @@ jQuery(document).ready(function ($) {
       }
     }
   });
-  $(".test").click(function () {
-    console.log("clicked");
-  });
+    // for removing domains on order create page starts 
 });
