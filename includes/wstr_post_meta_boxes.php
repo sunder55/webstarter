@@ -17,10 +17,29 @@ class wstr_domain_meta_boxes
 
     public function add_domain_meta_boxes()
     {
+
+        add_meta_box(
+            'highlight_section',
+            __('Highlight Section', 'webstarter'),
+            array($this, 'render_highlight_section_meta_box'),
+            'domain', // The custom post type slug
+            'normal',
+            'default'
+        );
+
         add_meta_box(
             'domain_fields',
             __('Domain Fields', 'webstarter'),
             array($this, 'render_domain_fields_meta_box'),
+            'domain', // The custom post type slug
+            'normal',
+            'default'
+        );
+
+        add_meta_box(
+            'media_section',
+            __('Media Section', 'webstarter'),
+            array($this, 'render_media_section_meta_box'),
             'domain', // The custom post type slug
             'normal',
             'default'
@@ -35,38 +54,62 @@ class wstr_domain_meta_boxes
             'core'
         );
     }
+    public function render_highlight_section_meta_box($post)
+    {
+        $highlight_title = get_post_meta($post->ID, '_highlight_title', true);
+        $highlight_content = get_post_meta($post->ID, '_highlight_content', true);
+?>
+        <div class="domainHighlightTitle">
+            <label><?php _e('Highlight Title'); ?></label>
+            <input type="text" name="highlight_title" class="widefat" value="<?php echo esc_attr($highlight_title); ?>">
+        </div>
+        <div class="domainHighlightContent">
+            <label><?php _e('Highlight Content'); ?></label>
+            <textarea name="highlight_content" class="widefat" rows="4"><?php echo esc_textarea($highlight_content); ?></textarea>
+        </div>
+    <?php
+    }
+    public function render_media_section_meta_box($post)
+    {
+        $pronounce_audio_id = get_post_meta($post->ID, '_pronounce_audio', true);
+        $pronounce_audio_url = wp_get_attachment_url($pronounce_audio_id);
 
+        $logo_image_id = get_post_meta($post->ID, '_logo_image', true);
+        $logo_image_url = wp_get_attachment_url($logo_image_id);
+    ?>
+        <div class="domainPronounce">
+            <label><?php _e('How to Pronounce'); ?></label>
+            <input type="hidden" id="pronounce_audio_url" name="pronounce_audio" value="<?php echo esc_attr($pronounce_audio_id); ?>">
+            <button type="button" class="button" id="upload_pronounce_audio"><?php _e('Add File'); ?></button>
+            <button type="button" class="button remove-button" id="remove_pronounce_audio"><?php _e('Remove File'); ?></button>
+            <p class="description"><?php echo $pronounce_audio_url ? '<audio controls src="' . esc_url($pronounce_audio_url) . '"></audio>' : __('No file selected'); ?></p>
+        </div>
+
+        <div class="domainLogo">
+            <label><?php _e('Logo/Document'); ?></label>
+            <input type="hidden" id="logo_image_url" name="logo_image" value="<?php echo esc_attr($logo_image_id); ?>">
+            <button type="button" class="button" id="upload_logo_image"><?php _e('Add Image'); ?></button>
+            <button type="button" class="button remove-button" id="remove_logo_image"><?php _e('Remove Image'); ?></button>
+            <p class="description"><?php echo $logo_image_url ? '<img src="' . esc_url($logo_image_url) . '" style="max-width: 150px; height: auto;" />' : __('No image selected'); ?></p>
+        </div>
+
+    <?php
+    }
     public function render_domain_fields_meta_box($post)
     {
         // Add nonce for security and authentication
         wp_nonce_field('domain_fields_nonce_action', 'domain_fields_nonce');
 
         // Retrieve existing value from the database if available
-        $highlight_title = get_post_meta($post->ID, '_highlight_title', true);
-        $highlight_content = get_post_meta($post->ID, '_highlight_content', true);
         $age = get_post_meta($post->ID, '_age', true);
         $length = get_post_meta($post->ID, '_length', true);
         $da_pa = get_post_meta($post->ID, '_da_pa', true);
         $seo_rating = get_post_meta($post->ID, '_seo_rating', true);
 
-        $pronounce_audio_id = get_post_meta($post->ID, '_pronounce_audio', true);
-        $pronounce_audio_url = wp_get_attachment_url($pronounce_audio_id);
-
-        $logo_image_id = get_post_meta($post->ID, '_logo_image', true);
-        $logo_image_url = wp_get_attachment_url($logo_image_id);
-
         // Retrieve TLD selection if available
         $domain_tld = get_post_meta($post->ID, '_tld', true);
-?>
+    ?>
         <div class="domainFields widefat">
-            <div class="domainHighlightTitle">
-                <label><?php _e('Highlight Title'); ?></label>
-                <input type="text" name="highlight_title" class="widefat" value="<?php echo esc_attr($highlight_title); ?>">
-            </div>
-            <div class="domainHighlightContent">
-                <label><?php _e('Highlight Content'); ?></label>
-                <textarea name="highlight_content" class="widefat"><?php echo esc_textarea($highlight_content); ?></textarea>
-            </div>
             <div class="domainAge">
                 <label><?php _e('Age'); ?></label>
                 <input type="text" name="age" id="domainAge" class="widefat" value="<?php echo esc_attr($age); ?>">
@@ -97,21 +140,7 @@ class wstr_domain_meta_boxes
                 <input type="number" name="seo_rating" min="1" max="5" class="widefat" value="<?php echo esc_attr($seo_rating); ?>">
                 <div class="wstr-error-msg"></div>
             </div>
-            <div class="domainPronounce">
-                <label><?php _e('How to Pronounce'); ?></label>
-                <input type="hidden" id="pronounce_audio_url" name="pronounce_audio" value="<?php echo esc_attr($pronounce_audio_id); ?>">
-                <button type="button" class="button" id="upload_pronounce_audio"><?php _e('Add File'); ?></button>
-                <button type="button" class="button remove-button" id="remove_pronounce_audio"><?php _e('Remove File'); ?></button>
-                <p class="description"><?php echo $pronounce_audio_url ? '<audio controls src="' . esc_url($pronounce_audio_url) . '"></audio>' : __('No file selected'); ?></p>
-            </div>
 
-            <div class="domainLogo">
-                <label><?php _e('Logo/Document'); ?></label>
-                <input type="hidden" id="logo_image_url" name="logo_image" value="<?php echo esc_attr($logo_image_id); ?>">
-                <button type="button" class="button" id="upload_logo_image"><?php _e('Add Image'); ?></button>
-                <button type="button" class="button remove-button" id="remove_logo_image"><?php _e('Remove Image'); ?></button>
-                <p class="description"><?php echo $logo_image_url ? '<img src="' . esc_url($logo_image_url) . '" style="max-width: 150px; height: auto;" />' : __('No image selected'); ?></p>
-            </div>
 
         </div>
     <?php
@@ -379,7 +408,7 @@ class wstr_domain_order_meta_boxes
                 </select>
             </p>
         </div>
-     
+
     <?php
     }
 
@@ -511,7 +540,7 @@ class wstr_domain_order_meta_boxes
                 <label for="shipping_phone"><?php _e('Phone', 'webstarter'); ?></label>
                 <input type="text" id="shipping_phone" name="shipping_phone" value="<?php echo esc_attr($shipping_phone); ?>" class="widefat">
             </p>
-          
+
         </div>
     <?php
     }
