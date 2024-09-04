@@ -272,6 +272,7 @@ class wstr_domain_order_meta_boxes
         $customer_id = get_post_meta($post->ID, '_customer', true);
         $order_status = get_post_meta($post->ID, '_order_status', true);
         $date_created = get_post_meta($post->ID, '_date_created', true);
+        $transfer_to = get_post_meta($post->ID, '_transfer_to', true);
 
         // Retrieve current data if exists
         $billing_first_name = get_post_meta($post->ID, '_billing_first_name', true);
@@ -301,6 +302,7 @@ class wstr_domain_order_meta_boxes
         $payment_method = get_post_meta($post->ID, '_payment_method', true);
         $transaction_id = get_post_meta($post->ID, '_transaction_id', true);
         $customer_note = get_post_meta($post->ID, '_customer_note', true);
+
 
         // HTML for meta box
     ?>
@@ -333,13 +335,27 @@ class wstr_domain_order_meta_boxes
             </p>
             <p>
                 <label for="order_status"><?php _e('Order Status', 'webstarter'); ?></label>
-                <select id="order_status" name="order_status" class="widefat">
+                <select id="orderStatus" name="order_status" class="widefat">
                     <option value="pending" <?php selected($order_status, 'pending'); ?>><?php _e('Pending', 'webstarter'); ?></option>
                     <option value="processing" <?php selected($order_status, 'processing'); ?>><?php _e('Processing', 'webstarter'); ?></option>
                     <option value="completed" <?php selected($order_status, 'completed'); ?>><?php _e('Completed', 'webstarter'); ?></option>
                     <option value="cancelled" <?php selected($order_status, 'cancelled'); ?>><?php _e('Cancelled', 'webstarter'); ?></option>
                     <option value="onhold" <?php selected($order_status, 'onhold'); ?>><?php _e('On hold', 'webstarter'); ?></option>
                     <option value="refunded" <?php selected($order_status, 'refunded'); ?>><?php _e('Refunded', 'webstarter'); ?></option>
+                </select>
+            </p>
+
+            <p>
+                <label for="transferTo"><?php _e('Transfer this domain to', 'webstarter'); ?></label>
+
+                <select name="transfer_to" id="transferTo" class="widefat">
+                    <option value="">Select domain provider</option>
+                    <option value="godaddy" <?php selected($transfer_to, 'godaddy'); ?>>GoDaddy</option>
+                    <option value="cloudflare" <?php selected($transfer_to, 'cloudflare'); ?>>CloudFlare</option>
+                    <option value="dreamhost" <?php selected($transfer_to, 'dreamhost'); ?>>DreamHost</option>
+                    <option value="mailchimp" <?php selected($transfer_to, 'mailchimp'); ?>>MailChimp</option>
+                    <option value="hostgator" <?php selected($transfer_to, 'hostgator'); ?>>HostGator</option>
+                    <option value="other" <?php selected($transfer_to, 'other'); ?>>Other</option>
                 </select>
             </p>
         </div>
@@ -596,6 +612,9 @@ class wstr_domain_order_meta_boxes
         // Sanitize and save the data
         $date_created = sanitize_text_field($_POST['date_created']);
         update_post_meta($post_id, '_date_created', $date_created);
+
+        $transfer_to = sanitize_text_field($_POST['transfer_to']);
+        update_post_meta($post_id, '_transfer_to', $transfer_to);
 
         // for billing details 
         $billing_first_name = sanitize_text_field($_POST['billing_first_name']);
