@@ -232,6 +232,10 @@ class wstr_domain_order_meta_boxes
         add_action('save_post', array($this, 'save_domain_order_meta_box'));
 
         add_action('add_meta_boxes', array($this, 'add_domain_meta_box'));
+        add_action('add_meta_boxes', array($this, 'add_order_notes_meta_box'));
+        add_action('add_meta_boxes', array($this, 'add_payment_info_meta_box'));
+        add_action('add_meta_boxes', array($this, 'add_billing_info_meta_box'));
+        add_action('add_meta_boxes', array($this, 'add_shipping_info_meta_box'));
     }
     public function add_domain_order_meta_boxes()
     {
@@ -256,6 +260,53 @@ class wstr_domain_order_meta_boxes
             'default'                 // Priority (default, low, high)
         );
     }
+    function add_shipping_info_meta_box()
+    {
+        add_meta_box(
+            'add_shipping_info_meta_box',       // Unique ID
+            'Add Shipping Information',          // Box title
+            array($this, 'render_shipping_info_meta_box'), // Content callback
+            'domain_order',             // Post type
+            'normal',                   // Context (side, normal, advanced)
+            'default'                 // Priority (default, low, high)
+        );
+    }
+    function add_billing_info_meta_box()
+    {
+        add_meta_box(
+            'add_billing_info_meta_box',       // Unique ID
+            'Add Billing Information',          // Box title
+            array($this, 'render_billing_info_meta_box'), // Content callback
+            'domain_order',             // Post type
+            'normal',                   // Context (side, normal, advanced)
+            'default'                 // Priority (default, low, high)
+        );
+    }
+
+    function add_payment_info_meta_box()
+    {
+        add_meta_box(
+            'add_payment_info_meta_box',       // Unique ID
+            'Add Payment Details',          // Box title
+            array($this, 'render_payment_info_meta_box'), // Content callback
+            'domain_order',             // Post type
+            'normal',                   // Context (side, normal, advanced)
+            'default'                 // Priority (default, low, high)
+        );
+    }
+    // meta box for order notes
+    function add_order_notes_meta_box()
+    {
+        add_meta_box(
+            'order_notes_meta_box',  // Unique ID for the meta box
+            'Order Notes',           // Meta box title
+            array($this, 'render_order_notes_meta_box'),  // Callback function
+            'domain_order',                 // Post type where the meta box will appear
+            'side',                // Context (normal, side, advanced)
+            'high'                   // Priority (high, low)
+        );
+    }
+
 
     /**
      *  For adding meta box
@@ -268,41 +319,10 @@ class wstr_domain_order_meta_boxes
         wp_nonce_field('domain_order_nonce_action', 'domain_order_nonce');
 
         // Retrieve current data if exists
-        // $domain_name = get_post_meta($post->ID, '_domain_name', true);
         $customer_id = get_post_meta($post->ID, '_customer', true);
         $order_status = get_post_meta($post->ID, '_order_status', true);
         $date_created = get_post_meta($post->ID, '_date_created', true);
         $transfer_to = get_post_meta($post->ID, '_transfer_to', true);
-
-        // Retrieve current data if exists
-        $billing_first_name = get_post_meta($post->ID, '_billing_first_name', true);
-        $billing_last_name = get_post_meta($post->ID, '_billing_last_name', true);
-        $billing_company = get_post_meta($post->ID, '_billing_company', true);
-        $billing_address_1 = get_post_meta($post->ID, '_billing_address_1', true);
-        $billing_address_2 = get_post_meta($post->ID, '_billing_address_2', true);
-        $billing_city = get_post_meta($post->ID, '_billing_city', true);
-        $billing_postcode = get_post_meta($post->ID, '_billing_postcode', true);
-        $billing_country = get_post_meta($post->ID, '_billing_country', true);
-        $billing_state = get_post_meta($post->ID, '_billing_state', true);
-        $billing_email = get_post_meta($post->ID, '_billing_email', true);
-        $billing_phone = get_post_meta($post->ID, '_billing_phone', true);
-
-        $shipping_first_name = get_post_meta($post->ID, '_shipping_first_name', true);
-        $shipping_last_name = get_post_meta($post->ID, '_shipping_last_name', true);
-        $shipping_company = get_post_meta($post->ID, '_shipping_company', true);
-        $shipping_address_1 = get_post_meta($post->ID, '_shipping_address_1', true);
-        $shipping_address_2 = get_post_meta($post->ID, '_shipping_address_2', true);
-        $shipping_city = get_post_meta($post->ID, '_shipping_city', true);
-        $shipping_postcode = get_post_meta($post->ID, '_shipping_postcode', true);
-        $shipping_country = get_post_meta($post->ID, '_shipping_country', true);
-        $shipping_state = get_post_meta($post->ID, '_shipping_state', true);
-        $shipping_email = get_post_meta($post->ID, '_shipping_email', true);
-        $shipping_phone = get_post_meta($post->ID, '_shipping_phone', true);
-
-        $payment_method = get_post_meta($post->ID, '_payment_method', true);
-        $transaction_id = get_post_meta($post->ID, '_transaction_id', true);
-        $customer_note = get_post_meta($post->ID, '_customer_note', true);
-
 
         // HTML for meta box
     ?>
@@ -359,6 +379,26 @@ class wstr_domain_order_meta_boxes
                 </select>
             </p>
         </div>
+     
+    <?php
+    }
+
+    public function render_billing_info_meta_box($post)
+    {
+        wp_nonce_field('domain_order_nonce_action', 'domain_order_nonce');
+        // Retrieve current data if exists
+        $billing_first_name = get_post_meta($post->ID, '_billing_first_name', true);
+        $billing_last_name = get_post_meta($post->ID, '_billing_last_name', true);
+        $billing_company = get_post_meta($post->ID, '_billing_company', true);
+        $billing_address_1 = get_post_meta($post->ID, '_billing_address_1', true);
+        $billing_address_2 = get_post_meta($post->ID, '_billing_address_2', true);
+        $billing_city = get_post_meta($post->ID, '_billing_city', true);
+        $billing_postcode = get_post_meta($post->ID, '_billing_postcode', true);
+        $billing_country = get_post_meta($post->ID, '_billing_country', true);
+        $billing_state = get_post_meta($post->ID, '_billing_state', true);
+        $billing_email = get_post_meta($post->ID, '_billing_email', true);
+        $billing_phone = get_post_meta($post->ID, '_billing_phone', true);
+    ?>
         <div class="orderBilling_info">
             <h4><?php _e('Billing Information', 'webstarter'); ?></h4>
             <p>
@@ -405,16 +445,26 @@ class wstr_domain_order_meta_boxes
                 <label for="billing_phone"><?php _e('Phone', 'webstarter'); ?></label>
                 <input type="text" id="billing_phone" name="billing_phone" value="<?php echo esc_attr($billing_phone); ?>" class="widefat">
             </p>
-            <h4><?php _e('Payment Information', 'webstarter'); ?></h4>
-            <p>
-                <label for="payment_method"><?php _e('Payment Method', 'webstarter'); ?></label>
-                <input type="text" id="payment_method" name="payment_method" value="<?php echo esc_attr($payment_method); ?>" class="widefat">
-            </p>
-            <p>
-                <label for="transaction_id"><?php _e('Transaction ID', 'webstarter'); ?></label>
-                <input type="text" id="transaction_id" name="transaction_id" value="<?php echo esc_attr($transaction_id); ?>" class="widefat">
-            </p>
+
         </div>
+    <?php
+    }
+    public function render_shipping_info_meta_box($post)
+    {
+        wp_nonce_field('domain_order_nonce_action', 'domain_order_nonce');
+
+        $shipping_first_name = get_post_meta($post->ID, '_shipping_first_name', true);
+        $shipping_last_name = get_post_meta($post->ID, '_shipping_last_name', true);
+        $shipping_company = get_post_meta($post->ID, '_shipping_company', true);
+        $shipping_address_1 = get_post_meta($post->ID, '_shipping_address_1', true);
+        $shipping_address_2 = get_post_meta($post->ID, '_shipping_address_2', true);
+        $shipping_city = get_post_meta($post->ID, '_shipping_city', true);
+        $shipping_postcode = get_post_meta($post->ID, '_shipping_postcode', true);
+        $shipping_country = get_post_meta($post->ID, '_shipping_country', true);
+        $shipping_state = get_post_meta($post->ID, '_shipping_state', true);
+        $shipping_email = get_post_meta($post->ID, '_shipping_email', true);
+        $shipping_phone = get_post_meta($post->ID, '_shipping_phone', true);
+    ?>
         <div class="orderShippingInfo">
             <h4><?php _e('Shipping Information', 'webstarter'); ?></h4>
             <p>
@@ -461,6 +511,29 @@ class wstr_domain_order_meta_boxes
                 <label for="shipping_phone"><?php _e('Phone', 'webstarter'); ?></label>
                 <input type="text" id="shipping_phone" name="shipping_phone" value="<?php echo esc_attr($shipping_phone); ?>" class="widefat">
             </p>
+          
+        </div>
+    <?php
+    }
+    public function render_payment_info_meta_box($post)
+    {
+        wp_nonce_field('domain_order_nonce_action', 'domain_order_nonce');
+
+        $payment_method = get_post_meta($post->ID, '_payment_method', true);
+        $transaction_id = get_post_meta($post->ID, '_transaction_id', true);
+        $customer_note = get_post_meta($post->ID, '_customer_note', true);
+
+    ?>
+        <div class="orderPaymentInfo">
+            <h4><?php _e('Payment Information', 'webstarter'); ?></h4>
+            <p>
+                <label for="payment_method"><?php _e('Payment Method', 'webstarter'); ?></label>
+                <input type="text" id="payment_method" name="payment_method" value="<?php echo esc_attr($payment_method); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="transaction_id"><?php _e('Transaction ID', 'webstarter'); ?></label>
+                <input type="text" id="transaction_id" name="transaction_id" value="<?php echo esc_attr($transaction_id); ?>" class="widefat">
+            </p>
             <p>
                 <label for="customer_note"><?php _e('Customer Note', 'webstarter'); ?></label>
                 <textarea id="customer_note" name="customer_note" class="widefat"><?php echo esc_textarea($customer_note); ?></textarea>
@@ -468,7 +541,6 @@ class wstr_domain_order_meta_boxes
         </div>
         <?php
     }
-
     /**
      * 
      * For addig add domain meta box
@@ -564,6 +636,47 @@ class wstr_domain_order_meta_boxes
                                         ?></p> -->
         </div>
 
+        <?php
+    }
+
+    public function render_order_notes_meta_box($post)
+    {
+
+        // Display existing notes
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'order_notes';
+
+        $order_notes = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table WHERE order_id = %d ORDER BY note_date DESC", $post->ID));
+
+        echo '<div class="orderNotesMain">';
+        if ($order_notes) {
+            foreach ($order_notes as $note) {
+        ?>
+                <div class="eachNoteSection">
+                    <p><?php echo $note->note ?> </p>
+                    <em><?php echo esc_html(date('F j, Y \a\t g:i a', strtotime($note->note_date))) ?></em>
+                    <a href="javascript:void(0);" class="deleteNoteButton" data-note-id="<?php echo  esc_attr($note->id) ?>">Delete</a>
+                </div>
+        <?php
+            }
+        } else {
+            echo '<p>No notes found for this order.</p>';
+        }
+        echo '</div>';
+
+        ?>
+
+        <div class="orderNotesAdd">
+            <textarea class="widefat" id="orderNote" name="order_note" rows="3"></textarea>
+            <select name="order_note_type" id="orderNoteType" class="widefat">
+                <option value="private">Private</option>
+                <option value="public">Note to customer</option>
+            </select>
+            <input type="button" class="addOrderNotesButton" id="<?php echo $post->ID ?>" value="Add Note">
+        </div>
+        <!-- 
+           -->
 <?php
     }
 
@@ -593,12 +706,6 @@ class wstr_domain_order_meta_boxes
         if (!current_user_can('edit_post', $post_id)) {
             return $post_id;
         }
-
-        // $subtotal = sanitize_text_field($_POST['order_subtotal']);
-        // update_post_meta($post_id, '_order_subtotal', $subtotal);
-
-        // $total = sanitize_text_field($_POST['order_total']);
-        // update_post_meta($post_id, '_order_total', $total);
 
         if (isset($_POST['order_status'])) {
             $order_status = sanitize_text_field($_POST['order_status']);
@@ -693,7 +800,7 @@ class wstr_domain_order_meta_boxes
         $customer_note = sanitize_textarea_field($_POST['customer_note']);
         update_post_meta($post_id, '_customer_note', $customer_note);
 
-        // save product
+        // for saving product 
         if (isset($_POST['domain_ids'])) {
 
             $domain_ids = array_map('sanitize_text_field', $_POST['domain_ids']);
@@ -716,6 +823,24 @@ class wstr_domain_order_meta_boxes
                 // Update the stock status to 'outofstock'
                 update_post_meta($domain_id, '_stock_status', 'instock');
             }
+        }
+
+        // for order notes
+        $order_note = sanitize_text_field($_POST['order_note']);
+        $order_note_type = sanitize_text_field($_POST['order_note_type']);
+
+        if ($order_note) {
+            global $wpdb;
+
+            $table = $wpdb->prefix . 'order_notes';
+            $data = array(
+                'order_id' => $post_id,
+                'note' => $order_note,
+                'note_type' => $order_note_type,
+                'note_date' => current_time('mysql')
+            );
+
+            $wpdb->insert($table, $data);
         }
     }
 }

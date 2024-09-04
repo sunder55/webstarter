@@ -295,7 +295,7 @@ jQuery(document).ready(function ($) {
 
   // for adding domain on order create ends
 
-  // for removing domains on order create page starts 
+  // for removing domains on order create page starts
   $(document).on("click", ".deleteOrderItem a", function () {
     var domainId = this.id;
     var orderId = $(".orderId").val();
@@ -330,5 +330,84 @@ jQuery(document).ready(function ($) {
       }
     }
   });
-    // for removing domains on order create page starts 
+  // for removing domains on order create page starts
+
+  // for adding order notes starts
+
+  $(".addOrderNotesButton").on("click", function () {
+    var orderId = this.id;
+    var orderNoteType = $("#orderNoteType").find(":selected").val();
+    var orderNote = $("#orderNote").val();
+
+    if (orderId && orderNote) {
+      $.ajax({
+        url: cpmAjax.ajax_url,
+        method: "POST",
+        data: {
+          action: "add_domain_order_notes",
+          order_note_type: orderNoteType,
+          order_note: orderNote,
+          order_id: orderId,
+        },
+        success: function (data) {
+          if (data.success) {
+            // Append the note to the list of notes
+            $(".orderNotesMain").prepend(
+              "<div>" +
+                "<p>" +
+                data.data.note +
+                "</p>" +
+                "<em>" +
+                data.data.note_date +
+                "</em>" +
+                " <a href='javascript:void(0);' class='deleteNoteButton' data-note-id='" +
+                data.data.id +
+                "'>Delete</a>" +
+                "</div>"
+            );
+            $("#orderNote").val(""); // Clear the textarea
+          } else {
+            console.log(data.data);
+          }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          // console.error("AJAX request failed: ", textStatus, errorThrown);
+        },
+      });
+    } else if (!orderId) {
+    }
+  });
+  // for adding order notes ends
+
+  // for deleting order notes starts
+  // Delete Note
+  $(".orderNotesMain").on("click", ".deleteNoteButton", function () {
+    var noteId = $(this).data("note-id");
+
+    $.ajax({
+      url: cpmAjax.ajax_url,
+      method: "POST",
+      data: {
+        action: "delete_domain_order_note",
+        note_id: noteId,
+      },
+      success: function (data) {
+        if (data.success) {
+          // Remove the note element from the DOM
+          $("a[data-note-id='" + noteId + "']")
+            .closest("div")
+            .remove();
+        } else {
+          console.log(data.data);
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.error("AJAX request failed: ", textStatus, errorThrown);
+      },
+    });
+  });
+  // for deleting order notes ends
 });
+
+// $formatted_date = date('F j, Y \a\t g:i a');
+// echo $formatted_date;

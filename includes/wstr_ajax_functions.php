@@ -7,6 +7,8 @@ class Wstr_ajax_functions
         add_action('wp_ajax_get_domains_list', array($this, 'get_domains_list'));
         add_action('wp_ajax_get_domain_details', array($this, 'get_domain_details'));
         add_action('wp_ajax_remove_domain_from_order', array($this, 'remove_domain_from_order'));
+        add_action('wp_ajax_add_domain_order_notes', array($this, 'add_domain_order_notes'));
+        add_action('wp_ajax_delete_domain_order_note', array($this, 'delete_domain_order_note'));
     }
 
     /**
@@ -165,7 +167,7 @@ class Wstr_ajax_functions
 
                 // Update the post meta with the new array
                 update_post_meta($order_id, '_domain_ids', $saved_domains);
-        
+
                 // Recalculate subtotal and total
                 $subtotal = 0;
                 foreach ($saved_domains as $domain) {
@@ -177,7 +179,6 @@ class Wstr_ajax_functions
                         }
                         $subtotal += (float) $price;
                     }
-
                 }
 
                 $total = $subtotal; // Adjust if needed
@@ -192,6 +193,73 @@ class Wstr_ajax_functions
                 'message'  => 'Domain removed successfully.',
             ));
         }
+    }
+
+
+    /**
+     * Function for adding order notes to the order_notes table
+     * @return never
+     */
+    public function add_domain_order_notes()
+    {
+        global $wpdb;
+        $order_id = sanitize_text_field($_POST['order_id']);
+        $order_note_type = sanitize_text_field($_POST['order_note_type']);
+        $order_note = sanitize_text_field($_POST['order_note']);
+
+        $table = $wpdb->prefix . 'order_notes';
+
+        // Prepare the data for insertion
+        $data = array(
+            'order_id' => $order_id,
+            'note' => $order_note,
+            'note_type' => $order_note_type,
+            'note_date' => current_time('mysql') // Current date and time
+        );
+
+        // Specify the data types for each field
+        $format = array(
+            '%d',   // order_id (integer)
+            '%s',   // note (string)
+            '%s',   // note_type (string)
+            '%s'    // note_date (string, MySQL format)
+        );
+
+        // Insert data into the database
+        $wpdb->insert($table, $data, $format);
+
+        // Optionally, you can check if the insert was successful
+        if ($wpdb->insert_id) {
+            wp_send_json_success(array(
+                'id' => $wpdb->insert_id,
+                'note' => $order_note,
+                'note_date' => date('F j, Y \a\t g:i a', strtotime(current_time('mysql')))
+            ));
+        } else {
+            wp_send_json_error('Failed to add order note.');
+        }
+        die();
+    }
+
+    /**
+     * Function for deleting order note from custom table -> order_notes
+     * @return never
+     */
+    public function delete_domain_order_note()
+    {
+        global $wpdb;
+
+        $note_id = intval($_POST['note_id']);
+        $table = $wpdb->prefix . 'order_notes';
+
+        $deleted = $wpdb->delete($table, array('id' => $note_id), array('%d'));
+        if ($deleted) {
+            wp_send_json_success('Note deleted successfully.');
+        } else {
+            wp_send_json_error('Failed to delete note.');
+        }
+
+        die();
     }
 }
 
