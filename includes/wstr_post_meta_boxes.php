@@ -246,9 +246,6 @@ class wstr_domain_meta_boxes
                 update_post_meta($post_id, '_' . $field, $value);
             }
         }
-        // if($sale_price){
-        //     update_post_meta()
-        // }
         update_post_meta($post_id, '_sale_price', $sale_price);
     }
 }

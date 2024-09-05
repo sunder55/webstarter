@@ -70,6 +70,9 @@ a.wp-block-button__link:hover {
 input::placeholder {
   color: #cccccc;
 }
+main {
+  padding-top: 0 !important;
+}
 /* =========================================  site styles ========================================= */
 
 /* headers */
@@ -89,6 +92,7 @@ input::placeholder {
   border: 1px solid #f5f7fb;
   padding: 15px 25px;
   border-radius: 50px;
+  background-color: #fff;
 }
 h1 span {
   background-color: var(--blue-light);
@@ -123,6 +127,9 @@ h1 span {
   font-weight: 600;
   margin-right: 10px;
 }
+.ws_mega_menu_row {
+  align-items: start;
+}
 .ws_mega_menu_button {
   cursor: pointer;
   border: 1px solid #edf0f7;
@@ -137,12 +144,29 @@ h1 span {
   /* padding: 10px; */
   border-radius: 10px;
 }
-
+.ws_mega_menu_col nav {
+  width: 100%;
+}
+.ws_mega_menu_col nav ul {
+  flex-direction: column;
+  align-items: start;
+}
+.ws_mega_menu_col nav ul a {
+  text-decoration: none;
+  font-size: 1.025rem;
+}
+.ws_mega_menu nav ul a:hover span {
+  color: var(--blue-light);
+}
+.ws_mega_menu nav a img {
+  margin-right: 10px;
+}
 .ws_headers .ws_mega_menu_button {
   background-image: url("../../images/hammburger.png");
   background-repeat: no-repeat;
   background-position: left 15px center;
   background-size: 13px;
+  background-color: #fff;
 }
 .ws_headers .ws_mega_menu_button.active {
   background-image: url("../../images/menu-close.png");
@@ -233,6 +257,9 @@ h1 span {
 .ws_footer_menus nav ul a {
   text-decoration: none;
   font-weight: 400;
+}
+.ws_pre_footer .is-layout-grid .ws_pre_footer_cards {
+  min-height: 250px;
 }
 /* sell page */
 .ws_home_banner p span {
