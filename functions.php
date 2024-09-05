@@ -78,6 +78,7 @@ include(get_stylesheet_directory() . '/includes/wstr_api_field_data.php');
 include(get_stylesheet_directory() . '/includes/wstr_ajax_functions.php');
 include(get_stylesheet_directory() . '/includes/wstr_shortcodes.php');
 include(get_stylesheet_directory() . '/includes/wstr_filters_hooks.php');
+include(get_stylesheet_directory() . '/includes/wstr_functions.php');
 
 
 // font awesome

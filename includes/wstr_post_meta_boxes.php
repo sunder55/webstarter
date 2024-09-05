@@ -206,6 +206,9 @@ class wstr_domain_meta_boxes
         $sale_price = isset($_POST['sale_price']) ? sanitize_text_field($_POST['sale_price']) : '';
         $seo_rating = isset($_POST['seo_rating']) ? sanitize_text_field($_POST['seo_rating']) : '';
 
+        if (!$regular_price) {
+            $sale_price = '';
+        }
         // Validate sale price is not greater than regular price
         if (!empty($regular_price) && !empty($sale_price) && floatval($sale_price) > floatval($regular_price)) {
             // Set an error message
@@ -243,6 +246,9 @@ class wstr_domain_meta_boxes
                 update_post_meta($post_id, '_' . $field, $value);
             }
         }
+        // if($sale_price){
+        //     update_post_meta()
+        // }
         update_post_meta($post_id, '_sale_price', $sale_price);
     }
 }

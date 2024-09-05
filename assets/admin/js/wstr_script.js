@@ -91,8 +91,7 @@ jQuery(document).ready(function ($) {
   $(".domainSalePrice input").on("keyup", function () {
     regularPrice = parseFloat($(".domainRegularPrice input").val());
     salePrice = parseFloat($(".domainSalePrice input").val());
-    console.log(salePrice);
-    if (salePrice > regularPrice) {
+    if (isNaN(regularPrice) || salePrice > regularPrice) {
       $(".wstr-error-msg").show();
       $(".wstr-error-msg").text(
         "Please enter the value less than regular price"
