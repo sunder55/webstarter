@@ -135,11 +135,11 @@ h1 span {
   border: 1px solid #edf0f7;
   padding: 10px 20px 10px 35px;
 }
-.ws_mega_menu_button.active {
+.ws_headers .ws_mega_menu_button.active {
   background-color: var(--blue-light);
   color: #fff;
 }
-.ws_mega_menu_first-col > .wp-block-group:hover {
+.ws_mega_menu_first-col .wp-block-uagb-container:hover {
   background-color: #fff;
   /* padding: 10px; */
   border-radius: 10px;
@@ -171,9 +171,25 @@ h1 span {
 .ws_headers .ws_mega_menu_button.active {
   background-image: url("../../images/menu-close.png");
 }
+.ws_mega_menu_col li.wp-block-navigation-item span {
+  display: flex;
+  align-items: center;
+}
+.ws_mega_menu_col li.wp-block-navigation-item span img {
+  width: 20px !important;
+  height: 20px !important;
+  object-fit: contain;
+}
+.ws_mega_menu_col a.wp-block-button__link {
+  padding-left: 15px !important;
+  font-size: 16px !important;
+}
 /* banner */
 .ws_home_banner .wp-block-search label {
   display: none;
+}
+.ws_home_banner p strong {
+  font-weight: 600;
 }
 .ws_home_banner .wp-block-search input,
 .ws_home_banner .wp-block-search button {
@@ -185,17 +201,19 @@ h1 span {
 .ws_home_banner .wp-block-search button,
 .ws_mega_menu .wp-block-search__input {
   height: fit-content;
-  padding: 16px 30px 16px 20px;
+  padding: 16px 40px 16px 20px;
   margin: auto;
   position: absolute;
   right: 20px;
   top: 8px;
   background-image: url("../../images/STARS.png");
   background-repeat: no-repeat;
-  background-position: right 5px center;
+  background-position: right 15px center;
   background-size: 18px;
 }
-
+.ws_mega_menu_col .wp-block-buttons {
+  width: 80%;
+}
 .ws_home_banner .wp-block-search__inside-wrapper {
   position: relative;
 }
@@ -261,8 +279,57 @@ h1 span {
 .ws_pre_footer .is-layout-grid .ws_pre_footer_cards {
   min-height: 250px;
 }
+form#mc4wp-form-1 {
+  width: 100%;
+  text-align: center;
+}
+.wstr_subscribe input[type="email"] {
+  border-radius: 50px;
+  padding: 20px 20px;
+  width: 100%;
+  margin-top: 10px;
+  text-align: center;
+  border: transparent;
+}
+.wstr_subscribe input[type="email"]::placeholder {
+  font-weight: 600;
+}
+.wstr_subscribe input[type="submit"] {
+  width: 100%;
+  margin-top: 30px;
+  background: #000;
+  color: #fff;
+  padding: 20px 20px;
+  border-radius: 50px;
+  border: transparent;
+}
+.wstr_subscribe p:nth-child(2) {
+  position: relative;
+}
+/* .wstr_subscribe p:nth-child(2):before {
+  content: "\f0e0";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  top: 52px;
+  left: 135px;
+  color: #fff;
+} */
+.wstr_subscribe p i {
+  position: absolute;
+  top: 65%;
+  color: #fff;
+  left: 38%;
+  transform: translate(-38%, -38%);
+}
+.wstr_subscribe label {
+  color: #666666;
+}
+.footer_subscribe .wp-block-uagb-container {
+  height: 100%;
+}
 /* sell page */
-.ws_home_banner p span {
+.ws_home_banner p span:not(.banner-reviews p span) {
   background-color: var(--blue-light);
   color: #fff;
   padding: 5px 10px;
