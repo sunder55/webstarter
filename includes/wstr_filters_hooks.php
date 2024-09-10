@@ -1,5 +1,4 @@
 <?php
-
 /**
  * For removing block editor from domain post type
  */

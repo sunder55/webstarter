@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Classes used for creating meta boxes to the custom post type.
  */

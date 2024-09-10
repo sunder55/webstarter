@@ -1,11 +1,14 @@
 <?php
-if (!class_exists('get_data_using_api')) {
-    class get_data_using_api
+if (!class_exists('wstr_rest_api')) {
+    class wstr_rest_api
     {
         function __construct()
         {
             add_action('wp_ajax_get_domain_age', [$this, 'get_domain_age']);
             add_action('wp_ajax_get_domain_da_pa', [$this, 'get_domain_da_pa']);
+            add_action('wp_footer', array($this, 'get_curreny_rates'));
+
+            add_action('rest_api_init', array($this, 'create_rest_api_endpoint'));
         }
 
         private $WHOIS_SERVERS = array(
@@ -69,7 +72,7 @@ if (!class_exists('get_data_using_api')) {
         public function get_domain_age()
         {
 
-            $domain = $_POST['domain_name'];
+            $domain = sanitize_text_field($_POST['domain_name']);
             $domain = trim($domain); //remove space from start and end of domain
             if (substr(strtolower($domain), 0, 7) == "http://")
                 $domain = substr($domain, 7); // remove http:// if included
@@ -109,7 +112,7 @@ if (!class_exists('get_data_using_api')) {
 
         public function get_domain_da_pa()
         {
-            $objectURL = $_POST['domain_name']; //getting domain url 
+            $objectURL = sanitize_text_field($_POST['domain_name']); //getting domain url 
             $accessID = "mozscape-749dc5236c";
             $secretKey = "1ba09be0fea28f66f04fbe3779447219";
             $expires = time() + 300;
@@ -128,6 +131,60 @@ if (!class_exists('get_data_using_api')) {
             wp_send_json_success($domainAuthority . '/' . $pageAuthority);
             wp_die();
         }
+
+        /**
+         * Function for getting current currency rate 
+         * @return void
+         */
+        public function get_curreny_rates()
+        {
+            $access_key = 'cur_live_RFDFd4STzeV5MnBBE3MFokvZmnaKEWpfAB1wT1iP';
+
+            // Retrieve the saved currencies from the options table
+            $saved_currencies = get_option('wstr_currency_codes'); // Assuming you store the currencies like ['USD', 'EUR', 'JPY']
+            if ($saved_currencies) {
+                // Build the symbols query for the API request
+                $symbols = implode(',', $saved_currencies);
+
+                $response = wp_remote_get('https://api.currencyapi.com/v3/latest?apikey=' . $access_key . '&currencies=' . $symbols);
+
+                if (is_wp_error($response)) {
+                    // Handle the error
+                    $error_message = $response->get_error_message();
+                    echo "Something went wrong: $error_message";
+                } else {
+                    $body = wp_remote_retrieve_body($response);
+                    $data = json_decode($body, true);
+
+                    if (isset($data['data'])) {
+                        // Prepare an array to store the exchange rates
+                        $currency_rates = [];
+
+                        // Loop through each currency and get the rate
+                        foreach ($saved_currencies as $currency) {
+                            if (isset($data['data'][$currency])) {
+                                $currency_rates[$currency] = $data['data'][$currency]['value'];
+                            }
+                        }
+
+                        // Save the updated rates to the options table
+                        update_option('wstr_currency_rates', $currency_rates);
+    
+                    } else {
+                        echo 'Failed to retrieve currency data.';
+                    }
+                }
+            }
+        }
+
+            function create_rest_api_endpoint() {
+                register_rest_route('wstr/v1', '/premium-domains/', array(
+                    'methods' => 'GET',
+                    'callback' => 'wstr_premium_domains_api',
+                    'permission_callback' => '__return_true', // If you want to restrict it, use a custom permission callback
+                ));
+            }
+
     }
 }
-new get_data_using_api();
+new wstr_rest_api();

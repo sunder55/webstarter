@@ -406,7 +406,9 @@ jQuery(document).ready(function ($) {
     });
   });
   // for deleting order notes ends
+  $("#currencyList").select2({
+    placeholder: "Select currencies",
+    allowClear: true
+});
 });
 
-// $formatted_date = date('F j, Y \a\t g:i a');
-// echo $formatted_date;

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Functions and definitions
  *
@@ -74,11 +73,12 @@ function wstr_enqueue_scripts()
 
 include(get_stylesheet_directory() . '/includes/wstr_post_type.php');
 include(get_stylesheet_directory() . '/includes/wstr_post_meta_boxes.php');
-include(get_stylesheet_directory() . '/includes/wstr_api_field_data.php');
+include(get_stylesheet_directory() . '/includes/wstr_api.php');
 include(get_stylesheet_directory() . '/includes/wstr_ajax_functions.php');
 include(get_stylesheet_directory() . '/includes/wstr_shortcodes.php');
 include(get_stylesheet_directory() . '/includes/wstr_filters_hooks.php');
 include(get_stylesheet_directory() . '/includes/wstr_functions.php');
+include(get_stylesheet_directory() . '/includes/wstr_admin_menu.php');
 
 
 // font awesome
@@ -122,7 +122,8 @@ add_action('enqueue_block_assets', 'enqueue_webstarter_mega_menu_assets');
  * Ceating an custom table for order notes
  * @return void
  */
-function create_order_notes_table_on_theme_activation() {
+function create_order_notes_table_on_theme_activation()
+{
     global $wpdb;
     $table_name = $wpdb->prefix . 'order_notes';
 
