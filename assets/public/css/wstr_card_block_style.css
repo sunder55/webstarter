@@ -1,0 +1,172 @@
+/* card blocks css */
+.ws-container {
+  max-width: 1400px;
+  margin: auto;
+  padding: 20px;
+}
+.ws-flex {
+  display: flex;
+}
+.ws-cards-container-wrapper {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ws-card-img {
+  height: 180px;
+}
+.ws-cards-container-wrapper .ws-card-img img {
+  max-width: 100%;
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+  border-radius: 15px 15px 0 0;
+}
+.ws-cards-container-wrapper .ws-cards-container {
+  position: relative;
+  border-radius: 15px;
+  border: 3px solid #fff;
+}
+.ws-cards-container .domain_card_diamond {
+  position: absolute;
+  top: 60px;
+  left: 60px;
+  background: #00000070;
+  padding: 8px 8px;
+  border-radius: 8px;
+}
+.ws-cards-container {
+  width: calc(25% - 30px);
+  display: flex;
+  flex-direction: column;
+}
+.ws-card-contents {
+  border: 1px solid rgb(237, 240, 247);
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0.122px 0.993px 31px 0px rgba(0, 34, 79, 0.04);
+  padding: 20px;
+  border-radius: 0 0 15px 15px;
+  justify-content: space-between;
+  align-items: end;
+}
+.ws-card-likes h6 {
+  border-radius: 5px;
+  background-color: rgb(243, 245, 250);
+  color: #666666;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+}
+.ws-card-inner-contents h5 a {
+  font-size: 16px;
+  font-weight: 600;
+}
+.ws-card-inner-contents h6 {
+  font-weight: 500;
+}
+
+@media (width <=1024px) {
+  .ws-cards-container {
+    width: calc(50% - 30px);
+  }
+}
+@media (width <=767px) {
+  .ws-cards-container {
+    width: 100%;
+  }
+}
+
+.circular-progress {
+  position: relative;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 15px;
+  width: calc(50% - 8px);
+}
+
+.circular-chart {
+  transform: rotate(-90deg);
+  width: 100px;
+  height: 100px;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: #f3f5fa;
+  stroke-width: 3.8;
+}
+
+.circle {
+  fill: none;
+  stroke-width: 2.8;
+  stroke: #f5b903;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s ease 0s;
+}
+.domain-trust .circle {
+  stroke: #00d9f5;
+}
+.progress-text {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: max-content;
+}
+
+.progress-text h2 {
+  font-size: 32px;
+  margin: 0;
+  line-height: 20px;
+}
+
+.progress-text h2 span {
+  color: #a2a2a2;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.ws-cards-container,
+.ws-card-contents {
+  background-color: #fff;
+}
+.progress-title h6 {
+  font-size: 11px;
+  font-weight: 400;
+  text-align: center;
+}
+.ws_card_hover_charts {
+  display: none;
+  height: 180px;
+}
+.ws-cards-container:hover .ws-card-img {
+  display: none;
+}
+.ws-cards-container:hover .ws_card_hover_charts {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+}
+.ws-cards-container:hover,
+.ws-cards-container:hover .ws-card-contents {
+  background-color: #f3f5fa;
+}
+.ws-cards-container:hover .ws-card-contents {
+  border: transparent;
+}
+.ws-cards-container:hover .ws-card-likes h6 span {
+  display: none;
+}
+.ws-cards-container:hover .ws-card-likes h6 i {
+  background-color: #fff;
+  padding: 6px;
+  border-radius: 5px;
+}
+.ws-cards-container:hover {
+  box-shadow: 0.122px 0.993px 20px 0px rgba(0, 34, 79, 0.1);
+  border: 3px solid #fff;
+}

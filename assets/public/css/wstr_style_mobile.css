@@ -2,15 +2,19 @@
   .hide_desktop {
     display: none !important;
   }
-  .ws_mega_menu {
-    margin-top: -50px !important;
-  }
 }
 @media (width <=767px) {
+  .section_gap_mobile {
+    margin: 40px 0 !important;
+  }
+  h1 {
+    font-size: 30px !important;
+  }
   .ws_headers {
     padding-bottom: 1.5rem !important;
     padding-right: 15px !important;
     padding-left: 15px !important;
+    background-position: 45% 75% !important;
   }
   .hide_mobile {
     display: none !important;
@@ -21,12 +25,12 @@
   /* header */
   .ws_headers h2.ws_mega_menu_button {
     font-size: 0 !important;
-    padding: 30px;
-    background-position: left 20px center;
+    padding: 24px;
+    background-position: left 14px center;
     background-size: 20px;
   }
   .ws_header_cart .br_50 {
-    padding: 20px 24px !important;
+    padding: 14px 18px !important;
   }
   .ws_header_right {
     flex-direction: row-reverse;
@@ -61,9 +65,16 @@
     padding: 10px !important;
   }
   /* banner */
+  .ws_home_banner .wp-block-search button {
+    right: 5px;
+  }
+  .ws_home_banner::before {
+    height: 1000px;
+  }
   .ws_home_banner {
     background-size: auto !important;
     padding-top: 30px !important;
+    padding-bottom: 30px !important;
   }
   .ws_home_banner .wp-block-search .wp-block-search__inside-wrapper {
     width: 100% !important;
@@ -110,5 +121,8 @@
   .wstr_subscribe p i {
     left: 30%;
     transform: translate(-30%, -30%);
+  }
+  .footer_subscribe .wp-block-group {
+    padding: 0 !important;
   }
 }

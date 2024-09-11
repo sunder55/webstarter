@@ -58,9 +58,9 @@ button {
 .gap_20 {
   gap: 20px;
 }
-.margin_v_30 {
-  margin-top: 30px;
-  margin-bottom: 30px;
+.margin_v_35 {
+  margin-top: 35px;
+  margin-bottom: 35px;
 }
 a.wp-block-button__link,
 a.wp-block-button__link:hover {
@@ -76,6 +76,10 @@ main {
 /* =========================================  site styles ========================================= */
 
 /* headers */
+.ws_home_banner {
+  /* background-size: auto !important; */
+  background-position-x: right !important;
+}
 .ws_headers button.wp-block-search__button,
 .ws_headers .wp-block-search label {
   display: none;
@@ -196,12 +200,12 @@ h1 span {
   border-radius: 100px;
 }
 .ws_home_banner .wp-block-search input {
-  padding: 20px;
+  padding: 25px;
 }
 .ws_home_banner .wp-block-search button,
 .ws_mega_menu .wp-block-search__input {
   height: fit-content;
-  padding: 16px 40px 16px 20px;
+  padding: 20px 40px 20px 30px;
   margin: auto;
   position: absolute;
   right: 20px;
@@ -217,6 +221,7 @@ h1 span {
 .ws_home_banner .wp-block-search__inside-wrapper {
   position: relative;
 }
+
 /* shortcode css client reviews banner */
 .ws_min_container {
   max-width: 600px;
@@ -302,6 +307,7 @@ form#mc4wp-form-1 {
   padding: 20px 20px;
   border-radius: 50px;
   border: transparent;
+  cursor: pointer;
 }
 .wstr_subscribe p:nth-child(2) {
   position: relative;
@@ -339,4 +345,21 @@ form#mc4wp-form-1 {
   color: #ec0172;
   background-color: transparent;
   padding: 0;
+}
+
+.ws_home_banner {
+  position: relative;
+}
+.ws_home_banner::before {
+  content: "";
+  background-image: url("../../images/banner_bg_main_1.png");
+  background-position: top;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: -150px;
+  left: 0;
+  width: 100%;
+  height: 750px;
+  z-index: -1;
+  background-size: cover;
 }
