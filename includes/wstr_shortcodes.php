@@ -68,7 +68,7 @@ class wstr_shortcodes
                                 <div class="premium-content">
 
                                     <?php //if ($product->is_on_sale()) {
-                                    echo wstr_get_price($premium_domain);
+                                    echo get_wstr_price($premium_domain);
                                     // var_dump (wstr_on_sale($premium_domain));
                                     ?>
                                     <span><?php //esc_html_e('Sale!', 'woocommerce')
@@ -179,7 +179,7 @@ class wstr_shortcodes
                                 <?php //}
                                 ?>
                                 <span><?php echo $product_title; ?></span>
-                                <span> <?php echo wstr_get_price($premium_domain);
+                                <span> <?php echo get_wstr_price($premium_domain);
                                         //echo $product->get_price_html(); 
                                         ?></span>
                             </div>

@@ -178,7 +178,7 @@ if (!class_exists('wstr_rest_api')) {
         }
 
             function create_rest_api_endpoint() {
-                register_rest_route('wstr/v1', '/premium-domains/', array(
+                register_rest_route('wstr/v1', '/domains/', array(
                     'methods' => 'GET',
                     'callback' => 'wstr_premium_domains_api',
                     'permission_callback' => '__return_true', // If you want to restrict it, use a custom permission callback
