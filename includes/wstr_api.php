@@ -6,7 +6,7 @@ if (!class_exists('wstr_rest_api')) {
         {
             add_action('wp_ajax_get_domain_age', [$this, 'get_domain_age']);
             add_action('wp_ajax_get_domain_da_pa', [$this, 'get_domain_da_pa']);
-            add_action('wp_footer', array($this, 'get_curreny_rates'));
+            // add_action('wp_footer', array($this, 'get_curreny_rates'));
 
             add_action('rest_api_init', array($this, 'create_rest_api_endpoint'));
         }
