@@ -22,11 +22,13 @@
   height: 100%;
   width: 100%;
   border-radius: 15px 15px 0 0;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  border-bottom: 1px solid rgba(99, 99, 99, 0.2);
 }
 .ws-cards-container-wrapper .ws-cards-container {
   position: relative;
   border-radius: 15px;
-  border: 3px solid #fff;
+  border: 1px solid rgb(237, 240, 247);
 }
 .ws-cards-container .domain_card_diamond {
   position: absolute;
@@ -38,17 +40,23 @@
 }
 .ws-cards-container {
   width: calc(25% - 30px);
-  display: flex;
+  /* display: flex; */
   flex-direction: column;
-}
-.ws-card-contents {
   border: 1px solid rgb(237, 240, 247);
   background-color: rgb(255, 255, 255);
   box-shadow: 0.122px 0.993px 31px 0px rgba(0, 34, 79, 0.04);
+}
+.ws-card-contents {
   padding: 20px;
   border-radius: 0 0 15px 15px;
-  justify-content: space-between;
+  /* justify-content: space-between; */
   align-items: end;
+  gap: 15px;
+  flex-wrap: wrap;
+  position: relative;
+}
+.ws-card-likes {
+  margin-left: auto;
 }
 .ws-card-likes h6 {
   border-radius: 5px;
@@ -59,6 +67,7 @@
   align-items: center;
   gap: 5px;
   font-weight: 500;
+  cursor: pointer;
 }
 .ws-card-inner-contents h5 a {
   font-size: 16px;
@@ -102,18 +111,24 @@
 .circle {
   fill: none;
   stroke-width: 2.8;
-  stroke: #f5b903;
+  /* stroke: #f5b903;
   stroke-linecap: round;
-  transition: stroke-dasharray 0.6s ease 0s;
+  transition: stroke-dasharray 0.6s ease 0s; */
 }
-.domain-trust .circle {
+/* .domain-trust .circle {
   stroke: #00d9f5;
+} */
+.circle-bg {
+  fill: none;
+  stroke: #e6e6e6; /* Background color */
+  stroke-width: 3.8;
 }
+
 .progress-text {
-  position: absolute;
+  /* position: absolute;
   top: 45%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
   text-align: center;
   width: max-content;
 }
@@ -168,5 +183,101 @@
 }
 .ws-cards-container:hover {
   box-shadow: 0.122px 0.993px 20px 0px rgba(0, 34, 79, 0.1);
-  border: 3px solid #fff;
+  border: 1px solid #fff;
+}
+.card_logo_img {
+  height: 50px;
+  width: 50px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.ws-card-contents .regular_price {
+  color: #a5a3a3;
+  text-decoration: line-through;
+}
+.ws_discount_percent {
+  background-color: #fd334f;
+  color: #fff;
+  position: absolute;
+  border-radius: 20px;
+  padding: 0px 8px;
+  top: 10px;
+  left: 10px;
+  font-size: 12px;
+}
+.premium_icon {
+  padding: 4px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+.premium_icon img {
+  object-fit: contain !important;
+  height: 28px !important;
+  width: 28px !important;
+  background-color: #030303c9;
+  border-radius: 5px !important;
+  padding: 2px 6px;
+}
+.ws_card_price_wrapper p {
+  font-size: 12px;
+}
+/* ciclelll
+ */
+/* @keyframes growProgressBar {
+  0%,
+  33% {
+    --pgPercentage: 0;
+  }
+  100% {
+    --pgPercentage: var(--value);
+  }
+} */
+
+/* @property --pgPercentage {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+} */
+
+div[role="progressbar"] {
+  --size: 12rem;
+  --fg: #f5b903;
+  --bg: #f3f5fa;
+  --pgPercentage: var(--value);
+  animation: growProgressBar 3s 1 forwards;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  /* display: grid; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  place-items: center;
+  background: radial-gradient(
+      closest-side,
+      white 80%,
+      transparent 0 99.9%,
+      white 0
+    ),
+    conic-gradient(var(--fg) calc(var(--pgPercentage) * 1%), var(--bg) 0);
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: calc(var(--size) / 5);
+  color: var(--fg);
+  line-height: 30px;
+}
+
+div[role="progressbar"]::before {
+  counter-reset: percentage var(--value);
+  content: counter(percentage);
+  color: #001f3e;
+  font-size: 28px;
+}
+div[role="progressbar"]::after {
+  content: "of 100";
+  font-size: 14px;
+  color: #a5a3a3;
+}
+.domain-trust div[role="progressbar"] {
+  --fg: #00d9f5;
 }
