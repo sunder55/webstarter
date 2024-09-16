@@ -218,7 +218,7 @@ function wstr_premium_domains_api($request)
         $query_args = array(
             'posts_per_page' => 8,
             'post_type' => 'domain',
-            // 'orderby' => 'rand',
+            'orderby' => 'rand',
             'order' => 'DESC',
             'fields' => 'ids',
             'meta_query' => array(
@@ -310,7 +310,7 @@ function wstr_premium_domains_api($request)
         $query_args = array(
             'posts_per_page' => 8,
             'post_type' => 'domain',
-            // 'orderby' => 'rand', //rand
+            'orderby' => 'rand', //rand
             'order' => 'DESC',
             'fields' => 'ids',
             'meta_query' => array(
