@@ -84,3 +84,11 @@ function wstr_add_custom_user_roles()
         // Add any other capabilities you need
     ));
 }
+
+
+add_action('init', 'start_session');
+function start_session() {
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
+}

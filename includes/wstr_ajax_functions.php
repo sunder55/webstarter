@@ -9,6 +9,9 @@ class Wstr_ajax_functions
         add_action('wp_ajax_remove_domain_from_order', array($this, 'remove_domain_from_order'));
         add_action('wp_ajax_add_domain_order_notes', array($this, 'add_domain_order_notes'));
         add_action('wp_ajax_delete_domain_order_note', array($this, 'delete_domain_order_note'));
+
+        add_action('wp_ajax_set_currency_session', array($this, 'set_currency_session'));
+        add_action('wp_ajax_nopriv_set_currency_session', array($this, 'set_currency_session'));
     }
 
     /**
@@ -261,6 +264,28 @@ class Wstr_ajax_functions
 
         die();
     }
+
+    /**
+     * Function for add currency value to the session
+     */
+
+    public function set_currency_session()
+    {
+        $currency = sanitize_text_field($_POST['currency']);
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $_SESSION['currency'] = $currency;
+
+        // Return the session value in response
+        $get_session_value = isset($_SESSION['currency']) ? $_SESSION['currency'] : '';
+        wp_send_json_success($get_session_value);
+        wp_die();
+    }
 }
 
 new Wstr_ajax_functions();
+
+
+

@@ -96,7 +96,7 @@ function get_wstr_regular_price($domain_id)
         $currency_rate = wstr_truncate_number((float) $currency_rate);
 
         // Calculate the prices in the specified currency
-        $regular_price = $regular_price > 0 ? $regular_price * $regular_price : 0;
+        $regular_price = $regular_price > 0 ? $regular_price * $currency_rate : 0;
     }
     return wstr_truncate_number($regular_price);
 }
@@ -218,7 +218,7 @@ function wstr_premium_domains_api($request)
         $query_args = array(
             'posts_per_page' => 8,
             'post_type' => 'domain',
-            'orderby' => 'rand',
+            // 'orderby' => 'rand',
             'order' => 'DESC',
             'fields' => 'ids',
             'meta_query' => array(
@@ -310,7 +310,7 @@ function wstr_premium_domains_api($request)
         $query_args = array(
             'posts_per_page' => 8,
             'post_type' => 'domain',
-            'orderby' => 'rand', //rand
+            // 'orderby' => 'rand', //rand
             'order' => 'DESC',
             'fields' => 'ids',
             'meta_query' => array(
