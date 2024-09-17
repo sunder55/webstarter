@@ -361,7 +361,7 @@ class wstr_domain_order_meta_boxes
             <h4><?php _e(' General', 'webstarter'); ?></h4>
             <p>
                 <label for="date_created"><?php _e('Date Created', 'webstarter'); ?></label>
-                <input type="date" id="date_created" name="date_created" value="<?php echo esc_attr($date_created); ?>" class="widefat">
+                <input type="datetime-local" id="date_created" name="date_created" value="<?php echo esc_attr($date_created); ?>" class="widefat">
             </p>
 
             <?php
