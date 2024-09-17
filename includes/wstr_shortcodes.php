@@ -6,6 +6,7 @@ class wstr_shortcodes
     {
         add_shortcode('wstr_banner_reviews', array($this, 'wstr_banner_reviews_function'));
         add_shortcode('wstr-multicurrency', array($this, 'wstr_multicurrency'));
+        // add_shortcode('wstr-browse-industry', array($this, 'wstr_browse_industry'));
     }
 
     public function wstr_banner_reviews_function()
@@ -83,7 +84,81 @@ class wstr_shortcodes
             }
             ?>
         </select>
+    <?php
+    }
+
+    /**
+     * function for home page browse industry
+     */
+    public function wstr_browse_industry()
+    {
+
+        ob_start();
+   
+        $args = array(
+            'hide_empty' => false,
+            'number' => 17,
+            'taxonomy' => 'domain_industry',
+        );
+        $industries = get_terms($args);
+        $domains_list_page = get_page_link(get_option('ws_domain_list_page')); // getting product page link
+        if (!$domains_list_page) {
+            $domains_list_page = get_home_url() . '/domain-list/';
+        }
+    ?>
+        <div class="ws-industry-wrapper">
+            <?php
+            if ($industries) {
+                foreach ($industries as $industry) {
+
+                    // Query domains for each industry (term)
+                    $args_domains = array(
+                        'post_type' => 'domain', // Assuming 'domain' is your custom post type
+                        'posts_per_page' => -1, // Fetch all domains for this industry
+                        'tax_query' => array(
+                            array(
+                                'taxonomy' => 'domain_industry',
+                                'field' => 'slug',
+                                'terms' => $industry->slug, // Get domains for the current term (industry)
+                            ),
+                        ),
+                    );
+                    
+                    $domains_query = new WP_Query($args_domains);
+                    
+                    if ($domains_query->have_posts()) {
+                        echo '<ul>';
+                        while ($domains_query->have_posts()) {
+                            $domains_query->the_post();
+                            ?>
+                            <li>
+                              
+                            </li>
+                            <?php
+                        }
+                        echo '</ul>';
+                    }
+            ?>
+                    <div class="ws-industry_details">
+                        <?php
+                        ?>
+                        <a href="<?php echo $domains_list_page . '?industry=' . $industry->slug ?>"><?php echo $industry->name; ?></a>
+                    </div>
+                <?php
+                }
+                ?>
+                <div class="ws-industry_details">
+
+                    <a href="<?php echo $domains_list_page; ?>">Browse All</a>
+                </div>
+            <?php
+
+            }
+            ?>
+
+        </div>
 <?php
+        return ob_get_clean();
     }
 }
 new wstr_shortcodes();

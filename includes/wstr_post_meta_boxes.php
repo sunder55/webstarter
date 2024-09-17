@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Classes used for creating meta boxes to the custom post type.
  */
@@ -741,7 +742,9 @@ class wstr_domain_order_meta_boxes
         if (isset($_POST['order_status'])) {
             $order_status = sanitize_text_field($_POST['order_status']);
             update_post_meta($post_id, '_order_status', $order_status);
+
         }
+
 
 
         $customer = sanitize_text_field($_POST['customer']);

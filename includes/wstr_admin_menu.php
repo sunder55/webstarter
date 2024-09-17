@@ -210,6 +210,42 @@ class Wstr_admin_menu
                         }
                         ?>
                     </select>
+                    <?php
+                    if ($saved_currencies) {
+                        $access_key = 'cur_live_RFDFd4STzeV5MnBBE3MFokvZmnaKEWpfAB1wT1iP';
+                        // Build the symbols query for the API request
+                        $symbols = implode(',', $saved_currencies);
+
+                        $response = wp_remote_get('https://api.currencyapi.com/v3/latest?apikey=' . $access_key . '&currencies=' . $symbols);
+
+                        if (is_wp_error($response)) {
+                            // Handle the error
+                            $error_message = $response->get_error_message();
+                            echo "Something went wrong: $error_message";
+                        } else {
+                            $body = wp_remote_retrieve_body($response);
+                            $data = json_decode($body, true);
+
+                            if (isset($data['data'])) {
+                                // Prepare an array to store the exchange rates
+                                $currency_rates = [];
+
+                                // Loop through each currency and get the rate
+                                foreach ($saved_currencies as $currency) {
+                                    if (isset($data['data'][$currency])) {
+                                        $currency_rates[$currency] = $data['data'][$currency]['value'];
+                                    }
+                                }
+
+                                // Save the updated rates to the options table
+                                update_option('wstr_currency_rates', $currency_rates);
+                                error_log('Currency rates updated successfully.');
+                            } else {
+                                error_log('Failed to retrieve currency data.');
+                            }
+                        }
+                    }
+                    ?>
                 </div>
                 <input type="submit" value="Add Currency">
             </form>

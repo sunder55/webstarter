@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Functions and definitions
  *
@@ -81,6 +82,7 @@ include(get_stylesheet_directory() . '/includes/wstr_shortcodes.php');
 include(get_stylesheet_directory() . '/includes/wstr_filters_hooks.php');
 include(get_stylesheet_directory() . '/includes/wstr_functions.php');
 include(get_stylesheet_directory() . '/includes/wstr_admin_menu.php');
+include(get_stylesheet_directory() . '/includes/wstr_api_functions.php');
 
 
 // font awesome

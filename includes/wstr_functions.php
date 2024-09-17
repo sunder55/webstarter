@@ -116,9 +116,26 @@ function get_wstr_sale_price($domain_id)
         $currency_rate = wstr_truncate_number((float) $currency_rate);
 
         // Calculate the prices in the specified currency
-        $sale_price = $sale_price > 0 ? $sale_price * $sale_price : 0;
+        $sale_price = $sale_price > 0 ? $sale_price * $currency_rate : 0;
     }
     return wstr_truncate_number($sale_price);
+}
+
+/**
+ * Function for getting currecy value according to the currency selected
+ * @return void
+ */
+function wstr_get_updated_price($price){
+    $currency = $_SESSION['currency'] ?? '';
+    $currency_rates = get_option('wstr_currency_rates', []);
+    $currency_rate = $currency_rates[$currency] ?? 1;
+    if ($currency && $currency != 'USD') {
+        $currency_rate = wstr_truncate_number((float) $currency_rate);
+
+        // Calculate the prices in the specified currency
+        $price = $price > 0 ? $price * $currency_rate : 0;
+    }
+    return wstr_truncate_number($price);
 }
 
 /**
@@ -178,7 +195,7 @@ function wstr_truncate_number($number, $precision = 2)
  * @param mixed $term_slug
  * @return bool
  */
-function wstr_check_existing_term($domain_id,$taxonomy, $term_slug)
+function wstr_check_existing_term($domain_id, $taxonomy, $term_slug)
 {
     // Get terms associated with the post (domain_id)
     $terms = wp_get_post_terms($domain_id, $taxonomy);
@@ -207,186 +224,4 @@ function wstr_check_existing_term($domain_id,$taxonomy, $term_slug)
     }
 }
 
-/**
- * Function for home page premium domains via REST API
- */
-function wstr_premium_domains_api($request)
-{
 
-    $params = $request->get_params();
-    if (isset($params['type']) && $params['type'] === 'premium') {
-        $query_args = array(
-            'posts_per_page' => 8,
-            'post_type' => 'domain',
-            'orderby' => 'rand',
-            'order' => 'DESC',
-            'fields' => 'ids',
-            'meta_query' => array(
-                array(
-                    'key' => '_stock_status',
-                    'value' => 'outofstock',
-                    'compare' => '!='
-                )
-            ),
-            'tax_query' => array(
-                array(
-                    'taxonomy' => 'domain_cat',
-                    'field' => 'term_id',
-                    'terms' => 57, // Example category ID
-                ),
-            ),
-        );
-
-        $premium_domains = get_posts($query_args);
-
-        // Prepare data to return as JSON
-        $premium_domains_data = array();
-
-        if ($premium_domains) {
-            foreach ($premium_domains as $premium_domain) {
-                // Get the basic domain details
-                $domain_title = get_the_title($premium_domain);
-                $domain_permalink = get_permalink($premium_domain);
-                $domain_image = get_the_post_thumbnail_url($premium_domain, 'medium_large');
-
-                if (!$domain_image) {
-                    $domain_image = get_stylesheet_directory_uri() . '/assets/images/Frame-1.png';
-                }
-
-                $logo = get_post_meta($premium_domain, '_logo_image', true);
-                $logo_url = wp_get_attachment_url($logo);
-
-                $sale_price = get_post_meta($premium_domain, '_sale_price', true);
-                $regular_price = get_post_meta($premium_domain, '_regular_price', true);
-                if (session_status() == PHP_SESSION_NONE) {
-                    session_start();
-                }
-
-                $currency = $_SESSION['currency'] ?? '';
-
-                $regular_price = get_wstr_regular_price($premium_domain);
-                $sale_price = get_wstr_sale_price($premium_domain);
-
-                $percentage_discount = 0;
-
-                if (!empty($regular_price) && !empty($sale_price) && $regular_price > $sale_price) {
-                    // Calculate the discount percentage
-                    $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
-                    $percentage_discount = round($percentage_discount, 2); // Round to 2 decimal places for readability  
-                }
-                // Get the price using custom function (assuming it exists)
-                $domain_price = get_wstr_price($premium_domain);
-                $currency = get_wstr_currency();
-                // Get DA / PA Ranking
-                $da_pa = get_post_meta($premium_domain, '_da_pa', true);
-                $da = $pa = '';
-                if ($da_pa) {
-                    $da_pa_split = explode('/', $da_pa);
-                    $da = $da_pa_split[0];
-                    $pa = $da_pa_split[1];
-                }
-
-                // Add to the response array
-                $premium_domains_data[] = array(
-                    'id' => $premium_domain,
-                    'title' => $domain_title,
-                    'permalink' => $domain_permalink,
-                    'featured_image' => $domain_image,
-                    'logo' => $logo_url,
-                    'price' => $domain_price,
-                    'da' => $da,
-                    'pa' => $pa,
-                    'currency' => $currency,
-                    'sale_price' => $sale_price,
-                    'regular_price' => $regular_price,
-                    'precentage_discount' => $percentage_discount,
-                );
-            }
-        }
-
-        // Return the data in JSON format
-        return new WP_REST_Response($premium_domains_data, 200);
-    } else if (isset($params['type']) && $params['type'] === 'new') {
-        $query_args = array(
-            'posts_per_page' => 8,
-            'post_type' => 'domain',
-            'orderby' => 'rand', //rand
-            'order' => 'DESC',
-            'fields' => 'ids',
-            'meta_query' => array(
-                'relation' => 'AND',
-                array(
-                    'key' => '_stock_status',
-                    'value' => 'outofstock',
-                    'compare' => '!='
-                )
-            ),
-        );
-
-        $domains = get_posts($query_args);
-
-        // Prepare data to return as JSON
-        $domains_data = array();
-
-        if ($domains) {
-            foreach ($domains as $domain) {
-                // Get the basic domain details
-                $domain_title = get_the_title($domain);
-                $domain_permalink = get_permalink($domain);
-                $domain_image = get_the_post_thumbnail_url($domain, 'medium_large');
-
-                if (!$domain_image) {
-                    $domain_image = get_stylesheet_directory_uri() . '/assets/images/Frame-1.png';
-                }
-
-                $logo = get_post_meta($domain, '_logo_image', true);
-                $logo_url = wp_get_attachment_url($logo);
-
-
-                $regular_price = get_wstr_regular_price($domain);
-                $sale_price = get_wstr_sale_price($domain);
-
-                $percentage_discount = 0;
-
-                if (!empty($regular_price) && !empty($sale_price) && $regular_price > $sale_price) {
-                    // Calculate the discount percentage
-                    $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
-                    $percentage_discount = round($percentage_discount, 2); // Round to 2 decimal places for readability  
-                }
-                // Get the price using custom function (assuming it exists)
-                $domain_price = get_wstr_price($domain);
-                $currency = get_wstr_currency();
-                // Get DA / PA Ranking
-                $da_pa = get_post_meta($domain, '_da_pa', true);
-                $da = $pa = '';
-                if ($da_pa) {
-                    $da_pa_split = explode('/', $da_pa);
-                    $da = $da_pa_split[0];
-                    $pa = $da_pa_split[1];
-                }
-
-                $term_exist = wstr_check_existing_term($domain, 'domain_cat','premium-names');
-
-                // Add to the response array
-                $domains_data[] = array(
-                    'id' => $domain,
-                    'title' => $domain_title,
-                    'permalink' => $domain_permalink,
-                    'featured_image' => $domain_image,
-                    'logo' => $logo_url,
-                    'price' => $domain_price,
-                    'da' => $da,
-                    'pa' => $pa,
-                    'currency' => $currency,
-                    'sale_price' => $sale_price,
-                    'regular_price' => $regular_price,
-                    'precentage_discount' => $percentage_discount,
-                    'term_exist' => $term_exist,
-                );
-            }
-        }
-
-        // Return the data in JSON format
-        return new WP_REST_Response($domains_data, 200);
-    }
-}

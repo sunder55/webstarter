@@ -3,15 +3,15 @@
  * For removing block editor from domain post type
  */
 
-add_filter('use_block_editor_for_post_type', 'prefix_disable_gutenberg', 10, 2);
-function prefix_disable_gutenberg($current_status, $post_type)
+add_filter('use_block_editor_for_post_type', 'wstr_disable_gutenberg', 10, 2);
+function wstr_disable_gutenberg($current_status, $post_type)
 {
     // Use your post type key instead of 'product'
     if ($post_type === 'domain')
         return false;
     return $current_status;
 }
-
+ 
 
 /*
  * For adding featured image column to the domain list in backend
