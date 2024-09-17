@@ -89,4 +89,17 @@ jQuery(document).ready(function ($) {
     var domainWithoutTLD = parts.join(".");
     return domainWithoutTLD.length;
   }
+
+
+  // single domain tabs
+  jQuery('ul.tabs li').on('click', function ($) {
+    // get the data attribute
+    var tab_id = jQuery(this).attr('data-tab');
+    // remove the default classes
+    jQuery('ul.tabs li').removeClass('current');
+    jQuery('.tab-content').removeClass('current');
+    // add new classes on mouse click
+    jQuery(this).addClass('current');
+    jQuery('#' + tab_id).addClass('current');
+  });
 });

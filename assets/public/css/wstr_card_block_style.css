@@ -273,11 +273,36 @@ div[role="progressbar"]::before {
   color: #001f3e;
   font-size: 28px;
 }
-div[role="progressbar"]::after {
+div[role="progressbar"]::after:not(
+    .single_domain_progress_wrapper div[role="progressbar"]::after
+  ) {
   content: "of 100";
   font-size: 14px;
   color: #a5a3a3;
 }
 .domain-trust div[role="progressbar"] {
   --fg: #00d9f5;
+}
+
+/* recently sold slides carousel */
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-slide {
+  text-align: center;
+  font-size: 18px;
+  background: #fff;
+}
+
+.swiper-slide .ws-card-img img {
+  display: block;
+  width: 100% !important;
+  height: 100%;
+  object-fit: cover;
+}
+.swiper-wrapper.ws-cards-container-wrapper {
+  flex-wrap: nowrap;
+  gap: 0;
 }
