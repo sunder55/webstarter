@@ -215,20 +215,26 @@ function wstr_premium_domains_api($request)
                     $pa = $da_pa_split[1];
                 }
 
+                $logo = get_post_meta($domain_id, '_logo_image', true);
+                $logo_url = wp_get_attachment_url($logo);
+
                 $product_thumbnail = get_the_post_thumbnail_url($domain_id, 'medium_large');
                 // if (!$product_thumbnail) {
                 //     $product_thumbnail = get_stylesheet_directory_uri() . '/assets/images/Frame-1.png';
                 // }
                 $currency = get_wstr_currency();
-                $product_data = array(
-                    'product_id'    => $domain_id,
-                    'product_title' => get_the_title($domain_id),
-                    'product_link'  => get_permalink($domain_id),
-                    'product_image' => $product_thumbnail,
-                    'total_price' => $update_total,
-                    'currency' => $currency,
+                $term_exist = wstr_check_existing_term($domain_id, 'domain_cat', 'premium-names');
+
+                $product_data[] = array(
+                    'id' => $domain_id,
+                    'title' => get_the_title($domain_id),
+                    'permalink' => get_permalink($domain_id),
+                    'featured_image' => $product_thumbnail,
+                    'logo' => $logo_url,
                     'da' => $da,
                     'pa' => $pa,
+
+                    'term_exist' => $term_exist,
                 );
                 $orders_data[] = $product_data;
             }
@@ -317,4 +323,3 @@ function wstr_premium_domains_api($request)
         return new WP_REST_Response($domains_data, 200);
     }
 }
-
