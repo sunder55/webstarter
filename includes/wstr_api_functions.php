@@ -237,7 +237,7 @@ function wstr_premium_domains_api($request)
             }
         }
         // Return the data in JSON format
-        return new WP_REST_Response($orders_data, 200);
+        return new WP_REST_Response($product_data, 200);
     } else if (isset($params['type']) && $params['type'] === 'trending') {
 
         $query_args = array(
