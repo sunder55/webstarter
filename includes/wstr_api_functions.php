@@ -198,7 +198,7 @@ function wstr_premium_domains_api($request)
             ),
         );
         $latest_solds = get_posts($args);
-        $orders_data = array();
+        $product_data = array();
         foreach ($latest_solds as $latest_sold) {
             $order_total = get_post_meta($latest_sold->ID, '_order_total', true);
 
@@ -214,7 +214,6 @@ function wstr_premium_domains_api($request)
                     $da = $da_pa_split[0];
                     $pa = $da_pa_split[1];
                 }
-
                 $logo = get_post_meta($domain_id, '_logo_image', true);
                 $logo_url = wp_get_attachment_url($logo);
 
@@ -233,10 +232,8 @@ function wstr_premium_domains_api($request)
                     'logo' => $logo_url,
                     'da' => $da,
                     'pa' => $pa,
-
                     'term_exist' => $term_exist,
                 );
-                $orders_data[] = $product_data;
             }
         }
         // Return the data in JSON format
