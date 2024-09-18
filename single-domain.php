@@ -21,7 +21,13 @@ get_header();
         $da_pa = get_post_meta(get_the_ID(), '_da_pa', true);
         $highlights_title = get_post_meta(get_the_ID(), '_highlight_title', true);
         $highlights_content = get_post_meta(get_the_ID(), '_highlight_content', true);
+        $currency = get_wstr_currency();
+        // $discount_percent = esc_html($domain['precentage_discount']);
+        // $term_exist = isset($domain['term_exist']) ? (bool) $domain['term_exist'] : true; // Default to true if not set
+    
 
+        // $currency = esc_html($domain['currency']);
+    
         $da = $pa = '';
         if ($da_pa) {
             $da_pa_split = explode('/', $da_pa);
@@ -34,7 +40,7 @@ get_header();
         update_post_meta(get_the_ID(), 'ws_product_view_count', $new_post_count);
 
         ?>
-        <div class="single_domain_details ws_flex ">
+        <div class="single_domain_details ws_flex fd_mob_col ">
             <!-- Featured Image -->
             <div class="featured-image">
                 <?php if ($featured_image): ?>
@@ -49,17 +55,21 @@ get_header();
                     <a href="#">
                         <p>Message</p>
                     </a>
-                </div>
+                </div><?php
+                if ($term_exist) {
+                    $output .= '<div class="premium_icon"><img src="/wp-content/plugins/card-block/images/diamond.png"
+                        alt="Diamond Icon" /></div>';
+                } ?>
             </div>
 
             <!-- Details Section -->
             <div class="domain-details">
                 <div class="ws_flex gap_20 ai_center">
-                    <div>
-
-                        <?php
-
-                        if ($logo): ?>
+                    <div><?php
+                    // if ((int) $discount_percent > 0) {
+                    //     $output .= '<div class="ws_discount_percent"> -' . $discount_percent . '%</div>';
+                    // }
+                    if ($logo): ?>
                             <img src="<?php echo esc_url($logo); ?>" alt="<?php echo esc_attr($title); ?>" class="logo">
                         <?php elseif ($featured_image): ?>
                             <img src="<?php echo esc_url($featured_image); ?>" alt="<?php echo esc_attr($title); ?>"
@@ -71,10 +81,14 @@ get_header();
                         <div class="single_domain_price ws_flex gap_10 ai_center">
                             <?php
                             if (!empty($regular_price)) { ?>
-                                <p class="regular_price"><?php echo esc_html($regular_price); ?></p><?php
+                                <p class="regular_price"><?php
+                                echo get_wstr_currency();
+                                echo get_wstr_regular_price(get_the_ID()); ?></p><?php
                             }
                             if (!empty($sale_price)) { ?>
-                                <p class="sale_price"><?php echo esc_html($sale_price); ?></p><?php
+                                <p class="sale_price"><?php
+                                echo get_wstr_currency();
+                                echo get_wstr_sale_price(get_the_ID()); ?></p><?php
                             } ?>
                         </div>
                     </div>
@@ -91,7 +105,7 @@ get_header();
 
             </div>
         </div>
-        <div class="single_domain_reviews_information ws_flex">
+        <div class="single_domain_reviews_information ws_flex fd_mob_col">
             <div class="single_domain_tabs_container">
                 <ul class="tabs">
                     <li class="tab current" data-tab="tab-1">Domain</li>
@@ -155,16 +169,16 @@ get_header();
                         </div>
 
                     </div>
+                    <div class="single_domain_info">
+                        <?php
+                        the_content();
+                        ?>
+                    </div>
                 </div>
                 <div id="tab-2" class="tab-content">
                     <h2>Tab Two</h2>
                     <!-- Your content here -->
 
-                </div>
-                <div class="single_domain_info">
-                    <?php
-                    the_content();
-                    ?>
                 </div>
             </div>
 

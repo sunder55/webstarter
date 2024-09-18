@@ -2,7 +2,7 @@
 .ws-container {
   max-width: 1400px;
   margin: auto;
-  padding: 20px;
+  /* padding: 20px; */
 }
 .ws-flex {
   display: flex;
@@ -11,7 +11,8 @@
   display: flex;
   gap: 30px;
   flex-wrap: wrap;
-  justify-content: center;
+  /* justify-content: center; */
+  justify-content: space-between;
 }
 .ws-card-img {
   height: 180px;
@@ -305,4 +306,16 @@ div[role="progressbar"]::after:not(
 .swiper-wrapper.ws-cards-container-wrapper {
   flex-wrap: nowrap;
   gap: 0;
+}
+/* trending cards */
+.ws_trending_cards {
+  max-width: 100% !important;
+}
+.ws_trending_cards .ws-card-contents {
+  border-width: 1px;
+  border-color: rgb(237, 240, 247);
+  border-style: solid;
+  border-radius: 15px;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0.122px 0.993px 31px 0px rgba(0, 34, 79, 0.04);
 }

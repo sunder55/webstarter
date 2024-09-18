@@ -18,10 +18,25 @@ jQuery(document).ready(function ($) {
         currency: currency,
       },
       success: function (response) {
-      if(response.data){
-        location.reload();
-      }
+        if (response.data) {
+          location.reload();
+        }
       },
     });
   });
+
+
+
+});
+
+var swiper = new Swiper(".swiper-container", {
+  slidesPerView: 4,
+  centeredSlides: false,
+  spaceBetween: 20,
+  grabCursor: true,
+  loop: true,
+  pagination: {
+    el: ".swiper-pagination",
+    clickable: true,
+  },
 });
