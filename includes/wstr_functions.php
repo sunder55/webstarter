@@ -30,55 +30,13 @@ function get_wstr_price($domain_id)
         $currency = 'USD';
         $price = $sale_price > 0 ? $sale_price : $regular_price;
     }
-    $price_html = '<div class="wstr-price_html">
-    <span class="wstr-currency">' . get_wstr_currency_symbol($currency) . '</span>
-    <span class="wstr-price">' . wstr_truncate_number($price) . '<span> </div>';
+    // $price_html = '<div class="wstr-price_html">
+    // <span class="wstr-currency">' . get_wstr_currency_symbol($currency) . '</span>
+    // <span class="wstr-price">' . wstr_truncate_number($price) . '<span> </div>';
+
+    $price_html = '<div class="ws_card_price_wrapper ws_flex gap_10"><p class="regular_price">' . $currency . '' . $regular_price . '</p><p class="sale_price">' . $currency . '' . $sale_price . '</p></div>';
+
     return $price_html;
-}
-
-/**
- * Function for getting currency symbol
- * @return void
- */
-function get_wstr_currency()
-{
-
-    if (session_status() == PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    $currency = $_SESSION['currency'] ? $_SESSION['currency'] : 'USD';
-    return get_wstr_currency_symbol($currency);
-}
-
-
-/**
- * Fuction for getting currency symbol 
- * @param mixed $string ex: $string = 'USD'
- * @return void
- */
-function get_wstr_currency_symbol($string, $for_api = false)
-{
-    // $locale = 'en-US'; //browser or user locale
-    // $fmt = new NumberFormatter($locale . "@currency=$string", NumberFormatter::CURRENCY);
-    // $symbol = $fmt->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
-    // header("Content-Type: text/html; charset=UTF-8;");
-    // return $symbol;
-
-    $locale = 'en-US'; //browser or user locale
-    $fmt = new NumberFormatter($locale . "@currency=$string", NumberFormatter::CURRENCY);
-    $symbol = $fmt->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
-
-    if ($for_api) {
-        // Convert Unicode character to escaped representation
-        $escaped_symbol = json_encode($symbol);
-        // Remove quotes around the symbol
-        $escaped_symbol = substr($escaped_symbol, 1, -1);
-        return $escaped_symbol;
-    } else {
-        header("Content-Type: text/html; charset=UTF-8;");
-        return $symbol;
-    }
 }
 
 /**
@@ -125,7 +83,8 @@ function get_wstr_sale_price($domain_id)
  * Function for getting currecy value according to the currency selected
  * @return void
  */
-function wstr_get_updated_price($price){
+function wstr_get_updated_price($price)
+{
     $currency = $_SESSION['currency'] ?? '';
     $currency_rates = get_option('wstr_currency_rates', []);
     $currency_rate = $currency_rates[$currency] ?? 1;
@@ -136,6 +95,71 @@ function wstr_get_updated_price($price){
         $price = $price > 0 ? $price * $currency_rate : 0;
     }
     return wstr_truncate_number($price);
+}
+
+/**
+ * Function for percetage of price differnce
+ * @param mixed $domain_id ID of the domain
+ * @return float|int
+ */
+function get_wstr_price_percentage($domain_id)
+{
+    $regular_price = get_wstr_regular_price($domain_id);
+    $sale_price = get_wstr_sale_price($domain_id);
+
+    $percentage_discount = 0;
+
+    if (!empty($regular_price) && !empty($sale_price) && $regular_price > $sale_price) {
+        // Calculate the discount percentage
+        $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
+        $percentage_discount = round($percentage_discount, 2); // Round to 2 decimal places for readability  
+    }
+    return $percentage_discount;
+}
+
+/**
+ * Function for getting currency symbol
+ * @return void
+ */
+function get_wstr_currency()
+{
+
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    $currency = $_SESSION['currency'] ? $_SESSION['currency'] : 'USD';
+    return get_wstr_currency_symbol($currency);
+}
+
+
+/**
+ * Fuction for getting currency symbol 
+ * @param mixed $string ex: $string = 'USD'
+ * @return void
+ */
+function get_wstr_currency_symbol($string, $for_api = false)
+{
+    // $locale = 'en-US'; //browser or user locale
+    // $fmt = new NumberFormatter($locale . "@currency=$string", NumberFormatter::CURRENCY);
+    // $symbol = $fmt->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
+    // header("Content-Type: text/html; charset=UTF-8;");
+    // return $symbol;
+
+    $locale = 'en-US'; //browser or user locale
+    $fmt = new NumberFormatter($locale . "@currency=$string", NumberFormatter::CURRENCY);
+    $symbol = $fmt->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
+
+    if ($for_api) {
+        // Convert Unicode character to escaped representation
+        $escaped_symbol = json_encode($symbol);
+        // Remove quotes around the symbol
+        $escaped_symbol = substr($escaped_symbol, 1, -1);
+        return $escaped_symbol;
+    } else {
+        header("Content-Type: text/html; charset=UTF-8;");
+        return $symbol;
+    }
 }
 
 /**
@@ -223,5 +247,3 @@ function wstr_check_existing_term($domain_id, $taxonomy, $term_slug)
         return false;
     }
 }
-
-
