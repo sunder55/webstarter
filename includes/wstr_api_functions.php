@@ -43,7 +43,7 @@ function wstr_premium_domains_api($request)
                 $domain_image = get_the_post_thumbnail_url($premium_domain, 'medium_large');
 
                 if (!$domain_image) {
-                    $domain_image = get_stylesheet_directory_uri() . '/assets/images/Frame-1.png';
+                    $domain_image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
                 }
 
                 $logo = get_post_meta($premium_domain, '_logo_image', true);
@@ -130,7 +130,7 @@ function wstr_premium_domains_api($request)
                 $domain_image = get_the_post_thumbnail_url($domain, 'medium_large');
 
                 if (!$domain_image) {
-                    $domain_image = get_stylesheet_directory_uri() . '/assets/images/Frame-1.png';
+                    $domain_image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
                 }
 
                 $logo = get_post_meta($domain, '_logo_image', true);
@@ -219,9 +219,9 @@ function wstr_premium_domains_api($request)
                 $logo_url = wp_get_attachment_url($logo);
 
                 $product_thumbnail = get_the_post_thumbnail_url($domain_id, 'medium_large');
-                // if (!$product_thumbnail) {
-                //     $product_thumbnail = get_stylesheet_directory_uri() . '/assets/images/Frame-1.png';
-                // }
+                if (!$product_thumbnail) {
+                    $product_thumbnail = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
+                }
                 $currency = get_wstr_currency();
                 $term_exist = wstr_check_existing_term($domain_id, 'domain_cat', 'premium-names');
 
@@ -268,7 +268,7 @@ function wstr_premium_domains_api($request)
                 $domain_image = get_the_post_thumbnail_url($domain, 'medium_large');
 
                 if (!$domain_image) {
-                    $domain_image = get_stylesheet_directory_uri() . '/assets/images/Frame-1.png';
+                    $domain_image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
                 }
 
                 $logo = get_post_meta($domain, '_logo_image', true);
