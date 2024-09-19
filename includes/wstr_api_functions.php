@@ -99,6 +99,7 @@ function wstr_premium_domains_api($request)
 
         // Return the data in JSON format
         return new WP_REST_Response($premium_domains_data, 200);
+
     } else if (isset($params['type']) && $params['type'] === 'new') {
         $query_args = array(
             'posts_per_page' => 8,
@@ -184,15 +185,15 @@ function wstr_premium_domains_api($request)
     } else if (isset($params['type']) && $params['type'] === 'recents') {
 
         $args = array(
-            'post_type'      => 'domain_order',     // Custom post type
-            'post_status'    => 'publish',        // Post status
+            'post_type' => 'domain_order',     // Custom post type
+            'post_status' => 'publish',        // Post status
             'posts_per_page' => -1,                 // Get all posts
-            'orderby'        => 'date',             // Order by date
-            'order'          => 'DESC',             // Descending order
-            'meta_query'     => array(              // Meta query for custom fields
+            'orderby' => 'date',             // Order by date
+            'order' => 'DESC',             // Descending order
+            'meta_query' => array(              // Meta query for custom fields
                 array(
-                    'key'     => '_order_status',   // Meta key
-                    'value'   => 'completed',       // Meta value
+                    'key' => '_order_status',   // Meta key
+                    'value' => 'completed',       // Meta value
                     'compare' => '=',               // Comparison operator
                 ),
             ),
@@ -242,15 +243,15 @@ function wstr_premium_domains_api($request)
 
         $query_args = array(
             'posts_per_page' => 20,                  // Get all posts
-            'post_type'      => 'domain',            // Custom post type
-            'orderby'        => 'meta_value_num',    // Order by numeric meta value
-            'order'          => 'DESC',              // Descending order
-            'meta_key'       => 'ws_product_view_count', // Meta key to order by
-            'fields'         => 'ids',               // Only return post IDs
-            'meta_query'     => array(               // Meta query conditions
+            'post_type' => 'domain',            // Custom post type
+            'orderby' => 'meta_value_num',    // Order by numeric meta value
+            'order' => 'DESC',              // Descending order
+            'meta_key' => 'ws_product_view_count', // Meta key to order by
+            'fields' => 'ids',               // Only return post IDs
+            'meta_query' => array(               // Meta query conditions
                 array(
-                    'key'     => '_stock_status',    // Meta key for stock status
-                    'value'   => 'instock',       // Exclude posts with 'outofstock' status
+                    'key' => '_stock_status',    // Meta key for stock status
+                    'value' => 'instock',       // Exclude posts with 'outofstock' status
                     'compare' => '=',               // Not equal to 'outofstock'
                 )
             ),

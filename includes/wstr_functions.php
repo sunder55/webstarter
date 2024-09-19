@@ -18,7 +18,6 @@ function get_wstr_price($domain_id)
     $currency = $_SESSION['currency'] ?? '';
     $currency_rates = get_option('wstr_currency_rates', []);
     $currency_rate = $currency_rates[$currency] ?? 1;
-
     $regular_price = (float) get_post_meta($domain_id, '_regular_price', true);
     $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
 
@@ -34,7 +33,7 @@ function get_wstr_price($domain_id)
     // <span class="wstr-currency">' . get_wstr_currency_symbol($currency) . '</span>
     // <span class="wstr-price">' . wstr_truncate_number($price) . '<span> </div>';
 
-    $price_html = '<div class="ws_card_price_wrapper ws_flex gap_10"><p class="regular_price">' . $currency . '' . $regular_price . '</p><p class="sale_price">' . $currency . '' . $sale_price . '</p></div>';
+    $price_html = '<div class="ws_card_price_wrapper ws_flex gap_10"><p class="regular_price">' . get_wstr_currency() . '' . get_wstr_regular_price($domain_id) . '</p><p class="sale_price">' . get_wstr_currency() . '' . get_wstr_sale_price($domain_id) . '</p></div>';
 
     return $price_html;
 }
@@ -194,7 +193,7 @@ function wstr_truncate_number($number, $precision = 2)
 {
 
     // Zero causes issues, and no need to truncate
-    if (0 == (int)$number) {
+    if (0 == (int) $number) {
         return $number;
     }
 
