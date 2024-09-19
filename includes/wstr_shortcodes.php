@@ -104,18 +104,22 @@ class wstr_shortcodes
                         'number' => 17,
                         'taxonomy' => 'domain_industry',
                     );
+
                     $industries = get_terms($args);
                     $domains_list_page = get_page_link(get_option('ws_domain_list_page')); // getting product page link
                     if (!$domains_list_page) {
                         $domains_list_page = get_home_url() . '/domain-list/';
                     }
                         ?>
-        <div class="ws-industry-wrapper">
+          <div class="ws-industry-wrapper">
             <?php
                     if ($industries) {
-                        foreach ($industries as $industry) {
-                            $term_id = $industry->term_id;
 
+                        foreach ($industries as $industry) {
+
+            ?>
+                    <div class="ws-industry_details">
+                        <?php
                             // Query domains for each industry (term)
                             $args_domains = array(
                                 'post_type' => 'domain', // Assuming 'domain' is your custom post type
@@ -127,28 +131,35 @@ class wstr_shortcodes
                                         'terms' => $industry->slug, // Get domains for the current term (industry)
                                     ),
                                 ),
+                                'date_query'     => array(
+                                    'after' => array(
+                                        'year'  => date("Y"),
+                                        'month' => date("m"),
+                                        'day'   => date("d") - 17,
+                                    ),
+                                ),
                             );
 
                             $domains_query = new WP_Query($args_domains);
 
                             if ($domains_query->have_posts()) {
-                                echo '<ul>';
-                                while ($domains_query->have_posts()) {
-                                    $domains_query->the_post();
 
-            ?>
-                    <?php
-                                }
-                                echo '</ul>';
-                            }
-                    ?>
-                    <div class="ws-industry_details">
-                        <?php
                         ?>
+                            <span>New</span>
+                        <?php
+                            }
+
+                            $term_image_id =  get_term_meta($industry->term_id, 'taxonomy-image-id', true);
+
+                            if ($term_image_id) {
+                                $term_image_url  =  wp_get_attachment_url($term_image_id);
+                        ?>
+                            <img src="<?php echo $term_image_url ? $term_image_url : '' ?>">
+                        <?php
+                            }
+                        ?>
+
                         <a href="<?php echo $domains_list_page . '?industry=' . $industry->slug ?>"><?php echo $industry->name; ?></a>
-                        <!-- <a href="<?php //echo $domains_list_page . '?industry=' . $industry->slug 
-                                        ?>"><?php //echo $industry->name; 
-                                                                                                            ?></a> -->
                     </div>
                 <?php
                         }
