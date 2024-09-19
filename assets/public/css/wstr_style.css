@@ -457,6 +457,9 @@ form#mc4wp-form-1 {
   padding: 14px 24px;
   border-radius: 50px;
 }
+.single_featured_image_footer i.fa-comments {
+  color: #848484;
+}
 .single_featured_image_footer .online p:nth-child(2),
 .single_featured_image_footer .online i:nth-child(3) {
   color: #00cd98;

@@ -76,7 +76,7 @@ get_header();
                                 class="logo">
                         <?php endif; ?>
                     </div>
-                    <?php echo get_wstr_price_percentage($domain['precentage_discount']) ?>
+                    <?php echo get_wstr_price_percentage(get_the_ID()); ?>
                     <div>
                         <h2 class="fw-600"><?php echo esc_html($title); ?></h2>
                         <div class="single_domain_price ws_flex gap_10 ai_center">
@@ -98,6 +98,9 @@ get_header();
                     <?php
                     the_excerpt();
                     ?>
+                </div>
+                <div class="wstr_payments">
+                    <h6>PAYMENT OPTIONS</h6>
                 </div>
                 <?php
                 // the_content();
