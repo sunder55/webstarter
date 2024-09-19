@@ -406,9 +406,48 @@ form#mc4wp-form-1 {
   z-index: -1;
   background-size: cover;
 } */
+
+/* browse industry styles */
+.ws-industry-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+.ws-industry-wrapper .ws-industry_details a {
+  font-size: 16px;
+  color: #424242;
+}
+.ws-industry-wrapper .ws-industry_details img {
+  height: 20px;
+  width: 20px;
+}
+.ws-industry-wrapper .ws-industry_details {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.ws-industry-wrapper .ws-industry_details {
+  border: 1px solid #edf0f7;
+  padding: 30px;
+  border-radius: 50px;
+  position: relative;
+}
+.ws-industry-wrapper .ws-industry_details span:first-child {
+  position: absolute;
+  /* top: 0; */
+  right: 20%;
+  top: -10px;
+  background: #00d9f5;
+  color: #fff;
+  border-radius: 50px;
+  padding: 2px 14px;
+}
 /* =============================================SINGLE PAGE========================================== */
 
 /* single page css */
+.single-container.ws-container {
+  margin-top: 80px;
+}
 .single_domain_reviews_information {
   margin-top: 60px;
   /* align-items: center; */
@@ -565,4 +604,40 @@ form#mc4wp-form-1 {
   line-height: 24px;
   margin: 20px 0;
   font-size: 16px;
+}
+.domain-details .ws_discount_percent {
+  left: -10px;
+  top: -10px;
+}
+.wstr_payments h6 {
+  background-color: #f3f5fa;
+  font-weight: 500;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 5px;
+  margin-top: 40px;
+}
+.single_domain_meta_search {
+  position: absolute;
+  top: 30px;
+  right: 50px;
+}
+.single_domain_search i {
+  color: #999999;
+  background-color: #fff;
+  font-size: 20px;
+  padding: 14px;
+  border-radius: 50px;
+}
+.single_domain_meta_search {
+  gap: 15px;
+}
+.single_domain_details .ws-card-likes h6 {
+  background-color: #fff;
+  padding: 14px 30px;
+  font-size: 14px;
+  border-radius: 30px;
+}
+.single_featured_image_footer a {
+  color: #999999;
 }

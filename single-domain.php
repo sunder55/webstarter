@@ -1,6 +1,7 @@
 <?php
-get_header();
-?>
+wp_head();
+block_header_area()
+    ?>
 
 <div class="single-container ws-container">
     <?php
@@ -42,7 +43,7 @@ get_header();
         ?>
         <div class="single_domain_details ws_flex fd_mob_col ">
             <!-- Featured Image -->
-            <div class="featured-image">
+            <div class="featured-image p_relative">
                 <?php if ($featured_image): ?>
                     <img src="<?php echo esc_url($featured_image); ?>" alt="<?php echo esc_attr($title); ?>">
                 <?php endif; ?>
@@ -60,11 +61,21 @@ get_header();
                     $output .= '<div class="premium_icon"><img src="/wp-content/plugins/card-block/images/diamond.png"
                         alt="Diamond Icon" /></div>';
                 } ?>
+                <div class="ws_flex ai_center single_domain_meta_search">
+                    <div class="single_domain_search">
+                        <form>
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </form>
+                    </div>
+                    <div class="ws-card-likes">
+                        <h6><span>2k</span><i class="fa-solid fa-heart"></i></h6>
+                    </div>
+                </div>
             </div>
 
             <!-- Details Section -->
             <div class="domain-details">
-                <div class="ws_flex gap_20 ai_center">
+                <div class="ws_flex gap_20 ai_center p_relative">
                     <div><?php
                     // if ((int) $discount_percent > 0) {
                     //     $output .= '<div class="ws_discount_percent"> -' . $discount_percent . '%</div>';
@@ -76,7 +87,12 @@ get_header();
                                 class="logo">
                         <?php endif; ?>
                     </div>
-                    <?php echo get_wstr_price_percentage(get_the_ID()); ?>
+
+                    <?php
+                    //  if (isset($discount_percent) && (int) $discount_percent > 0) {
+                    echo get_wstr_price_percentage(get_the_ID());
+                    // }
+                    ?>
                     <div>
                         <h2 class="fw-600"><?php echo esc_html($title); ?></h2>
                         <div class="single_domain_price ws_flex gap_10 ai_center">
@@ -219,5 +235,7 @@ get_header();
 </div>
 
 <?php
-get_footer();
-?>
+// get_footer();
+wp_footer();
+block_footer_area()
+    ?>
