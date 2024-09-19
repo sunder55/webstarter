@@ -113,7 +113,8 @@ function get_wstr_price_percentage($domain_id)
         $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
         $percentage_discount = round($percentage_discount, 2); // Round to 2 decimal places for readability  
     }
-    return $percentage_discount;
+    $output = ' <div class="ws_discount_percent">' . $percentage_discount . '</div>';
+    return $output;
 }
 
 /**
