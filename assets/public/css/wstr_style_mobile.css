@@ -7,6 +7,9 @@
   .section_gap_mobile {
     margin: 40px 0 !important;
   }
+  #wstr-mulitcurrency {
+    display: none;
+  }
   h1 {
     font-size: 30px !important;
   }
