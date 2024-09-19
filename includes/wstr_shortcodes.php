@@ -6,7 +6,7 @@ class wstr_shortcodes
     {
         add_shortcode('wstr_banner_reviews', array($this, 'wstr_banner_reviews_function'));
         add_shortcode('wstr-multicurrency', array($this, 'wstr_multicurrency'));
-        // add_shortcode('wstr-browse-industry', array($this, 'wstr_browse_industry'));
+        add_shortcode('wstr-browse-industry', array($this, 'wstr_browse_industry'));
     }
 
     public function wstr_banner_reviews_function()
@@ -117,32 +117,29 @@ class wstr_shortcodes
                 foreach ($industries as $industry) {
 
                     // Query domains for each industry (term)
-                    $args_domains = array(
-                        'post_type' => 'domain', // Assuming 'domain' is your custom post type
-                        'posts_per_page' => -1, // Fetch all domains for this industry
-                        'tax_query' => array(
-                            array(
-                                'taxonomy' => 'domain_industry',
-                                'field' => 'slug',
-                                'terms' => $industry->slug, // Get domains for the current term (industry)
-                            ),
-                        ),
-                    );
+                    // $args_domains = array(
+                    //     'post_type' => 'domain', // Assuming 'domain' is your custom post type
+                    //     'posts_per_page' => -1, // Fetch all domains for this industry
+                    //     'tax_query' => array(
+                    //         array(
+                    //             'taxonomy' => 'domain_industry',
+                    //             'field' => 'slug',
+                    //             'terms' => $industry->slug, // Get domains for the current term (industry)
+                    //         ),
+                    //     ),
+                    // );
 
-                    $domains_query = new WP_Query($args_domains);
+                    // $domains_query = new WP_Query($args_domains);
 
-                    if ($domains_query->have_posts()) {
-                        echo '<ul>';
-                        while ($domains_query->have_posts()) {
-                            $domains_query->the_post();
-                            ?>
-                            <li>
-
-                            </li>
-                            <?php
-                        }
-                        echo '</ul>';
-                    }
+                    // if ($domains_query->have_posts()) {
+                    //     echo '<ul>';
+                    //     while ($domains_query->have_posts()) {
+                    //         $domains_query->the_post();
+                    //         ?>
+                     <?php
+                    //     }
+                    //     echo '</ul>';
+                    // }
                     ?>
                     <div class="ws-industry_details">
                         <?php
@@ -168,31 +165,4 @@ class wstr_shortcodes
 }
 new wstr_shortcodes();
 
-
-// add_action('wp_footer', 'fetch_api_data_with_wp_remote_get');
-
-function fetch_api_data_with_wp_remote_get()
-{
-    // API endpoint with cache-busting query param
-    // $api_url = 'http://localhost:10033/wstr/v1/domains/?type=premium&timestamp=' . time();
-    $api_url = 'http://localhost:10033/wp-json/wstr/v1/domains/?type=premium';
-
-    // Make the request
-    $response = wp_remote_get($api_url);
-
-    // Check for errors
-    if (is_wp_error($response)) {
-        echo 'Error: ' . $response->get_error_message();
-        return;
-    }
-
-    // Get the response body
-    $data = wp_remote_retrieve_body($response);
-
-    // Decode the JSON response
-    $data = json_decode($data, true);
-    var_dump($data);
-    // Output the fetched data to the frontend (for testing)
-    // echo '<script>console.log(' . json_encode($data) . ');</script>';
-}
 

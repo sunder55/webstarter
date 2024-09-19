@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Classes used for creating meta boxes to the custom post type.
  */
@@ -51,6 +52,15 @@ class wstr_domain_meta_boxes
             'domain', // The custom post type slug
             'side',
             'core'
+        );
+
+        add_meta_box(
+            'what_you_get_meta_box',  // Unique ID for the meta box
+            'What you get section.',           // Meta box title
+            array($this, 'render_what_you_get_meta_box'),  // Callback function
+            'domain', // The custom post type slug
+            'normal',
+            'default'                      // Priority (high, low)
         );
     }
     public function render_highlight_section_meta_box($post)
@@ -180,6 +190,12 @@ class wstr_domain_meta_boxes
                 <span class="wstr-help-tip" tabindex="0" aria-label="Enable this option to enable the 'Make Offer' buttons and form display in the shop."></span>
             </div>
         </div>
+    <?php
+    }
+
+    public function render_what_you_get_meta_box($post)
+    {
+    ?>
     <?php
     }
 
