@@ -7,6 +7,7 @@ class wstr_shortcodes
         add_shortcode('wstr_banner_reviews', array($this, 'wstr_banner_reviews_function'));
         add_shortcode('wstr-multicurrency', array($this, 'wstr_multicurrency'));
         add_shortcode('wstr-browse-industry', array($this, 'wstr_browse_industry'));
+        add_shortcode('wstr-popular-category', array($this, 'wstr_popular_category'));
     }
 
     public function wstr_banner_reviews_function()
@@ -84,85 +85,87 @@ class wstr_shortcodes
                 <?php
                 }
                 ?>
-            </select><?php
-                    }
-                    $output = ob_get_contents();
-                    ob_end_clean();
-                    return $output;
-                }
+            </select>
+        <?php
+        }
+        $output = ob_get_contents();
+        ob_end_clean();
+        return $output;
+    }
 
-                /**
-                 * function for home page browse industry
-                 */
-                public function wstr_browse_industry()
-                {
 
-                    ob_start();
+    /**
+     * function for home page browse industry
+     */
+    public function wstr_browse_industry()
+    {
 
-                    $args = array(
-                        'hide_empty' => false,
-                        'number' => 17,
-                        'taxonomy' => 'domain_industry',
-                    );
+        ob_start();
 
-                    $industries = get_terms($args);
-                    $domains_list_page = get_page_link(get_option('ws_domain_list_page')); // getting product page link
-                    if (!$domains_list_page) {
-                        $domains_list_page = get_home_url() . '/domain-list/';
-                    }
-                        ?>
-          <div class="ws-industry-wrapper">
+        $args = array(
+            'hide_empty' => false,
+            'number' => 17,
+            'taxonomy' => 'domain_industry',
+        );
+
+        $industries = get_terms($args);
+        $domains_list_page = get_page_link(get_option('ws_domain_list_page')); // getting product page link
+        if (!$domains_list_page) {
+            $domains_list_page = get_home_url() . '/domain-list/';
+        }
+        ?>
+        <div class="ws-industry-wrapper">
             <?php
-                    if ($industries) {
+            if ($industries) {
 
-                        foreach ($industries as $industry) {
+                foreach ($industries as $industry) {
 
             ?>
                     <div class="ws-industry_details">
                         <?php
-                            // Query domains for each industry (term)
-                            $args_domains = array(
-                                'post_type' => 'domain', // Assuming 'domain' is your custom post type
-                                'posts_per_page' => -1, // Fetch all domains for this industry
-                                'tax_query' => array(
-                                    array(
-                                        'taxonomy' => 'domain_industry',
-                                        'field' => 'slug',
-                                        'terms' => $industry->slug, // Get domains for the current term (industry)
-                                    ),
+                        // Query domains for each industry (term)
+                        $args_domains = array(
+                            'post_type' => 'domain', // Assuming 'domain' is your custom post type
+                            'posts_per_page' => -1, // Fetch all domains for this industry
+                            'tax_query' => array(
+                                array(
+                                    'taxonomy' => 'domain_industry',
+                                    'field' => 'slug',
+                                    'terms' => $industry->slug, // Get domains for the current term (industry)
                                 ),
-                                'date_query'     => array(
-                                    'after' => array(
-                                        'year'  => date("Y"),
-                                        'month' => date("m"),
-                                        'day'   => date("d") - 17,
-                                    ),
+                            ),
+                            'date_query'     => array(
+                                'after' => array(
+                                    'year'  => date("Y"),
+                                    'month' => date("m"),
+                                    'day'   => date("d") - 17,
                                 ),
-                            );
+                            ),
+                        );
 
-                            $domains_query = new WP_Query($args_domains);
+                        $domains_query = new WP_Query($args_domains);
 
-                            if ($domains_query->have_posts()) {
+                        if ($domains_query->have_posts()) {
 
                         ?>
                             <span>New</span>
                         <?php
-                            }
+                        }
 
-                            $term_image_id =  get_term_meta($industry->term_id, 'taxonomy-image-id', true);
+                        $term_image_id =  get_term_meta($industry->term_id, 'taxonomy-image-id', true);
 
-                            if ($term_image_id) {
-                                $term_image_url  =  wp_get_attachment_url($term_image_id);
+                        if ($term_image_id) {
+                            $term_image_url  =  wp_get_attachment_url($term_image_id);
                         ?>
                             <img src="<?php echo $term_image_url ? $term_image_url : '' ?>">
                         <?php
-                            }
+                        }
                         ?>
 
                         <a href="<?php echo $domains_list_page . '?industry=' . $industry->slug ?>"><?php echo $industry->name; ?></a>
                     </div>
                 <?php
-                        }
+                }
                 ?>
                 <div class="ws-industry_details">
 
@@ -170,12 +173,21 @@ class wstr_shortcodes
                 </div>
             <?php
 
-                    }
+            }
             ?>
 
         </div>
 <?php
-                    return ob_get_clean();
-                }
-            }
-            new wstr_shortcodes();
+        return ob_get_clean();
+    }
+
+    public function wstr_popular_category($args)
+    {
+        ob_start();
+        $term_id = $args['term_id'];
+        $term_details = get_term($term_id);
+        echo $term_details->count;
+        return ob_get_clean();
+    }
+}
+new wstr_shortcodes();
