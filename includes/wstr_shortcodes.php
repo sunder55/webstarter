@@ -1,5 +1,5 @@
 <?php
-class wstr_shortcodes
+class wstr_home_page_shortcodes
 {
 
     public function __construct()
@@ -8,6 +8,7 @@ class wstr_shortcodes
         add_shortcode('wstr-multicurrency', array($this, 'wstr_multicurrency'));
         add_shortcode('wstr-browse-industry', array($this, 'wstr_browse_industry'));
         add_shortcode('wstr-popular-category', array($this, 'wstr_popular_category'));
+        add_shortcode('wstr-domain-count', array($this, 'wstr_domain_count'));
     }
 
     public function wstr_banner_reviews_function()
@@ -181,6 +182,11 @@ class wstr_shortcodes
         return ob_get_clean();
     }
 
+    /**
+     * Shortcode for getting no of domain of each popular category
+     * @param mixed $args
+     * @return bool|string
+     */
     public function wstr_popular_category($args)
     {
         ob_start();
@@ -189,5 +195,34 @@ class wstr_shortcodes
         echo $term_details->count;
         return ob_get_clean();
     }
+
+    /**
+     * Shortcode for getting total of domains
+     */
+    public function wstr_domain_count()
+    {
+        ob_start();
+        $query_args = array(
+            'posts_per_page' => -1,
+            'post_type'      => 'domain',
+            'meta_query' => array(
+                array(
+                    'key' => '_stock_status',
+                    'value' => 'outofstock',
+                    'compare' => '!='
+                )
+            )
+        );
+        $domain_products = get_posts($query_args);
+        $count = count($domain_products);
+
+        if ($count > 120) {
+            echo '120+';
+        } else {
+            echo $count;
+        }
+
+        return ob_get_clean();
+    }
 }
-new wstr_shortcodes();
+new wstr_home_page_shortcodes();
