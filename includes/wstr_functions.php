@@ -38,6 +38,36 @@ function get_wstr_price($domain_id)
     return $price_html;
 }
 
+function get_wstr_price_value($domain_id)
+{
+    if (!$domain_id) {
+        return 0;
+    }
+
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    $currency = $_SESSION['currency'] ?? '';
+    $currency_rates = get_option('wstr_currency_rates', []);
+    $currency_rate = $currency_rates[$currency] ?? 1;
+    $regular_price = (float) get_post_meta($domain_id, '_regular_price', true);
+    $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+
+    if ($currency && $currency != 'USD') {
+        $currency_rate = wstr_truncate_number((float) $currency_rate);
+        //  $currency_rate;
+        $price = $sale_price > 0 ? $sale_price * $currency_rate : $regular_price * $currency_rate;
+    } else {
+        $currency = 'USD';
+        $price = $sale_price > 0 ? $sale_price : $regular_price;
+    }
+    // $price_html = '<div class="wstr-price_html">
+    // <span class="wstr-currency">' . get_wstr_currency_symbol($currency) . '</span>
+    // <span class="wstr-price">' . wstr_truncate_number($price) . '<span> </div>';
+    return $price;
+}
+
 /**
  * Function for getting regular price of domain
  * @param mixed $domain_id
@@ -113,7 +143,7 @@ function get_wstr_price_percentage($domain_id)
         $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
         $percentage_discount = round($percentage_discount, 2); // Round to 2 decimal places for readability  
     }
-    $output = ' <div class="ws_discount_percent">' . $percentage_discount .'%</div>';
+    $output = ' <div class="ws_discount_percent">' . $percentage_discount . '%</div>';
     return $output;
 }
 
