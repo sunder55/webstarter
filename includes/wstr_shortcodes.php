@@ -1,5 +1,5 @@
 <?php
-class wstr_home_page_shortcodes
+class wstr_shortcodes
 {
 
     public function __construct()
@@ -9,6 +9,7 @@ class wstr_home_page_shortcodes
         add_shortcode('wstr-browse-industry', array($this, 'wstr_browse_industry'));
         add_shortcode('wstr-popular-category', array($this, 'wstr_popular_category'));
         add_shortcode('wstr-domain-count', array($this, 'wstr_domain_count'));
+        add_shortcode('wbstr-footer-average-cost', array($this, 'wbstr_footer_average_cost_calculation'));
     }
 
     public function wstr_banner_reviews_function()
@@ -224,5 +225,35 @@ class wstr_home_page_shortcodes
 
         return ob_get_clean();
     }
+
+    public function wbstr_footer_average_cost_calculation()
+    {
+        ob_start();
+        $total_prices = 0;
+        $args = array(
+            'posts_per_page' => -1,
+            'post_type'      => 'domain',
+            'meta_query' => array(
+                array(
+                    'key' => '_stock_status',
+                    'value' => 'outofstock',
+                    'compare' => '!='
+                )
+            )
+        );
+        $domains = get_posts($args);
+        if ($domains) {
+            $price = 0;
+            foreach ($domains as $domain) {
+                $price += get_wstr_price_value($domain->ID);
+            }
+        }
+        $average_price = (float) $price / count($domains);
+
+        $output = "<p class='get_average_price'>'" . get_wstr_currency() . '' . wstr_truncate_number($average_price) . "' </p>";
+
+        echo $output;
+        return ob_get_clean();
+    }
 }
-new wstr_home_page_shortcodes();
+new wstr_shortcodes();
