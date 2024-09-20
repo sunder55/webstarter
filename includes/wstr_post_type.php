@@ -9,7 +9,7 @@ class wstr_post_types
         add_action('init', array($this, 'register_domain_taxonomies'));
         add_action('init',  array($this, 'create_domain_order_post_type'));
         add_action('init', array($this, 'create_faq_post_type'));
-        add_action('init',  array($this,'create_faq_cat_taxonomy'));
+        add_action('init',  array($this, 'create_faq_cat_taxonomy'));
 
         // Hook into the 'domain_industry_add_form_fields' and 'domain_industry_edit_form_fields' actions to add image field.
         add_action('domain_industry_add_form_fields', array($this, 'add_taxonomy_image_field'));
@@ -185,6 +185,12 @@ class wstr_post_types
     {
 ?>
         <div class="form-field term-group">
+            <td>
+                <label>Is Popular</label>
+                <input type="checkbox" name="is_popular">
+            </td>
+        </div>
+        <div class="form-field term-group">
             <label for="taxonomy-image-id"><?php _e('Image', 'webstarter'); ?></label>
             <input type="hidden" id="taxonomy-image-id" name="taxonomy-image-id" value="">
             <div id="taxonomy-image-wrapper"></div>
@@ -201,7 +207,17 @@ class wstr_post_types
     {
         // Retrieve the existing value(s) for the term meta.
         $image_id = get_term_meta($term->term_id, 'taxonomy-image-id', true);
+        $is_popular = get_term_meta($term->term_id, '_is_popular', true);
+        
     ?>
+        <tr class="form-field term-group-wrap">
+            <td>
+                <label>Is Popular</label>
+                <input type="checkbox" name="is_popular" <?php echo $is_popular ? 'checked' : '' ?>>
+            </td>
+        </tr>
+
+        </tr>
         <tr class="form-field term-group-wrap">
             <th scope="row">
                 <label for="taxonomy-image-id"><?php _e('Image', 'webstarter'); ?></label>
@@ -227,6 +243,9 @@ class wstr_post_types
      */
     public function save_taxonomy_image($term_id, $tt_id)
     {
+        if (isset($_POST['is_popular']) && $_POST['is_popular']) {
+            update_term_meta($term_id, '_is_popular', $_POST['is_popular']);
+        }
         if (isset($_POST['taxonomy-image-id']) && '' !== $_POST['taxonomy-image-id']) {
             $image = intval($_POST['taxonomy-image-id']);
             update_term_meta($term_id, 'taxonomy-image-id', $image);
