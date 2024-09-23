@@ -99,7 +99,6 @@ function wstr_premium_domains_api($request)
 
         // Return the data in JSON format
         return new WP_REST_Response($premium_domains_data, 200);
-
     } else if (isset($params['type']) && $params['type'] === 'new') {
         $query_args = array(
             'posts_per_page' => 8,
@@ -202,11 +201,13 @@ function wstr_premium_domains_api($request)
         $product_data = array();
         foreach ($latest_solds as $latest_sold) {
             $order_total = get_post_meta($latest_sold->ID, '_order_total', true);
-
             $update_total = wstr_get_updated_price($order_total);
 
             $domains = get_post_meta($latest_sold->ID, '_domain_ids', true);
             foreach ($domains as $domain_id) {
+
+                $term =  get_the_terms($domain_id, 'domain_industry');
+                $term_name = $term[0]->name;
 
                 $da_pa = get_post_meta($domain_id, '_da_pa', true);
                 $da = $pa = '';
@@ -233,6 +234,7 @@ function wstr_premium_domains_api($request)
                     'logo' => $logo_url,
                     'da' => $da,
                     'pa' => $pa,
+                    'term_name' => $term_name,
                     'term_exist' => $term_exist,
                 );
             }
