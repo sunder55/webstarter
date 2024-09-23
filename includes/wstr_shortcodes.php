@@ -250,7 +250,7 @@ class wstr_shortcodes
         }
         $average_price = (float) $price / count($domains);
 
-        $output = "<p class='get_average_price'>'" . get_wstr_currency() . '' . wstr_truncate_number($average_price) . "' </p>";
+        $output = '<p class="get_average_price">'. get_wstr_currency() . '' . wstr_truncate_number($average_price) . ' </p>';
 
         echo $output;
         return ob_get_clean();
