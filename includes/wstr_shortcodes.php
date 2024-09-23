@@ -179,7 +179,7 @@ class wstr_shortcodes
             ?>
 
         </div>
-<?php
+    <?php
         return ob_get_clean();
     }
 
@@ -254,6 +254,15 @@ class wstr_shortcodes
 
         echo $output;
         return ob_get_clean();
+    }
+
+    public function wstr_estimation()
+    {
+    ?>
+        <h4>Become a seller</h4>
+        <p>Verify your Domain Value Estimation!</p>
+
+<?php
     }
 }
 new wstr_shortcodes();

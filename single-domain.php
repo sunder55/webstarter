@@ -1,7 +1,7 @@
 <?php
 wp_head();
 block_header_area()
-    ?>
+?>
 
 <div class="single-container ws-container">
     <?php
@@ -23,12 +23,69 @@ block_header_area()
         $highlights_title = get_post_meta(get_the_ID(), '_highlight_title', true);
         $highlights_content = get_post_meta(get_the_ID(), '_highlight_content', true);
         $currency = get_wstr_currency();
+        $category = get_the_terms(get_the_ID(), 'domain_cat');
+        shuffle($category);
+        $category_name = $category[0]->name;
+        $category_id = $category[0]->term_id;
+        $cat_image_id = get_term_meta($category_id, 'taxonomy-image-id', true);
+        $cat_image_url = wp_get_attachment_url($cat_image_id);
+
+        $similar_domain_args = array(
+            'post_type' => 'domain',
+            'fields' => 'ids',
+            'posts_per_page' => 3,
+            'tax_query' => array(
+                array(
+                    'taxonomy' => 'domain_cat',
+                    'field'    => 'term_id',
+                    'terms'    => $category_id,
+                    'operator' => 'IN',
+                )
+            )
+        );
+    ?>
+        <div class="similar-industry-names-main">
+            <?php
+            $similar_domain_ids = get_posts($similar_domain_args);
+            foreach ($similar_domain_ids as $similar_domain_id) {
+                $similar_domain_title = get_the_title($similar_domain_id);
+                $featured_image_id = get_post_thumbnail_id($similar_domain_id);
+                $featured_image_url = wp_get_attachment_url($featured_image_id);
+
+                $logo_image_id = get_post_meta($post->ID, '_logo_image', true);
+                $logo_image_url = wp_get_attachment_url($logo_image_id);
+
+                $permalink = get_permalink($similar_domain_id);
+            ?>
+                <div class="similar-industry-names">
+                    <img style="height: 100px; width:100px;" src="<?php echo $logo_image_url ? $logo_image_url : $featured_image_url ?>">
+                    <h5><?php echo $similar_domain_title ?></h5>
+                    <?php echo get_wstr_price($similar_domain_id); ?>
+                </div>
+            <?php
+            }
+
+            ?>
+        </div>
+        <?php
+        $tags = get_the_terms(get_the_ID(), 'domain_tag');
+        ?>
+        <div class="domain-tag">
+            <h3>Related tags</h3>
+            <?php
+            foreach ($tags as $tag) {
+                $tag_id = $tag->term_id;
+                $tag_name = $tag->name;
+            }
+            ?>
+        </div>
+        <?php
         // $discount_percent = esc_html($domain['precentage_discount']);
         // $term_exist = isset($domain['term_exist']) ? (bool) $domain['term_exist'] : true; // Default to true if not set
-    
+
 
         // $currency = esc_html($domain['currency']);
-    
+
         $da = $pa = '';
         if ($da_pa) {
             $da_pa_split = explode('/', $da_pa);
@@ -57,10 +114,10 @@ block_header_area()
                         <p>Message</p>
                     </a>
                 </div><?php
-                if ($term_exist) {
-                    $output .= '<div class="premium_icon"><img src="/wp-content/plugins/card-block/images/diamond.png"
+                        if ($term_exist) {
+                            $output .= '<div class="premium_icon"><img src="/wp-content/plugins/card-block/images/diamond.png"
                         alt="Diamond Icon" /></div>';
-                } ?>
+                        } ?>
                 <div class="ws_flex ai_center single_domain_meta_search">
                     <div class="single_domain_search">
                         <form>
@@ -77,10 +134,10 @@ block_header_area()
             <div class="domain-details">
                 <div class="ws_flex gap_20 ai_center p_relative">
                     <div><?php
-                    // if ((int) $discount_percent > 0) {
-                    //     $output .= '<div class="ws_discount_percent"> -' . $discount_percent . '%</div>';
-                    // }
-                    if ($logo): ?>
+                            // if ((int) $discount_percent > 0) {
+                            //     $output .= '<div class="ws_discount_percent"> -' . $discount_percent . '%</div>';
+                            // }
+                            if ($logo): ?>
                             <img src="<?php echo esc_url($logo); ?>" alt="<?php echo esc_attr($title); ?>" class="logo">
                         <?php elseif ($featured_image): ?>
                             <img src="<?php echo esc_url($featured_image); ?>" alt="<?php echo esc_attr($title); ?>"
@@ -99,14 +156,14 @@ block_header_area()
                             <?php
                             if (!empty($regular_price)) { ?>
                                 <p class="regular_price"><?php
-                                echo get_wstr_currency();
-                                echo get_wstr_regular_price(get_the_ID()); ?></p><?php
-                            }
-                            if (!empty($sale_price)) { ?>
+                                                            echo get_wstr_currency();
+                                                            echo get_wstr_regular_price(get_the_ID()); ?></p><?php
+                                                                                                            }
+                                                                                                            if (!empty($sale_price)) { ?>
                                 <p class="sale_price"><?php
-                                echo get_wstr_currency();
-                                echo get_wstr_sale_price(get_the_ID()); ?></p><?php
-                            } ?>
+                                                                                                                echo get_wstr_currency();
+                                                                                                                echo get_wstr_sale_price(get_the_ID()); ?></p><?php
+                                                                                                                                                            } ?>
                         </div>
                     </div>
                 </div>
@@ -223,13 +280,13 @@ block_header_area()
                     <div class="single_domain_highlights_card">
                         <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/highlight-1.png"
                             alt="Feature Image">
-                        <h5>Fast and Secure Transfer</h5>
+                        <h5><?php echo $category_name ?></h5>
                     </div>
                 </div>
             </div>
         </div>
 
-        <?php
+    <?php
     endwhile; // End the Loop.
     ?>
 </div>
@@ -238,4 +295,4 @@ block_header_area()
 // get_footer();
 wp_footer();
 block_footer_area()
-    ?>
+?>
