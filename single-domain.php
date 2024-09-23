@@ -23,14 +23,6 @@ block_header_area()
         $highlights_title = get_post_meta(get_the_ID(), '_highlight_title', true);
         $highlights_content = get_post_meta(get_the_ID(), '_highlight_content', true);
         $currency = get_wstr_currency();
-        $category = get_the_terms(get_the_ID(), 'domain_cat');
-        shuffle($category);
-        $category_name = $category[0]->name;
-        $category_id = $category[0]->term_id;
-        $cat_image_id = get_term_meta($category_id, 'taxonomy-image-id', true);
-        $cat_image_url = wp_get_attachment_url($cat_image_id);
-        var_dump($cat_image_url);
-
         // $discount_percent = esc_html($domain['precentage_discount']);
         // $term_exist = isset($domain['term_exist']) ? (bool) $domain['term_exist'] : true; // Default to true if not set
     
@@ -231,7 +223,7 @@ block_header_area()
                     <div class="single_domain_highlights_card">
                         <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/highlight-1.png"
                             alt="Feature Image">
-                        <h5><?php echo $category_name ?></h5>
+                        <h5>Fast and Secure Transfer</h5>
                     </div>
                 </div>
             </div>
