@@ -4,8 +4,9 @@
   }
 }
 @media (width <=767px) {
-  .section_gap_mobile {
-    margin: 40px 0 !important;
+  .section_gap_mobile,
+  .mob_section_gap {
+    margin: 60px 0 !important;
   }
   #wstr-mulitcurrency {
     display: none;
@@ -37,7 +38,7 @@
   }
   .ws_header_right {
     flex-direction: row-reverse;
-    gap: 15px;
+    gap: 8px;
   }
   .ws_mega_menu {
     padding: 24px !important;
@@ -87,6 +88,13 @@
   }
   input::placeholder {
     font-size: 12px;
+  }
+  /* browse industry */
+  .ws-industry-wrapper .ws-industry_details {
+    padding: 20px;
+  }
+  .ws-industry-wrapper {
+    gap: 20px 12px;
   }
   /* footer */
   .ws_pre_footer .is-layout-grid {

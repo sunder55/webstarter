@@ -286,9 +286,11 @@ h1 span {
 /* popular category section */
 .ws_domain_count_popular {
   width: fit-content;
-}
-.ws_domain_count_popular h4 {
-  border-radius: 100px;
+  background-color: #fff !important;
+  border-radius: 100px !important;
+  padding: 10px 30px;
+  font-weight: 600;
+  font-size: 18px;
 }
 .ws_popular_category .wp-block-column {
   border-radius: 15px;
@@ -411,7 +413,7 @@ form#mc4wp-form-1 {
 .ws-industry-wrapper {
   display: flex;
   flex-wrap: wrap;
-  gap: 30px;
+  gap: 30px 20px;
 }
 .ws-industry-wrapper .ws-industry_details a {
   font-size: 16px;
@@ -419,16 +421,17 @@ form#mc4wp-form-1 {
 }
 .ws-industry-wrapper .ws-industry_details img {
   height: 20px;
-  width: 20px;
+  width: 15px;
+  object-fit: contain;
 }
 .ws-industry-wrapper .ws-industry_details {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
 }
 .ws-industry-wrapper .ws-industry_details {
   border: 1px solid #edf0f7;
-  padding: 30px;
+  padding: 25px 30px;
   border-radius: 50px;
   position: relative;
 }
@@ -441,6 +444,13 @@ form#mc4wp-form-1 {
   color: #fff;
   border-radius: 50px;
   padding: 2px 14px;
+}
+.ws-industry-wrapper .ws-industry_details:last-child {
+  background-color: var(--blue-light);
+  border: transparent;
+}
+.ws-industry-wrapper .ws-industry_details:last-child a {
+  color: #fff;
 }
 /* =============================================SINGLE PAGE========================================== */
 
@@ -581,6 +591,9 @@ form#mc4wp-form-1 {
   border: 1px solid #edf0f7;
   border-radius: 15px;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 .single_domain_highlights_cards {
   display: grid;
@@ -634,7 +647,7 @@ form#mc4wp-form-1 {
 }
 .single_domain_details .ws-card-likes h6 {
   background-color: #fff;
-  padding: 14px 30px;
+  padding: 14px 25px;
   font-size: 14px;
   border-radius: 30px;
 }

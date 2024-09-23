@@ -29,28 +29,59 @@ jQuery(document).ready(function ($) {
 
 });
 
-var swiper = new Swiper(".swiper-container", {
-  slidesPerView: 4,
-  centeredSlides: false,
-  spaceBetween: 20,
-  grabCursor: true,
-  loop: true,
-  pagination: {
-    el: ".swiper-pagination",
-    clickable: true,
-  },
-  breakpoints: {
-    0: {
-      slidesPerView: 1,
+
+// var swiper = new Swiper(".swiper-container", {
+//   slidesPerView: 4,
+//   centeredSlides: false,
+//   spaceBetween: 20,
+//   grabCursor: true,
+//   loop: true,
+//   pagination: {
+//     el: ".swiper-pagination",
+//     clickable: true,
+//   },
+//   breakpoints: {
+//     0: {
+//       slidesPerView: 1,
+//     },
+//     640: {
+//       slidesPerView: 2,
+//     },
+//     1024: {
+//       slidesPerView: 3,
+//     },
+//     1440: {
+//       slidesPerView: 4,
+//     },
+//   },
+// });
+
+jQuery('.swiper-wrapper').slick({
+
+  centerMode: true,
+  centerPadding: '100px',
+  slidesToShow: 4,
+  slidesToScroll: 1,
+  infinite: true,
+  arrows: false,
+  responsive: [
+    {
+      breakpoint: 1024,
+      settings: {
+        arrows: false,
+        centerMode: true,
+        centerPadding: '40px',
+        slidesToShow: 3
+      }
     },
-    640: {
-      slidesPerView: 2,
-    },
-    1024: {
-      slidesPerView: 3,
-    },
-    1440: {
-      slidesPerView: 4,
-    },
-  },
+    {
+      breakpoint: 600,
+      settings: {
+        arrows: false,
+        centerMode: true,
+        centerPadding: '40px',
+        slidesToShow: 1
+      }
+    }
+  ]
 });
