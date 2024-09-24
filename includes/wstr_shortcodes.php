@@ -10,7 +10,7 @@ class wstr_shortcodes
         add_shortcode('wstr-popular-category', array($this, 'wstr_popular_category'));
         add_shortcode('wstr-domain-count', array($this, 'wstr_domain_count'));
         add_shortcode('wstr-footer-average-cost', array($this, 'wstr_footer_average_cost_calculation'));
-        add_shortcode('wstr-customers-also-callback', array($this, 'wstr_customers_also_callback'));
+        add_shortcode('wstr-you-may-like', array($this, 'wstr_you_may_like'));
     }
 
     public function wstr_banner_reviews_function()
@@ -267,7 +267,7 @@ class wstr_shortcodes
     }
 
 
-    public function wstr_customers_also_callback($atts)
+    public function wstr_you_may_like($atts)
     {
         global $post;
         ob_start();
