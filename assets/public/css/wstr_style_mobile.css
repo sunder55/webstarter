@@ -3,7 +3,8 @@
     display: none !important;
   }
 }
-@media (width <=767px) {
+/* @media (width <=767px) { */
+@media screen and (max-width: 767px) {
   .section_gap_mobile,
   .mob_section_gap {
     margin: 60px 0 !important;
@@ -11,8 +12,14 @@
   #wstr-mulitcurrency {
     display: none;
   }
+  .mt_center {
+    text-align: center;
+  }
   h1 {
     font-size: 30px !important;
+  }
+  h2 {
+    font-size: 24px !important;
   }
   .ws_headers {
     padding-bottom: 1.5rem !important;
@@ -24,7 +31,7 @@
     display: none !important;
   }
   .fd_mob_col {
-    flex-direction: column;
+    flex-direction: column !important;
   }
   /* header */
   .ws_headers h2.ws_mega_menu_button {
@@ -135,5 +142,53 @@
   }
   .footer_subscribe .wp-block-group {
     padding: 0 !important;
+  }
+
+  /* single page responsive */
+  .single_domain_you_may_like .ws-cards-container {
+    width: calc(100% - 50px);
+  }
+  .single_domain_highlights,
+  .single_domain_tabs_container {
+    width: 100%;
+    padding: 20px;
+  }
+  .single_domain_progress_wrapper {
+    padding: 15px;
+  }
+  .single_domain_progress_wrapper .ws_flex {
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .related_tag_list_wrapper {
+    flex-wrap: wrap;
+  }
+  .single_domain_progress_wrapper h4 {
+    text-align: center;
+  }
+  .single-container {
+    padding: 0 15px;
+  }
+  .single_domain_tabs_container ul.tabs {
+    justify-content: center;
+  }
+  .similar-industry-names-main,
+  .single_domain_you_may_like {
+    padding: 20px;
+  }
+  .single_domain_you_may_like .ws-cards-container-wrapper {
+    gap: 15px;
+  }
+  .single_domain_meta_search {
+    right: 20px;
+  }
+  .single_domain_details .ws-card-likes h6,
+  .single_domain_search i {
+    padding: 10px;
+  }
+  .single_featured_image_footer span,
+  .single_featured_image_footer a {
+    flex: 1;
+    text-align: center;
   }
 }

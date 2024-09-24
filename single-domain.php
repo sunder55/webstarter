@@ -1,10 +1,18 @@
+<!-- <header class="wp-block-template-part site-header">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php // echo do_blocks('<!-- wp:template-part {"slug":"header"} /-->'); ?>
+</header>
+<?php // wp_head(); ?> -->
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php wp_head(); ?>
+</head>
 <header class="wp-block-template-part site-header">
     <?php echo do_blocks('<!-- wp:template-part {"slug":"header"} /-->'); ?>
 </header>
-<?php wp_head(); ?>
 
 <div class="single-container ws-container">
-    <div class="arpan"></div>
     <?php
     // echo do_shortcode('[wstr-multicurrency]');
     // Start the Loop.
@@ -46,6 +54,7 @@
             )
         );
 
+        $term_exist = wstr_check_existing_term(get_the_ID(), 'domain_cat', 'premium-names');
         // $discount_percent = esc_html($domain['precentage_discount']);
         // $term_exist = isset($domain['term_exist']) ? (bool) $domain['term_exist'] : true; // Default to true if not set
     
@@ -66,9 +75,10 @@
         ?>
         <div class="single_domain_details ws_flex fd_mob_col ">
             <!-- Featured Image -->
-            <div class="featured-image p_relative">
+            <div class="featured-image p_relative img_producto_container" data-scale="1.6">
                 <?php if ($featured_image): ?>
-                    <img src="<?php echo esc_url($featured_image); ?>" alt="<?php echo esc_attr($title); ?>">
+                    <img src="<?php echo esc_url($featured_image); ?>" alt="<?php echo esc_attr($title); ?>"
+                        class="img_producto">
                 <?php endif; ?>
                 <div class="single_featured_image_footer ws_flex">
                     <span class="domain_online ws_flex gap_10 ai_center online">
@@ -81,20 +91,28 @@
                         <p>Message</p>
                     </a>
                 </div><?php
-                // if ($term_exist) {
-                $output .= '<div class="premium_icon"><img src="/wp-content/plugins/card-block/images/diamond.png"
-                            alt="Diamond Icon" /></div>';
-                // } ?>
+                if ($term_exist) {
+                    ?>
+                    <div class="premium_icon">
+                        <img src="/wp-content/plugins/card-block/images/diamond.png" alt="Diamond Icon" />
+                    </div> <?php
+                }
+                ?>
                 <div class="ws_flex ai_center single_domain_meta_search">
                     <div class="single_domain_search">
-                        <form>
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </form>
+
+                        <i class="fa-solid fa-magnifying-glass" id="enlarge-icon"></i>
+
                     </div>
                     <div class="ws-card-likes">
                         <h6><span>2k</span><i class="fa-solid fa-heart"></i></h6>
                     </div>
                 </div>
+            </div>
+            <div id="imageModal" class="modal">
+                <!-- Modal content -->
+                <span class="close">&times;</span>
+                <img id="modalImage" src="" alt="Full-Width Image" />
             </div>
 
             <!-- Details Section -->
@@ -157,7 +175,7 @@
                 </ul>
 
                 <div id="tab-1" class="tab-content current">
-                    <h2 class="fw-600 margin_v_35">Domain Information</h2>
+                    <h2 class="fw-600 margin_v_35 mt_center">Domain Information</h2>
                     <div class="single_domain_progress_wrapper br_15">
                         <h4 class="fw-600"><?php echo esc_html($title); ?></h4>
                         <div class="ws_flex gap_20">
@@ -218,9 +236,9 @@
                         the_content();
                         ?>
                     </div>
-                    <div class="single_domain_features ws_trending_cards margin_v_35">
+                    <div class="single_domain_features ws_trending_cards">
                         <h2>What You Get</h2>
-                        <div class="ws_flex gap_10">
+                        <div class="ws_flex gap_10 fd_mob_col">
                             <div class="similar-industry-names ws-card-contents ws_flex single_domain_feature">
                                 <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/domain-name.png"
                                     alt="Feature Image">
@@ -302,6 +320,7 @@
                         <h5><?php echo $category_name ?></h5>
                     </div>
                 </div>
+                <?php echo do_shortcode('[wstr_estimation]'); ?>
                 <div class="similar-industry-names-main ws_trending_cards margin_v_35">
                     <h5>Similar Industry Names</h5>
                     <?php
@@ -315,7 +334,18 @@
                         $permalink = get_permalink($similar_domain_id);
                         ?>
                         <div class="similar-industry-names ws-card-contents ws_flex">
-                            <img src="<?php echo $logo_image_url ? $logo_image_url : $featured_image_url ?>">
+                            <?php if (!$logo_image_url && !$featured_image_url) {
+                                ?>
+                                <img src="<?php echo get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png' ?>"
+                                    alt="<?php echo $similar_domain_title ?>">
+                                <?php
+                            } else {
+
+                                ?>
+                                <img src="<?php echo $logo_image_url ? $logo_image_url : $featured_image_url ?>"
+                                    alt="<?php echo $similar_domain_title; ?> ">
+                            <?php }
+                            ?>
                             <div class="ws-card-inner-contents">
                                 <h5><?php echo $similar_domain_title ?></h5>
                                 <?php echo get_wstr_price($similar_domain_id); ?>
@@ -328,6 +358,12 @@
             </div>
         </div>
 
+        <div class="single_domain_you_may_like">
+            <?php
+            echo do_shortcode('[wstr-you-may-like]');
+            ?>
+        </div>
+
         <?php
     endwhile; // End the Loop.
     ?>
@@ -338,6 +374,6 @@
     <?php echo do_blocks('<!-- wp:template-part {"slug":"footer","tagName":"footer","className":"site-footer"} /-->'); ?>
 </footer>
 
-</div>
+<!-- </div> -->
 
 <?php wp_footer(); ?>

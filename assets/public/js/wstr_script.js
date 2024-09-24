@@ -26,35 +26,51 @@ jQuery(document).ready(function ($) {
   });
 
 
+  // When the magnifying glass is clicked make the image whole screen single domain page  =================================
+  $('.fa-magnifying-glass').on('click', function () {
+    const imageSrc = $('.featured-image img').attr('src');
 
+    // Set the image source in the modal
+    $('#modalImage').attr('src', imageSrc);
+
+    $('#imageModal').fadeIn();
+  });
+
+  $('.close').on('click', function () {
+    $('#imageModal').fadeOut();
+  });
+  $(window).on('click', function (e) {
+    if ($(e.target).is('#imageModal')) {
+      $('#imageModal').fadeOut();
+    }
+  });
+
+  // zoom feature on hover ====================================
+  $(".img_producto_container")
+    .on("mouseover", function () {
+      $(this)
+        .children(".img_producto")
+        .css({ transform: "scale(" + $(this).attr("data-scale") + ")" });
+    })
+    .on("mouseout", function () {
+      $(this)
+        .children(".img_producto")
+        .css({ transform: "scale(1)" });
+    })
+    .on("mousemove", function (e) {
+      $(this)
+        .children(".img_producto")
+        .css({
+          "transform-origin":
+            ((e.pageX - $(this).offset().left) / $(this).width()) * 100 +
+            "% " +
+            ((e.pageY - $(this).offset().top) / $(this).height()) * 100 +
+            "%"
+        });
+    });
 });
 
 
-// var swiper = new Swiper(".swiper-container", {
-//   slidesPerView: 4,
-//   centeredSlides: false,
-//   spaceBetween: 20,
-//   grabCursor: true,
-//   loop: true,
-//   pagination: {
-//     el: ".swiper-pagination",
-//     clickable: true,
-//   },
-//   breakpoints: {
-//     0: {
-//       slidesPerView: 1,
-//     },
-//     640: {
-//       slidesPerView: 2,
-//     },
-//     1024: {
-//       slidesPerView: 3,
-//     },
-//     1440: {
-//       slidesPerView: 4,
-//     },
-//   },
-// });
 
 jQuery('.swiper-wrapper').slick({
 
@@ -85,3 +101,6 @@ jQuery('.swiper-wrapper').slick({
     }
   ]
 });
+
+
+

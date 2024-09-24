@@ -11,12 +11,13 @@ class wstr_shortcodes
         add_shortcode('wstr-domain-count', array($this, 'wstr_domain_count'));
         add_shortcode('wstr-footer-average-cost', array($this, 'wstr_footer_average_cost_calculation'));
         add_shortcode('wstr-you-may-like', array($this, 'wstr_you_may_like'));
+        add_shortcode('wstr_estimation', array($this, 'wstr_estimation'));
     }
 
     public function wstr_banner_reviews_function()
     {
         ob_start();
-?>
+        ?>
         <!-- reviews banner -->
         <div class="banner-reviews ws_min_container ws_flex gap_20 jc_center margin_v_30 fd_mob_col">
             <div class=" reviews_images_lists ws_flex jc_center ai_center">
@@ -72,7 +73,7 @@ class wstr_shortcodes
             }
 
             // Output the select box
-        ?>
+            ?>
             <select id="wstr-mulitcurrency">
                 <!-- USD option -->
                 <option value="USD" <?php selected($selected_currency, 'USD'); ?>>$</option>
@@ -81,15 +82,15 @@ class wstr_shortcodes
                 foreach ($currency_codes as $currency_code) {
                     // Assuming get_wstr_currency_symbol() fetches the appropriate symbol for each currency code
                     $currency_symbol = get_wstr_currency_symbol($currency_code);
-                ?>
+                    ?>
                     <option value="<?php echo esc_attr($currency_code); ?>" <?php selected($selected_currency, $currency_code); ?>>
                         <?php echo esc_html($currency_symbol); ?>
                     </option>
-                <?php
+                    <?php
                 }
                 ?>
             </select>
-        <?php
+            <?php
         }
         $output = ob_get_contents();
         ob_end_clean();
@@ -123,7 +124,7 @@ class wstr_shortcodes
 
                 foreach ($industries as $industry) {
 
-            ?>
+                    ?>
                     <div class="ws-industry_details">
                         <?php
                         // Query domains for each industry (term)
@@ -137,11 +138,11 @@ class wstr_shortcodes
                                     'terms' => $industry->slug, // Get domains for the current term (industry)
                                 ),
                             ),
-                            'date_query'     => array(
+                            'date_query' => array(
                                 'after' => array(
-                                    'year'  => date("Y"),
+                                    'year' => date("Y"),
                                     'month' => date("m"),
-                                    'day'   => date("d") - 17,
+                                    'day' => date("d") - 17,
                                 ),
                             ),
                         );
@@ -150,37 +151,37 @@ class wstr_shortcodes
 
                         if ($domains_query->have_posts()) {
 
-                        ?>
+                            ?>
                             <span>New</span>
-                        <?php
+                            <?php
                         }
 
-                        $term_image_id =  get_term_meta($industry->term_id, 'taxonomy-image-id', true);
+                        $term_image_id = get_term_meta($industry->term_id, 'taxonomy-image-id', true);
 
                         if ($term_image_id) {
-                            $term_image_url  =  wp_get_attachment_url($term_image_id);
-                        ?>
+                            $term_image_url = wp_get_attachment_url($term_image_id);
+                            ?>
                             <img src="<?php echo $term_image_url ? $term_image_url : '' ?>">
-                        <?php
+                            <?php
                         }
                         ?>
 
                         <a href="<?php echo $domains_list_page . '?industry=' . $industry->slug ?>"><?php echo $industry->name; ?></a>
                     </div>
-                <?php
+                    <?php
                 }
                 ?>
                 <div class="ws-industry_details">
 
                     <a href="<?php echo $domains_list_page; ?>">Browse All</a>
                 </div>
-            <?php
+                <?php
 
             }
             ?>
 
         </div>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -206,7 +207,7 @@ class wstr_shortcodes
         ob_start();
         $query_args = array(
             'posts_per_page' => -1,
-            'post_type'      => 'domain',
+            'post_type' => 'domain',
             'meta_query' => array(
                 array(
                     'key' => '_stock_status',
@@ -233,7 +234,7 @@ class wstr_shortcodes
         $total_prices = 0;
         $args = array(
             'posts_per_page' => -1,
-            'post_type'      => 'domain',
+            'post_type' => 'domain',
             'meta_query' => array(
                 array(
                     'key' => '_stock_status',
@@ -259,11 +260,22 @@ class wstr_shortcodes
 
     public function wstr_estimation()
     {
-    ?>
-        <h4>Become a seller</h4>
-        <p>Verify your Domain Value Estimation!</p>
-
-    <?php
+        ?>
+        <div class="wstr_estimate_domain_wrapper ws_home_banner" id="wstr_domain_estimate">
+            <div class="reviews_images_lists ws_flex jc_center ai_center">
+                <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/clients-1.jpeg" alt="Client Image" />
+                <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/clients-2.jpg" alt="Client Image" />
+                <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/clients-3.jpeg" alt="Client Image" />
+                <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/clients-4.jpeg" alt="Client Image" />
+            </div>
+            <h4 class="ws_text_center">Become a seller</h4>
+            <p class="ws_text_center">Verify your Domain Value Estimation!</p>
+            <div class="wp-block-search p_relative">
+                <input type="text" name="domain" id="domain" placeholder="Enter your domain" class="w_100" />
+                <button type="submit" value="Estimate">Estmate
+            </div>
+        </div>
+        <?php
     }
 
 
@@ -277,10 +289,10 @@ class wstr_shortcodes
 
         $query_args = array(
             'posts_per_page' => $args['count'],
-            'post_type'      => 'domain',
-            'orderby'        => 'meta_value_num',
-            'order'          => 'DESC',
-            'meta_key'       => 'ws_product_view_count',
+            'post_type' => 'domain',
+            'orderby' => 'meta_value_num',
+            'order' => 'DESC',
+            'meta_key' => 'ws_product_view_count',
             // 'post__not_in'   => array($post->ID),
             'meta_query' => array(
                 array(
@@ -291,77 +303,88 @@ class wstr_shortcodes
             )
         );
 
-    ?>
+        ?>
         <div class="you-may-like-main">
-            <h3>You May Like</h3>
-            <a href="#">All Domains</a>
-            <?php
-            $domains = get_posts($query_args);
-            foreach ($domains as $domain) {
-                $domain_id = $domain->ID;
-                $featured_image = get_the_post_thumbnail_url($domain->ID);
-                $logo_image_id = get_post_meta($domain->ID, '_logo_image', true);
-                $logo_image = wp_get_attachment_url($logo_image_id);
+            <div class="you_may_like_heading_wrapper ws_flex">
+                <h4 class="ws_flex ai_center gap_5">
+                    <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/love-emoji.png" alt="You May Like">
+                    You May Like
+                </h4>
+                <a href="#">All Domains</a>
+            </div>
+            <div class="ws-cards-container-wrapper ws_cards_xl you_may_like_card_wrapper margin_v_35">
+                <?php
+                $domains = get_posts($query_args);
+                foreach ($domains as $domain) {
+                    $domain_id = $domain->ID;
+                    $featured_image = get_the_post_thumbnail_url($domain->ID);
+                    $logo_image_id = get_post_meta($domain->ID, '_logo_image', true);
+                    $logo_image = wp_get_attachment_url($logo_image_id);
 
-                $da_pa = get_post_meta($domain->ID, '_da_pa', true);
-                $da = $pa = '';
-                if ($da_pa) {
-                    $da_pa_split = explode('/', $da_pa);
-                    $da = $da_pa_split[0];
-                    $pa = $da_pa_split[1];
+                    $da_pa = get_post_meta($domain->ID, '_da_pa', true);
+                    $da = $pa = '';
+                    if ($da_pa) {
+                        $da_pa_split = explode('/', $da_pa);
+                        $da = $da_pa_split[0];
+                        $pa = $da_pa_split[1];
+                    }
+
+                    ?>
+
+
+                    <div class="ws-cards-container">
+                        <div class="ws_card_hover_charts ws_flex">
+                            <div class="circular-progress page-trust">
+                                <div class="progress-text">
+                                    <div role="progressbar" aria-valuenow="<?php echo (int) $pa; ?>" aria-valuemin="0"
+                                        aria-valuemax="100" style="--value: <?php echo (int) $pa; ?>"></div>
+                                </div>
+                                <div class="progress-title">
+                                    <h6>Page Trust</h6>
+                                </div>
+                            </div>
+                            <div class="circular-progress domain-trust">
+                                <div class="progress-text">
+                                    <div role="progressbar" aria-valuenow="<?php echo (int) $da; ?> " aria-valuemin="0"
+                                        aria-valuemax="100" style="--value:<?php echo (int) $da; ?> "></div>
+                                </div>
+                                <div class="progress-title">
+                                    <h6>Domain Trust</h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ws-card-img">
+                            <img decoding="async"
+                                src="<?php echo $featured_image ? $featured_image : get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png' ?>"
+                                alt="<?php echo get_the_title($domain->ID); ?>">
+                        </div>
+                        <div class="ws-card-contents ws-flex">
+                            <img decoding="async" src="<?php echo $logo_image ? $logo_image : $featured_image ?>" alt="zanabism.com"
+                                title="<?php echo get_the_title($domain->ID); ?>" class="card_logo_img">
+                            <span class="ws-card-inner-contents">
+                                <h5>
+                                    <a
+                                        href="https://new-webstarter.codepixelz.tech/domain/zanabism/"><?php echo get_the_title($domain->ID); ?></a>
+                                </h5>
+
+                                <?php echo get_wstr_price($domain->ID); ?>
+                            </span>
+                            <div class="ws-card-likes">
+                                <h6>
+                                    <span>2k</span>
+                                    <i class="fa-solid fa-heart"></i>
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                    <?php
                 }
 
-            ?>
-                <div class="you-may-like-details">
-                    <img src="<?php echo $featured_image ? $featured_image : get_home_url() . '/assets/images/alternate-domain.png' ?>">
-                </div>
-
-                <div class="ws-cards-container">
-                    <div class="ws_card_hover_charts ws_flex">
-                        <div class="circular-progress page-trust">
-                            <div class="progress-text">
-                                <div role="progressbar" aria-valuenow="<?php echo (int) $pa; ?>" aria-valuemin="0" aria-valuemax="100" style="--value: <?php echo (int) $pa; ?>"></div>
-                            </div>
-                            <div class="progress-title">
-                                <h6>Page Trust</h6>
-                            </div>
-                        </div>
-                        <div class="circular-progress domain-trust">
-                            <div class="progress-text">
-                                <div role="progressbar" aria-valuenow="<?php echo (int) $da; ?> " aria-valuemin="0" aria-valuemax="100" style="--value:<?php echo (int) $da; ?> "></div>
-                            </div>
-                            <div class="progress-title">
-                                <h6>Domain Trust</h6>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ws-card-img">
-                        <img decoding="async" src="<?php echo $featured_image ? $featured_image : get_home_url() . '/assets/images/alternate-domain.png' ?>" alt="<?php echo get_the_title($domain->ID); ?>">
-                    </div>
-                    <div class="ws-card-contents ws-flex">
-                        <img decoding="async" src="<?php echo $logo_image ? $logo_image : $featured_image ?>" alt="zanabism.com" title="<?php echo get_the_title($domain->ID); ?>" class="card_logo_img">
-                        <span class="ws-card-inner-contents">
-                            <h5>
-                                <a href="https://new-webstarter.codepixelz.tech/domain/zanabism/"><?php echo get_the_title($domain->ID); ?></a>
-                            </h5>
-
-                            <?php echo get_wstr_price($domain->ID); ?>
-                        </span>
-                        <div class="ws-card-likes">
-                            <h6>
-                                <span>2k</span>
-                                <i class="fa-solid fa-heart"></i>
-                            </h6>
-                        </div>
-                    </div>
-                </div>
-            <?php
-            }
-
-            // $domains_list_page = get_page_link(get_option('ws_domain_list_page'));
-            ?>
+                // $domains_list_page = get_page_link(get_option('ws_domain_list_page'));
+                ?>
+            </div>
         </div>
-<?php
+        <?php
         return ob_get_clean();
     }
 }
