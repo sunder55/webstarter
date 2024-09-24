@@ -9,7 +9,8 @@ class wstr_shortcodes
         add_shortcode('wstr-browse-industry', array($this, 'wstr_browse_industry'));
         add_shortcode('wstr-popular-category', array($this, 'wstr_popular_category'));
         add_shortcode('wstr-domain-count', array($this, 'wstr_domain_count'));
-        add_shortcode('wbstr-footer-average-cost', array($this, 'wbstr_footer_average_cost_calculation'));
+        add_shortcode('wstr-footer-average-cost', array($this, 'wstr_footer_average_cost_calculation'));
+        add_shortcode('wstr-customers-also-callback', array($this, 'wstr_customers_also_callback'));
     }
 
     public function wstr_banner_reviews_function()
@@ -226,7 +227,7 @@ class wstr_shortcodes
         return ob_get_clean();
     }
 
-    public function wbstr_footer_average_cost_calculation()
+    public function wstr_footer_average_cost_calculation()
     {
         ob_start();
         $total_prices = 0;
@@ -250,7 +251,7 @@ class wstr_shortcodes
         }
         $average_price = (float) $price / count($domains);
 
-        $output = '<p class="get_average_price">'. get_wstr_currency() . '' . wstr_truncate_number($average_price) . ' </p>';
+        $output = '<p class="get_average_price">' . get_wstr_currency() . '' . wstr_truncate_number($average_price) . ' </p>';
 
         echo $output;
         return ob_get_clean();
@@ -262,7 +263,106 @@ class wstr_shortcodes
         <h4>Become a seller</h4>
         <p>Verify your Domain Value Estimation!</p>
 
+    <?php
+    }
+
+
+    public function wstr_customers_also_callback($atts)
+    {
+        global $post;
+        ob_start();
+        $args = shortcode_atts(array(
+            'count' => 12,
+        ), $atts);
+
+        $query_args = array(
+            'posts_per_page' => $args['count'],
+            'post_type'      => 'domain',
+            'orderby'        => 'meta_value_num',
+            'order'          => 'DESC',
+            'meta_key'       => 'ws_product_view_count',
+            // 'post__not_in'   => array($post->ID),
+            'meta_query' => array(
+                array(
+                    'key' => '_stock_status',
+                    'value' => 'outofstock',
+                    'compare' => '!='
+                )
+            )
+        );
+
+    ?>
+        <div class="you-may-like-main">
+            <h3>You May Like</h3>
+            <a href="#">All Domains</a>
+            <?php
+            $domains = get_posts($query_args);
+            foreach ($domains as $domain) {
+                $domain_id = $domain->ID;
+                $featured_image = get_the_post_thumbnail_url($domain->ID);
+                $logo_image_id = get_post_meta($domain->ID, '_logo_image', true);
+                $logo_image = wp_get_attachment_url($logo_image_id);
+
+                $da_pa = get_post_meta($domain->ID, '_da_pa', true);
+                $da = $pa = '';
+                if ($da_pa) {
+                    $da_pa_split = explode('/', $da_pa);
+                    $da = $da_pa_split[0];
+                    $pa = $da_pa_split[1];
+                }
+
+            ?>
+                <div class="you-may-like-details">
+                    <img src="<?php echo $featured_image ? $featured_image : get_home_url() . '/assets/images/alternate-domain.png' ?>">
+                </div>
+
+                <div class="ws-cards-container">
+                    <div class="ws_card_hover_charts ws_flex">
+                        <div class="circular-progress page-trust">
+                            <div class="progress-text">
+                                <div role="progressbar" aria-valuenow="<?php echo (int) $pa; ?>" aria-valuemin="0" aria-valuemax="100" style="--value: <?php echo (int) $pa; ?>"></div>
+                            </div>
+                            <div class="progress-title">
+                                <h6>Page Trust</h6>
+                            </div>
+                        </div>
+                        <div class="circular-progress domain-trust">
+                            <div class="progress-text">
+                                <div role="progressbar" aria-valuenow="<?php echo (int) $da; ?> " aria-valuemin="0" aria-valuemax="100" style="--value:<?php echo (int) $da; ?> "></div>
+                            </div>
+                            <div class="progress-title">
+                                <h6>Domain Trust</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ws-card-img">
+                        <img decoding="async" src="<?php echo $featured_image ? $featured_image : get_home_url() . '/assets/images/alternate-domain.png' ?>" alt="<?php echo get_the_title($domain->ID); ?>">
+                    </div>
+                    <div class="ws-card-contents ws-flex">
+                        <img decoding="async" src="<?php echo $logo_image ? $logo_image : $featured_image ?>" alt="zanabism.com" title="<?php echo get_the_title($domain->ID); ?>" class="card_logo_img">
+                        <span class="ws-card-inner-contents">
+                            <h5>
+                                <a href="https://new-webstarter.codepixelz.tech/domain/zanabism/"><?php echo get_the_title($domain->ID); ?></a>
+                            </h5>
+
+                            <?php echo get_wstr_price($domain->ID); ?>
+                        </span>
+                        <div class="ws-card-likes">
+                            <h6>
+                                <span>2k</span>
+                                <i class="fa-solid fa-heart"></i>
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+            <?php
+            }
+
+            // $domains_list_page = get_page_link(get_option('ws_domain_list_page'));
+            ?>
+        </div>
 <?php
+        return ob_get_clean();
     }
 }
 new wstr_shortcodes();
