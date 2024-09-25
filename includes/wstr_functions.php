@@ -141,10 +141,14 @@ function get_wstr_price_percentage($domain_id)
     if (!empty($regular_price) && !empty($sale_price) && $regular_price > $sale_price) {
         // Calculate the discount percentage
         $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
-        $percentage_discount = round($percentage_discount, 2); // Round to 2 decimal places for readability  
+        $percentage_discount = round($percentage_discount); // Round to 2 decimal places for readability  
     }
+
     $output = ' <div class="ws_discount_percent">' . $percentage_discount . '%</div>';
-    return $output;
+
+    if ($percentage_discount > 0) {
+        return $output;
+    }
 }
 
 /**

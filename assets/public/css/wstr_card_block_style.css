@@ -294,7 +294,12 @@ div[role="progressbar"]::after:not(
 .domain-trust div[role="progressbar"] {
   --fg: #00d9f5;
 }
-
+.domain-length div[role="progressbar"] {
+  --fg: #f00073;
+}
+.domain-age div[role="progressbar"] {
+  --fg: #00cd97;
+}
 /* recently sold slides carousel */
 .swiper {
   width: 100%;

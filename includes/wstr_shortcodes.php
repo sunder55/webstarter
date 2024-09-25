@@ -364,7 +364,7 @@ class wstr_shortcodes
                             <span class="ws-card-inner-contents">
                                 <h5>
                                     <a
-                                        href="https://new-webstarter.codepixelz.tech/domain/zanabism/"><?php echo get_the_title($domain->ID); ?></a>
+                                        href="<?php echo get_permalink($domain->ID); ?>"><?php echo get_the_title($domain->ID); ?></a>
                                 </h5>
 
                                 <?php echo get_wstr_price($domain->ID); ?>

@@ -791,18 +791,26 @@ form#mc4wp-form-1 {
   background-position: left 15px center;
   background-size: 15px;
   padding: 20px 20px 20px 40px;
+  top: 4px;
+  right: 8px;
 }
 .wstr_estimate_domain_wrapper input {
   border: transparent;
 }
+.wstr_estimate_domain_wrapper input::placeholder {
+  font-weight: 500;
+}
 .wstr_estimate_domain_wrapper {
-  background-image: url(../../images/banner_bg_main_1-min.png);
+  background-image: url(../../images/estimation-bg.png);
   padding: 40px 20px;
   background-size: cover;
+  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   gap: 15px;
   border-radius: 15px;
+  margin: 30px 0;
+  background-position: center;
 }
 
 /* The Modal (background) */

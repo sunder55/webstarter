@@ -55,12 +55,7 @@
         );
 
         $term_exist = wstr_check_existing_term(get_the_ID(), 'domain_cat', 'premium-names');
-        // $discount_percent = esc_html($domain['precentage_discount']);
-        // $term_exist = isset($domain['term_exist']) ? (bool) $domain['term_exist'] : true; // Default to true if not set
-    
 
-        // $currency = esc_html($domain['currency']);
-    
         $da = $pa = '';
         if ($da_pa) {
             $da_pa_split = explode('/', $da_pa);
@@ -119,9 +114,7 @@
             <div class="domain-details">
                 <div class="ws_flex gap_20 ai_center p_relative">
                     <div><?php
-                    // if ((int) $discount_percent > 0) {
-                    //     $output .= '<div class="ws_discount_percent"> -' . $discount_percent . '%</div>';
-                    // }
+
                     if ($logo): ?>
                             <img src="<?php echo esc_url($logo); ?>" alt="<?php echo esc_attr($title); ?>" class="logo">
                         <?php elseif ($featured_image): ?>
@@ -131,9 +124,8 @@
                     </div>
 
                     <?php
-                    //  if (isset($discount_percent) && (int) $discount_percent > 0) {
-                    echo get_wstr_price_percentage(get_the_ID());
-                    // }
+                    $discount_percent = get_wstr_price_percentage(get_the_ID());
+                    echo $discount_percent;
                     ?>
                     <div>
                         <h2 class="fw-600"><?php echo esc_html($title); ?></h2>
@@ -181,8 +173,9 @@
                         <div class="ws_flex gap_20">
                             <div class="circular-progress page-trust">
                                 <div class="progress-text">
-                                    <div role="progressbar" aria-valuenow="<?php echo esc_html($pa); ?>" aria-valuemin="0"
-                                        aria-valuemax="100" style="--value:<?php echo esc_html($pa); ?>">
+                                    <div role="progressbar" aria-valuenow="<?php echo (int) esc_html($pa); ?>"
+                                        aria-valuemin="0" aria-valuemax="100"
+                                        style="--value:<?php echo (int) esc_html($pa); ?>">
                                         <p>of 100</p>
                                     </div>
                                 </div>
@@ -193,8 +186,9 @@
 
                             <div class="circular-progress domain-trust">
                                 <div class="progress-text">
-                                    <div role="progressbar" aria-valuenow="<?php echo esc_html($da); ?>" aria-valuemin="0"
-                                        aria-valuemax="100" style="--value:<?php echo esc_html($da); ?>">
+                                    <div role="progressbar" aria-valuenow="<?php echo (int) esc_html($da); ?>"
+                                        aria-valuemin="0" aria-valuemax="100"
+                                        style="--value:<?php echo (int) esc_html($da); ?>">
                                         <p>of 100</p>
                                     </div>
                                 </div>
@@ -203,11 +197,11 @@
 
                                 </div>
                             </div>
-                            <div class="circular-progress domain-trust">
+                            <div class="circular-progress domain-trust domain-length">
                                 <div class="progress-text">
-                                    <div role="progressbar" aria-valuenow="<?php echo esc_html($domain_length); ?>"
+                                    <div role="progressbar" aria-valuenow="<?php echo (int) esc_html($domain_length); ?>"
                                         aria-valuemin="0" aria-valuemax="100"
-                                        style="--value:<?php echo esc_html($domain_length); ?>">
+                                        style="--value:<?php echo (int) esc_html($domain_length); ?>">
                                         <p>Letters</p>
                                     </div>
                                 </div>
@@ -216,11 +210,11 @@
 
                                 </div>
                             </div>
-                            <div class="circular-progress domain-trust">
+                            <div class="circular-progress domain-trust domain-age">
                                 <div class="progress-text">
-                                    <div role="progressbar" aria-valuenow="<?php echo esc_html($domain_age); ?>"
+                                    <div role="progressbar" aria-valuenow="<?php echo (int) esc_html($domain_age); ?>"
                                         aria-valuemin="0" aria-valuemax="100"
-                                        style="--value:<?php echo esc_html($domain_age); ?>">
+                                        style="--value:<?php echo (int) esc_html($domain_age); ?>">
                                         <p>Years</p>
                                     </div>
                                 </div>
@@ -243,7 +237,7 @@
                                 <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/domain-name.png"
                                     alt="Feature Image">
                                 <div class="ws-card-inner-contents">
-                                    <h5><?php echo $title ?></h5>
+                                    <h5 class="fw-600"><?php echo $title ?></h5>
                                     <div class="ws_card_price_wrapper ws_flex gap_10">
                                         <p>Domain Name</p>
 
@@ -254,7 +248,7 @@
                                 <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/svg-file-icon.png"
                                     alt="SVG Icon">
                                 <div class="ws-card-inner-contents">
-                                    <h5>SVG File & Copyright</h5>
+                                    <h5 class="fw-600">SVG File & Copyright</h5>
                                     <div class="ws_card_price_wrapper ws_flex gap_10">
                                         <p class="">Logo Design</p>
 
@@ -265,7 +259,7 @@
                                 <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/technical-support.png"
                                     alt="SVG Icon">
                                 <div class="ws-card-inner-contents">
-                                    <h5>Technical Support</h5>
+                                    <h5 class="fw-600">Technical Support</h5>
                                     <div class="ws_card_price_wrapper ws_flex gap_10">
                                         <p>Free Technical Support</p>
 
@@ -333,24 +327,27 @@
                         $logo_image_url = wp_get_attachment_url($logo_image_id);
                         $permalink = get_permalink($similar_domain_id);
                         ?>
-                        <div class="similar-industry-names ws-card-contents ws_flex">
-                            <?php if (!$logo_image_url && !$featured_image_url) {
-                                ?>
-                                <img src="<?php echo get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png' ?>"
-                                    alt="<?php echo $similar_domain_title ?>">
-                                <?php
-                            } else {
+                        <a href="<?php echo $permalink ?>">
+                            <div class="similar-industry-names ws-card-contents ws_flex">
 
+                                <?php if (!$logo_image_url && !$featured_image_url) {
+                                    ?>
+                                    <img src="<?php echo get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png' ?>"
+                                        alt="<?php echo $similar_domain_title ?>">
+                                    <?php
+                                } else {
+
+                                    ?>
+                                    <img src="<?php echo $logo_image_url ? $logo_image_url : $featured_image_url ?>"
+                                        alt="<?php echo $similar_domain_title; ?> ">
+                                <?php }
                                 ?>
-                                <img src="<?php echo $logo_image_url ? $logo_image_url : $featured_image_url ?>"
-                                    alt="<?php echo $similar_domain_title; ?> ">
-                            <?php }
-                            ?>
-                            <div class="ws-card-inner-contents">
-                                <h5><?php echo $similar_domain_title ?></h5>
-                                <?php echo get_wstr_price($similar_domain_id); ?>
+                                <div class="ws-card-inner-contents">
+                                    <h5><?php echo $similar_domain_title ?></h5>
+                                    <?php echo get_wstr_price($similar_domain_id); ?>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                         <?php
                     }
                     ?>

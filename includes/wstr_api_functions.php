@@ -206,7 +206,7 @@ function wstr_premium_domains_api($request)
             $domains = get_post_meta($latest_sold->ID, '_domain_ids', true);
             foreach ($domains as $domain_id) {
 
-                $term =  get_the_terms($domain_id, 'domain_industry');
+                $term = get_the_terms($domain_id, 'domain_industry');
                 $term_name = $term[0]->name;
 
                 $da_pa = get_post_meta($domain_id, '_da_pa', true);
