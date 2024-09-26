@@ -85,10 +85,24 @@ function wstr_add_custom_user_roles()
     ));
 }
 
-
-add_action('init', 'start_session');
-function start_session() {
+/**
+ * Starting sestion
+ */
+add_action('init', 'wstr_start_session');
+function wstr_start_session() {
     if (session_status() == PHP_SESSION_NONE) {
         session_start();
     }
 }
+
+/**
+ * Filter for the solution of extra tag adding to the shortcode
+ */
+add_filter('register_block_type_args', function ($settings, $name) {
+    if ($name === 'core/shortcode') {
+        $settings['render_callback'] = function ($attributes, $content) {
+            return $content;
+        };
+    }
+    return $settings;
+}, 10, 2);
