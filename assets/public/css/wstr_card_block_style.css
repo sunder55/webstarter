@@ -166,7 +166,8 @@
 .ws-cards-container:hover .ws-card-img {
   display: none;
 }
-.ws-cards-container:hover .ws_card_hover_charts {
+.ws-cards-container:hover .ws_card_hover_charts,
+.ws_home_trending_cards .ws-card-contents:hover .ws_card_hover_charts {
   display: flex;
   gap: 15px;
   padding: 15px;
@@ -342,8 +343,20 @@ div[role="progressbar"]::after:not(
   background-color: rgb(255, 255, 255);
   box-shadow: 0.122px 0.993px 31px 0px rgba(0, 34, 79, 0.04);
 }
-
-.ws_trending_cards .ws-cards-container-wrapper .ws-card-contents {
+.ws_home_trending_cards .ws-card-contents:hover {
+  border: 1px solid #fff;
+}
+.ws_home_trending_cards .ws-card-contents:hover {
+  padding: 0;
+}
+.ws_home_trending_cards .ws-cards-container-wrapper {
+  justify-content: start;
+  gap: 20px;
+}
+.ws_home_trending_cards .ws-card-contents:hover .ws_card_hover_charts {
+  height: auto;
+}
+/* .ws_trending_cards .ws-cards-container-wrapper .ws-card-contents {
   animation: scroll-left 10s linear infinite;
 }
 
@@ -354,4 +367,50 @@ div[role="progressbar"]::after:not(
   to {
     transform: translateX(-100%);
   }
+} */
+
+.ws_home_trending_cards
+  .ws-card-contents:hover
+  .ws_home_trending_cards
+  .ws_card_hover_charts {
+  display: flex;
+  height: auto;
+  gap: 20px;
+  padding: 10px 20px;
+}
+.ws_home_trending_cards .ws-card-contents {
+  flex-direction: column;
+  height: 100%;
+}
+.ws_home_trending_contents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.ws_home_trending_cards .ws-card-likes {
+  margin-top: auto;
+}
+.ws_home_trending_cards div[role="progressbar"] {
+  width: 30px;
+  height: 30px;
+}
+.ws_home_trending_cards div[role="progressbar"]::before {
+  font-size: 12px;
+}
+.ws_home_trending_cards .circular-progress {
+  flex-direction: row-reverse;
+  gap: 10px;
+  padding: 0;
+  justify-content: start;
+}
+.ws_home_trending_cards .ws-card-contents:hover .ws_card_hover_charts {
+  padding: 10px 20px;
+}
+.ws_home_trending_cards .ws-card-contents:hover .ws_home_trending_contents {
+  background-color: #f3f5fa;
+  padding: 20px;
+  border-radius: 15px;
+}
+.ws_home_trending_cards .ws-card-contents:hover .ws-card-likes h6 {
+  background-color: #fff;
 }
