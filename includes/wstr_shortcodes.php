@@ -696,7 +696,8 @@ class wstr_shortcodes
                                 <h5>Professionally Crafter Logo</h5>
                             </div>
                             <div class="single_domain_highlights_card">
-                                <img src="<?php echo $cat_image_url ?> ">
+                                <?php var_dump ($cat_image_url); ?>
+                                <img src="<?php echo $cat_image_url ? $cat_image_url : get_stylesheet_directory_uri() . '/asstes/images/highlight-alternate.png'; ?> ">
                                 <h5><?php echo $category_name ?></h5>
                             </div>
                         </div>
