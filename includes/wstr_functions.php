@@ -74,7 +74,7 @@ function get_wstr_price_value($domain_id)
 /**
  * Function for getting regular price of domain
  * @param mixed $domain_id
- * @return void
+ * @return mixed
  */
 function get_wstr_regular_price($domain_id)
 {
@@ -94,7 +94,7 @@ function get_wstr_regular_price($domain_id)
 /**
  * Function for getting regular price of domain
  * @param mixed $domain_id
- * @return void
+ * @return mixed
  */
 function get_wstr_sale_price($domain_id)
 {
@@ -113,7 +113,7 @@ function get_wstr_sale_price($domain_id)
 
 /**
  * Function for getting currecy value according to the currency selected
- * @return void
+ * @return mixed
  */
 function wstr_get_updated_price($price)
 {
@@ -132,7 +132,7 @@ function wstr_get_updated_price($price)
 /**
  * Function for percetage of price differnce
  * @param mixed $domain_id ID of the domain
- * @return float|int
+ * @return mixed
  */
 function get_wstr_price_percentage($domain_id)
 {
@@ -156,7 +156,7 @@ function get_wstr_price_percentage($domain_id)
 
 /**
  * Function for getting currency symbol
- * @return void
+ * @return string
  */
 function get_wstr_currency()
 {
@@ -173,7 +173,7 @@ function get_wstr_currency()
 /**
  * Fuction for getting currency symbol 
  * @param mixed $string ex: $string = 'USD'
- * @return void
+ * @return string
  */
 function get_wstr_currency_symbol($string, $for_api = false)
 {
