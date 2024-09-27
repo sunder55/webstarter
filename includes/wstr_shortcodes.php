@@ -13,6 +13,7 @@ class wstr_shortcodes
         add_shortcode('wstr_estimation', array($this, 'wstr_estimation'));
         add_shortcode('wstr-single-domain', array($this, 'wstr_single_domain_page'));
         add_shortcode('wstr-similar-industry-name', [$this, 'wstr_similar_industry_name']);
+        add_shortcode('wstr-buy-domain', [$this, 'wstr_buy_domain']);
     }
 
     public function wstr_banner_reviews_function()
@@ -97,7 +98,6 @@ class wstr_shortcodes
         ob_end_clean();
         return $output;
     }
-
 
     /**
      * function for home page browse industry
@@ -615,7 +615,7 @@ class wstr_shortcodes
                                 the_content();
                                 ?>
                             </div>
-                            <div class="single_domain_features ws_trending_cards">
+                            <div class="single_domain_features ws_trending_cards section_gap_mobile">
                                 <h2>What You Get</h2>
                                 <div class="ws_flex gap_10 fd_mob_col">
                                     <div class="similar-industry-names ws-card-contents ws_flex single_domain_feature">
@@ -696,8 +696,7 @@ class wstr_shortcodes
                                 <h5>Professionally Crafter Logo</h5>
                             </div>
                             <div class="single_domain_highlights_card">
-                                <?php var_dump ($cat_image_url); ?>
-                                <img src="<?php echo $cat_image_url ? $cat_image_url : get_stylesheet_directory_uri() . '/asstes/images/highlight-alternate.png'; ?> ">
+                                <img src="<?php echo $cat_image_url ? $cat_image_url : get_stylesheet_directory_uri() . '/asstes/images/highlight-alternate.png'; ?> " alt="<?php echo $category_name ?>">
                                 <h5><?php echo $category_name ?></h5>
                             </div>
                         </div>
@@ -787,6 +786,47 @@ class wstr_shortcodes
             ?>
         </div>
 <?php
+        return ob_get_clean();
+    }
+
+    public function wstr_buy_domain()
+    {
+        ob_start();
+        $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+        $args = [
+            'posts_per_page' => 20,
+            'post_type' => 'domain',
+            'paged' => $paged,
+            'meta_query' => [
+                [
+                    'key' => '_stock_status',
+                    'value' => 'outofstock',
+                    'compare' => '!='
+                ]
+            ],
+
+        ];
+        query_posts($args); ?>
+        <!-- the loop -->
+        <?php if (have_posts()) :
+         while (have_posts()) : 
+            the_post();
+        ?>
+        
+        <h5><?php echo get_the_title();  ?></h5>
+
+            <?php endwhile;
+            // <!-- pagination -->
+
+            the_posts_pagination( array(
+                'mid_size'  => 2,
+                'prev_text' => __( '<', 'webstarter' ),
+                'next_text' => __( '>', 'webstarter' ),
+            ) );
+            
+        //  else : 
+            // <!-- No posts found -->
+         endif;
         return ob_get_clean();
     }
 }
