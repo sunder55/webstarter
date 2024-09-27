@@ -102,5 +102,38 @@ jQuery('.swiper-wrapper').slick({
   ]
 });
 
+// trending cards moving effect
+jQuery(document).ready(function ($) {
+
+  var $container = $('.ws_trending_cards .ws-cards-container-wrapper');
+  var $contents = $container.html();
+  $container.html('<div class="scrolling">' + $contents + '</div>');
+  var $scrolling = $container.find('.scrolling');
+  $scrolling.append($scrolling.children().clone());
+  function startScrolling() {
+    var totalWidth = $scrolling.width();
+
+    $scrolling.css({
+      transform: 'translateX(0)'
+    });
+    setTimeout(function () {
+      $scrolling.css({
+        transition: `${totalWidth / 100}s linear`,
+        transform: `translateX(-${totalWidth / 2}px)`
+      });
+    }, 50);
+  }
+  $scrolling.on('transitionend', function () {
+    $scrolling.css({
+      transition: 'none',
+      transform: 'translateX(0)'
+    });
+    startScrolling();
+  });
+
+  // Initialize scrolling
+  startScrolling();
+});
+
 
 

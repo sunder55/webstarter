@@ -33,8 +33,11 @@ function get_wstr_price($domain_id)
     // <span class="wstr-currency">' . get_wstr_currency_symbol($currency) . '</span>
     // <span class="wstr-price">' . wstr_truncate_number($price) . '<span> </div>';
 
-    $price_html = '<div class="ws_card_price_wrapper ws_flex gap_10"><p class="regular_price">' . get_wstr_currency() . '' . get_wstr_regular_price($domain_id) . '</p><p class="sale_price">' . get_wstr_currency() . '' . get_wstr_sale_price($domain_id) . '</p></div>';
-
+    if ($sale_price) {
+        $price_html = '<div class="ws_card_price_wrapper ws_flex gap_10"><p class="regular_price">' . get_wstr_currency() . '' . get_wstr_regular_price($domain_id) . '</p><p class="sale_price">' . get_wstr_currency() . '' . get_wstr_sale_price($domain_id) . '</p></div>';
+    } else {
+        $price_html = '<div class="ws_card_price_wrapper ws_flex gap_10"><p class="sale_price">' . get_wstr_currency() . '' . get_wstr_regular_price($domain_id) . '</p></div>';
+    }
     return $price_html;
 }
 

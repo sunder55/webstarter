@@ -191,4 +191,7 @@
     flex: 1;
     text-align: center;
   }
+  .single_featured_image_footer {
+    padding: 15px;
+  }
 }

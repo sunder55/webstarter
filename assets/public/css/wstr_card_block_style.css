@@ -70,6 +70,7 @@
   font-weight: 500;
   cursor: pointer;
   width: 55px;
+  height: 30px;
 }
 .ws-card-inner-contents h5 a {
   font-size: 16px;
@@ -87,6 +88,9 @@
 @media (width <=767px) {
   .ws-cards-container {
     width: 100%;
+  }
+  .ws_trending_cards .ws-cards-container-wrapper .ws-card-contents {
+    width: auto;
   }
 }
 
@@ -413,4 +417,41 @@ div[role="progressbar"]::after:not(
 }
 .ws_home_trending_cards .ws-card-contents:hover .ws-card-likes h6 {
   background-color: #fff;
+}
+
+/* trending cards moving effect */
+.ws_trending_cards .ws-cards-container-wrapper {
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap; /* Ensure horizontal scrolling */
+  height: auto; /* Ensure height adapts to the content */
+}
+
+/* Adjust the scrolling element */
+.ws_trending_cards .scrolling {
+  display: flex;
+  flex-wrap: wrap; /* Allow multiple rows */
+  width: 200%; /* Make sure it's wide enough to show multiple rows */
+  animation: scroll 30s linear infinite; /* Adjust animation duration for speed */
+  align-content: flex-start; /* Align items from the top */
+}
+
+/* Individual card styling */
+.ws_trending_cards .ws-card-contents {
+  width: calc(20% - 10px); /* Adjust width for 5 cards per row */
+  margin: 5px; /* Adjust margin to control spacing */
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  height: auto; /* Maintain the card height */
+}
+
+/* Keyframes for continuous scrolling */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
