@@ -65,7 +65,7 @@ function wstr_premium_domains_api($request)
                 if (!empty($regular_price) && !empty($sale_price) && $regular_price > $sale_price) {
                     // Calculate the discount percentage
                     $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
-                    $percentage_discount = round($percentage_discount, 2); // Round to 2 decimal places for readability  
+                    $percentage_discount = round($percentage_discount); // Round to 2 decimal places for readability  
                 }
                 // Get the price using custom function (assuming it exists)
                 $domain_price = get_wstr_price($premium_domain);
@@ -144,7 +144,7 @@ function wstr_premium_domains_api($request)
                 if (!empty($regular_price) && !empty($sale_price) && $regular_price > $sale_price) {
                     // Calculate the discount percentage
                     $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
-                    $percentage_discount = round($percentage_discount, 2); // Round to 2 decimal places for readability  
+                    $percentage_discount = round($percentage_discount); // Round to 2 decimal places for readability  
                 }
                 // Get the price using custom function (assuming it exists)
                 $domain_price = get_wstr_price($domain);
@@ -285,7 +285,7 @@ function wstr_premium_domains_api($request)
                 if (!empty($regular_price) && !empty($sale_price) && $regular_price > $sale_price) {
                     // Calculate the discount percentage
                     $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
-                    $percentage_discount = round($percentage_discount, 2); // Round to 2 decimal places for readability  
+                    $percentage_discount = round($percentage_discount); // Round to 2 decimal places for readability  
                 }
                 // Get the price using custom function (assuming it exists)
                 $domain_price = get_wstr_price($domain);
