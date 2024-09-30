@@ -28,7 +28,7 @@ class Wstr_ajax_functions
 
             // Query for users
             $user_query = new WP_User_Query(array(
-                'search'         => '*' . esc_attr($search_term) . '*',
+                'search' => '*' . esc_attr($search_term) . '*',
                 'search_columns' => array('user_login', 'user_email', 'display_name'),
             ));
 
@@ -38,7 +38,7 @@ class Wstr_ajax_functions
             $response = array();
             foreach ($users as $user) {
                 $response[] = array(
-                    'id'    => $user->ID,
+                    'id' => $user->ID,
                     'username' => $user->user_login,
                     'email' => $user->user_email,
                 );
@@ -62,10 +62,10 @@ class Wstr_ajax_functions
 
             // Query for domains
             $domain_query = new WP_Query(array(
-                'post_type'      => 'domain',
-                's'              => $search_term,
+                'post_type' => 'domain',
+                's' => $search_term,
                 'posts_per_page' => -1, // Adjust this if you want to limit the number of results
-                'fields'         => 'ids', // Only retrieve post IDs
+                'fields' => 'ids', // Only retrieve post IDs
             ));
 
             $domains = $domain_query->get_posts();
@@ -74,8 +74,8 @@ class Wstr_ajax_functions
             $response = array();
             foreach ($domains as $domain_id) {
                 $response[] = array(
-                    'id'    => $domain_id,
-                    'name'  => get_the_title($domain_id),
+                    'id' => $domain_id,
+                    'name' => get_the_title($domain_id),
                 );
             }
 
@@ -133,13 +133,13 @@ class Wstr_ajax_functions
 
                 // Prepare the response data
                 $response = array(
-                    'id'    => $domain_post->ID,
-                    'name'  => $domain_post->post_title,
+                    'id' => $domain_post->ID,
+                    'name' => $domain_post->post_title,
                     'image' => $image_url ? $image_url : '', // Use empty string if no image
                     'amount' => $price ? $price : '0.00', // Use '0.00' if no amount is set
                     'order_id' => $order_id ? $order_id : '',
                     'subtotal' => number_format($subtotal, 2), // Add subtotal to response
-                    'total'    => number_format($total, 2), // Add total to response
+                    'total' => number_format($total, 2), // Add total to response
                 );
 
                 // Send the response in JSON format
@@ -192,10 +192,10 @@ class Wstr_ajax_functions
             }
 
             wp_send_json_success(array(
-                'id'       => $domain_id,
+                'id' => $domain_id,
                 'subtotal' => number_format($subtotal, 2),
-                'total'    => number_format($total, 2),
-                'message'  => 'Domain removed successfully.',
+                'total' => number_format($total, 2),
+                'message' => 'Domain removed successfully.',
             ));
         }
     }
@@ -325,7 +325,7 @@ class Wstr_ajax_functions
         update_user_meta(get_current_user_id(), '_favourite', $favourite_data);
         wp_send_json_success(array(
             'count' => $count,
-        ))
+        ));
         wp_die();
     }
 }

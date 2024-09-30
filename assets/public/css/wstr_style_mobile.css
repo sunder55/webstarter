@@ -145,6 +145,9 @@
   }
 
   /* single page responsive */
+  .single-container.ws-container {
+    margin-top: 40px;
+  }
   .single_domain_you_may_like .ws-cards-container {
     width: calc(100% - 50px);
   }
@@ -181,15 +184,18 @@
   }
   .single_domain_meta_search {
     right: 20px;
+    gap: 5px;
   }
   .single_domain_details .ws-card-likes h6,
   .single_domain_search i {
     padding: 10px;
+    font-size: 14px;
   }
   .single_featured_image_footer span,
   .single_featured_image_footer a {
     flex: 1;
     text-align: center;
+    justify-content: center;
   }
   .single_featured_image_footer {
     padding: 15px;

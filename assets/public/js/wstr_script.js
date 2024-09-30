@@ -25,22 +25,23 @@ jQuery(document).ready(function ($) {
     });
   });
 
+
   // When the magnifying glass is clicked make the image whole screen single domain page  =================================
-  $(".fa-magnifying-glass").on("click", function () {
-    const imageSrc = $(".featured-image img").attr("src");
+  $('.fa-magnifying-glass').on('click', function () {
+    const imageSrc = $('.featured-image img').attr('src');
 
     // Set the image source in the modal
-    $("#modalImage").attr("src", imageSrc);
+    $('#modalImage').attr('src', imageSrc);
 
-    $("#imageModal").fadeIn();
+    $('#imageModal').fadeIn();
   });
 
-  $(".close").on("click", function () {
-    $("#imageModal").fadeOut();
+  $('.close').on('click', function () {
+    $('#imageModal').fadeOut();
   });
-  $(window).on("click", function (e) {
-    if ($(e.target).is("#imageModal")) {
-      $("#imageModal").fadeOut();
+  $(window).on('click', function (e) {
+    if ($(e.target).is('#imageModal')) {
+      $('#imageModal').fadeOut();
     }
   });
 
@@ -52,7 +53,9 @@ jQuery(document).ready(function ($) {
         .css({ transform: "scale(" + $(this).attr("data-scale") + ")" });
     })
     .on("mouseout", function () {
-      $(this).children(".img_producto").css({ transform: "scale(1)" });
+      $(this)
+        .children(".img_producto")
+        .css({ transform: "scale(1)" });
     })
     .on("mousemove", function (e) {
       $(this)
@@ -62,9 +65,79 @@ jQuery(document).ready(function ($) {
             ((e.pageX - $(this).offset().left) / $(this).width()) * 100 +
             "% " +
             ((e.pageY - $(this).offset().top) / $(this).height()) * 100 +
-            "%",
+            "%"
         });
     });
+});
+
+
+
+jQuery('.swiper-wrapper').slick({
+
+  centerMode: true,
+  centerPadding: '100px',
+  slidesToShow: 4,
+  slidesToScroll: 1,
+  infinite: true,
+  arrows: false,
+  responsive: [
+    {
+      breakpoint: 1024,
+      settings: {
+        arrows: false,
+        centerMode: true,
+        centerPadding: '40px',
+        slidesToShow: 3
+      }
+    },
+    {
+      breakpoint: 600,
+      settings: {
+        arrows: false,
+        centerMode: true,
+        centerPadding: '40px',
+        slidesToShow: 1
+      }
+    }
+  ]
+});
+
+
+
+// trending cards aniamtion effect
+
+jQuery(document).ready(function ($) {
+  var $container = $('.ws_home_trending_cards .ws-cards-container-wrapper');
+  var $contents = $container.html();
+
+  $container.html('<div class="scrolling">' + $contents + '</div>');
+
+  var $scrolling = $container.find('.scrolling');
+
+
+  for (let i = 0; i < 1; i++) {
+    $scrolling.append($scrolling.children().clone());
+  }
+
+  var isPaused = false; // Track the paused state
+
+
+  $('.toggleMarquee').on('click', function () {
+    isPaused = !isPaused;
+
+    // Update button icon based on the paused state
+    if (isPaused) {
+      $(this).html('<i class="fa-solid fa-circle-play"></i>');
+      $scrolling.css('animation-play-state', 'paused');
+    } else {
+      $(this).html('<i class="fa-regular fa-circle-pause"></i>');
+      $scrolling.css('animation-play-state', 'running');
+    }
+
+  });
+
+  $scrolling.addClass('scrolling-animation');
+
 
   // favourite section ===========================
   $(".ws-card-likes i").on("click", function () {
@@ -113,65 +186,6 @@ jQuery(document).ready(function ($) {
       },
     });
   });
-});
 
-jQuery(".swiper-wrapper").slick({
-  centerMode: true,
-  centerPadding: "100px",
-  slidesToShow: 4,
-  slidesToScroll: 1,
-  infinite: true,
-  arrows: false,
-  responsive: [
-    {
-      breakpoint: 1024,
-      settings: {
-        arrows: false,
-        centerMode: true,
-        centerPadding: "40px",
-        slidesToShow: 3,
-      },
-    },
-    {
-      breakpoint: 600,
-      settings: {
-        arrows: false,
-        centerMode: true,
-        centerPadding: "40px",
-        slidesToShow: 1,
-      },
-    },
-  ],
-});
 
-// trending cards moving effect
-jQuery(document).ready(function ($) {
-  var $container = $(".ws_trending_cards .ws-cards-container-wrapper");
-  var $contents = $container.html();
-  $container.html('<div class="scrolling">' + $contents + "</div>");
-  var $scrolling = $container.find(".scrolling");
-  $scrolling.append($scrolling.children().clone());
-  function startScrolling() {
-    var totalWidth = $scrolling.width();
-
-    $scrolling.css({
-      transform: "translateX(0)",
-    });
-    setTimeout(function () {
-      $scrolling.css({
-        transition: `${totalWidth / 100}s linear`,
-        transform: `translateX(-${totalWidth / 2}px)`,
-      });
-    }, 50);
-  }
-  $scrolling.on("transitionend", function () {
-    $scrolling.css({
-      transition: "none",
-      transform: "translateX(0)",
-    });
-    startScrolling();
-  });
-
-  // Initialize scrolling
-  startScrolling();
 });

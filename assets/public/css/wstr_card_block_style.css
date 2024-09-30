@@ -80,20 +80,6 @@
   font-weight: 500;
 }
 
-@media (width <=1024px) {
-  .ws-cards-container {
-    width: calc(50% - 30px);
-  }
-}
-@media (width <=767px) {
-  .ws-cards-container {
-    width: 100%;
-  }
-  .ws_trending_cards .ws-cards-container-wrapper .ws-card-contents {
-    width: auto;
-  }
-}
-
 .circular-progress {
   position: relative;
   padding: 15px;
@@ -235,9 +221,9 @@
   border-radius: 5px !important;
   padding: 2px 6px;
 }
-.ws_card_price_wrapper p {
+/* .ws_card_price_wrapper p {
   font-size: 12px;
-}
+} */
 /* ciclelll
  */
 /* @keyframes growProgressBar {
@@ -313,7 +299,7 @@ div[role="progressbar"]::after:not(
 
 .swiper-slide {
   text-align: center;
-  font-size: 18px;
+  /* font-size: 18px; */
   background: #fff;
 }
 
@@ -405,7 +391,8 @@ div[role="progressbar"]::after:not(
   flex-direction: row-reverse;
   gap: 10px;
   padding: 0;
-  justify-content: start;
+  /* justify-content: start; */
+  justify-content: center;
 }
 .ws_home_trending_cards .ws-card-contents:hover .ws_card_hover_charts {
   padding: 10px 20px;
@@ -420,30 +407,26 @@ div[role="progressbar"]::after:not(
 }
 
 /* trending cards moving effect */
-.ws_trending_cards .ws-cards-container-wrapper {
-  display: flex;
-  overflow: hidden;
+
+.ws_home_trending_cards .ws-cards-container-wrapper {
+  display: block;
   position: relative;
-  white-space: nowrap; /* Ensure horizontal scrolling */
-  height: auto; /* Ensure height adapts to the content */
 }
 
 /* Adjust the scrolling element */
-.ws_trending_cards .scrolling {
+.ws_home_trending_cards .scrolling {
   display: flex;
-  flex-wrap: wrap; /* Allow multiple rows */
-  width: 200%; /* Make sure it's wide enough to show multiple rows */
-  animation: scroll 30s linear infinite; /* Adjust animation duration for speed */
-  align-content: flex-start; /* Align items from the top */
+  flex-wrap: wrap;
+  width: 200%;
+  animation: scroll 30s linear infinite;
+  gap: 20px;
+  align-content: flex-start;
+  animation: none;
+  gap: 45px 20px;
+  padding-bottom: 50px;
 }
-
-/* Individual card styling */
-.ws_trending_cards .ws-card-contents {
-  width: calc(20% - 10px); /* Adjust width for 5 cards per row */
-  margin: 5px; /* Adjust margin to control spacing */
-  box-sizing: border-box;
-  flex: 0 0 auto;
-  height: auto; /* Maintain the card height */
+.ws_home_trending_cards .scrolling-animation {
+  animation: scroll 30s linear infinite;
 }
 
 /* Keyframes for continuous scrolling */
@@ -453,5 +436,53 @@ div[role="progressbar"]::after:not(
   }
   100% {
     transform: translateX(-50%);
+  }
+}
+
+/* Individual card styling */
+.ws_home_trending_cards .ws-card-contents {
+  margin: 5px;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  height: 100%;
+}
+
+.trending_header i {
+  font-size: 20px;
+  background: #f3f5fa;
+  padding: 10px;
+  border-radius: 50px;
+  cursor: pointer;
+}
+.ws_home_trending_cards .ws-cards-container-wrapper {
+  overflow: hidden;
+}
+.ws_home_trending_cards .ws_card_hover_charts {
+  position: absolute;
+  width: 100%;
+  box-shadow: 0.122px 0.993px 31px 0px rgba(0, 34, 79, 0.04);
+  border-radius: 0 0 15px 15px;
+}
+@media (width <=1024px) {
+  .ws-cards-container {
+    width: calc(50% - 30px);
+  }
+}
+@media (width <=767px) {
+  .ws-cards-container {
+    width: 100%;
+  }
+
+  .ws_home_trending_cards .scrolling {
+    flex-wrap: wrap;
+    width: 200%;
+    gap: 45px 20px;
+  }
+
+  .ws_home_trending_cards .ws-card-contents {
+    /* width: calc(50% - 25px); */
+    width: fit-content;
+    /* width: auto; */
+    padding: 20px 10px;
   }
 }
