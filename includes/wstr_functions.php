@@ -284,3 +284,22 @@ function wstr_check_existing_term($domain_id, $taxonomy, $term_slug)
         return false;
     }
 }
+
+/**
+ * Function for getting favourite count for specfic domain
+ * @param mixed $domain_id
+ * @return int|string
+ */
+function wstr_get_favourite_count($domain_id)
+{
+    $favourite_count = get_post_meta($domain_id, '_favourite_count', true);
+    $favourite_count = (int) $favourite_count; // Ensure it's an integer
+
+    // Check if the count is above 1000 and format it
+    if ($favourite_count >= 1000) {
+        // Format the number to display with "K" (rounded to 1 decimal place)
+        $favourite_count = round($favourite_count / 1000, 1) . 'K';
+    }
+
+    return $favourite_count;
+}

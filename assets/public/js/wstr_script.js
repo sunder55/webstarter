@@ -25,23 +25,22 @@ jQuery(document).ready(function ($) {
     });
   });
 
-
   // When the magnifying glass is clicked make the image whole screen single domain page  =================================
-  $('.fa-magnifying-glass').on('click', function () {
-    const imageSrc = $('.featured-image img').attr('src');
+  $(".fa-magnifying-glass").on("click", function () {
+    const imageSrc = $(".featured-image img").attr("src");
 
     // Set the image source in the modal
-    $('#modalImage').attr('src', imageSrc);
+    $("#modalImage").attr("src", imageSrc);
 
-    $('#imageModal').fadeIn();
+    $("#imageModal").fadeIn();
   });
 
-  $('.close').on('click', function () {
-    $('#imageModal').fadeOut();
+  $(".close").on("click", function () {
+    $("#imageModal").fadeOut();
   });
-  $(window).on('click', function (e) {
-    if ($(e.target).is('#imageModal')) {
-      $('#imageModal').fadeOut();
+  $(window).on("click", function (e) {
+    if ($(e.target).is("#imageModal")) {
+      $("#imageModal").fadeOut();
     }
   });
 
@@ -53,9 +52,7 @@ jQuery(document).ready(function ($) {
         .css({ transform: "scale(" + $(this).attr("data-scale") + ")" });
     })
     .on("mouseout", function () {
-      $(this)
-        .children(".img_producto")
-        .css({ transform: "scale(1)" });
+      $(this).children(".img_producto").css({ transform: "scale(1)" });
     })
     .on("mousemove", function (e) {
       $(this)
@@ -65,17 +62,34 @@ jQuery(document).ready(function ($) {
             ((e.pageX - $(this).offset().left) / $(this).width()) * 100 +
             "% " +
             ((e.pageY - $(this).offset().top) / $(this).height()) * 100 +
-            "%"
+            "%",
         });
     });
+
+  // favourite section ===========================
+  $(".ws-card-likes i").on("click", function () {
+    var domainId = $(this).closest(".ws-card-likes").attr("id");
+    var count = $(this).closest(".ws-card-likes").find("span").text();
+    $.ajax({
+      type: "post",
+      dataType: "json",
+      url: cpmAjax.ajax_url,
+      data: {
+        action: "wstr_favourite",
+        domain_id: domainId,
+      },
+      success: function (response) {
+        if (response.success == true) {
+          location.reload();
+        }
+      },
+    });
+  });
 });
 
-
-
-jQuery('.swiper-wrapper').slick({
-
+jQuery(".swiper-wrapper").slick({
   centerMode: true,
-  centerPadding: '100px',
+  centerPadding: "100px",
   slidesToShow: 4,
   slidesToScroll: 1,
   infinite: true,
@@ -86,47 +100,46 @@ jQuery('.swiper-wrapper').slick({
       settings: {
         arrows: false,
         centerMode: true,
-        centerPadding: '40px',
-        slidesToShow: 3
-      }
+        centerPadding: "40px",
+        slidesToShow: 3,
+      },
     },
     {
       breakpoint: 600,
       settings: {
         arrows: false,
         centerMode: true,
-        centerPadding: '40px',
-        slidesToShow: 1
-      }
-    }
-  ]
+        centerPadding: "40px",
+        slidesToShow: 1,
+      },
+    },
+  ],
 });
 
 // trending cards moving effect
 jQuery(document).ready(function ($) {
-
-  var $container = $('.ws_trending_cards .ws-cards-container-wrapper');
+  var $container = $(".ws_trending_cards .ws-cards-container-wrapper");
   var $contents = $container.html();
-  $container.html('<div class="scrolling">' + $contents + '</div>');
-  var $scrolling = $container.find('.scrolling');
+  $container.html('<div class="scrolling">' + $contents + "</div>");
+  var $scrolling = $container.find(".scrolling");
   $scrolling.append($scrolling.children().clone());
   function startScrolling() {
     var totalWidth = $scrolling.width();
 
     $scrolling.css({
-      transform: 'translateX(0)'
+      transform: "translateX(0)",
     });
     setTimeout(function () {
       $scrolling.css({
         transition: `${totalWidth / 100}s linear`,
-        transform: `translateX(-${totalWidth / 2}px)`
+        transform: `translateX(-${totalWidth / 2}px)`,
       });
     }, 50);
   }
-  $scrolling.on('transitionend', function () {
+  $scrolling.on("transitionend", function () {
     $scrolling.css({
-      transition: 'none',
-      transform: 'translateX(0)'
+      transition: "none",
+      transform: "translateX(0)",
     });
     startScrolling();
   });
@@ -134,6 +147,3 @@ jQuery(document).ready(function ($) {
   // Initialize scrolling
   startScrolling();
 });
-
-
-

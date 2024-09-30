@@ -12,6 +12,8 @@ class Wstr_ajax_functions
 
         add_action('wp_ajax_set_currency_session', array($this, 'set_currency_session'));
         add_action('wp_ajax_nopriv_set_currency_session', array($this, 'set_currency_session'));
+
+        add_action('wp_ajax_wstr_favourite', array($this, 'wstr_favourite'));
     }
 
     /**
@@ -283,9 +285,46 @@ class Wstr_ajax_functions
         wp_send_json_success($get_session_value);
         wp_die();
     }
+
+    /**
+     *  Function for favourite section
+     */
+    public function wstr_favourite()
+    {
+        $domain_id = sanitize_text_field($_POST['domain_id']);
+
+        $favourite_data = get_user_meta(get_current_user_id(), '_favourite', true);
+
+        // Ensure $favourite_data is an array
+        if (!is_array($favourite_data)) {
+            $favourite_data = [];
+        }
+
+        // Get the current favorite count from post meta
+        $favourite_count = get_post_meta($domain_id, '_favourite_count', true);
+        $favourite_count = (int) $favourite_count; // Ensure it's an integer
+
+        // Check if the domain ID already exists
+        if (($key = array_search($domain_id, $favourite_data)) !== false) {
+            // Remove domain ID if it exists
+            unset($favourite_data[$key]);
+
+            // Decrease the favorite count if the domain is removed
+            $favourite_count = max(0, $favourite_count - 1); // Prevent negative count
+            $count = 'deduct';
+        } else {
+            // Add domain ID if it doesn't exist
+            $favourite_data[] = $domain_id;
+
+            // Increase the favorite count if the domain is added
+            $favourite_count++;
+            $count = 'add';
+        }
+        // Update the favorite count in post meta
+        update_post_meta($domain_id, '_favourite_count', $favourite_count);
+        update_user_meta(get_current_user_id(), '_favourite', $favourite_data);
+        wp_die();
+    }
 }
 
 new Wstr_ajax_functions();
-
-
-
