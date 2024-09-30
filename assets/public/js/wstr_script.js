@@ -68,9 +68,20 @@ jQuery(document).ready(function ($) {
 
   // favourite section ===========================
   $(".ws-card-likes i").on("click", function () {
+    var $this = $(this);
     var domainId = $(this).closest(".ws-card-likes").attr("id");
-    var count = $(this).closest(".ws-card-likes").find("span").text();
-    return;
+
+    // Get the current count from the span (handle both number and 'K' format)
+    var countText = $this.closest(".ws-card-likes").find("span").text().trim();
+    var count = 0;
+
+    // Check if the count is in the 'K' format and convert to a number
+    if (countText.includes("K")) {
+      count = parseFloat(countText.replace("K", "")) * 1000;
+    } else {
+      count = parseInt(countText);
+    }
+
     $.ajax({
       type: "post",
       dataType: "json",
@@ -80,10 +91,25 @@ jQuery(document).ready(function ($) {
         domain_id: domainId,
       },
       success: function (response) {
-        // if (response.success == true) {
-        //   console.log(response.data);
-        //   // location.reload();
-        // }
+        if (response.success == true) {
+          // console.log(response.data);
+          if (response.data.count == "deduct") {
+            count = Math.max(0, count - 1); // Prevent negative count
+          } else {
+            // Add to the count
+            count++;
+          }
+
+          // Update the displayed count (convert back to 'K' format if necessary)
+          if (count >= 1000) {
+            $this
+              .closest(".ws-card-likes")
+              .find("span")
+              .text((count / 1000).toFixed(1) + "K");
+          } else {
+            $this.closest(".ws-card-likes").find("span").text(count);
+          }
+        }
       },
     });
   });
