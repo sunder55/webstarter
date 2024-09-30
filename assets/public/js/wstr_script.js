@@ -70,6 +70,7 @@ jQuery(document).ready(function ($) {
   $(".ws-card-likes i").on("click", function () {
     var domainId = $(this).closest(".ws-card-likes").attr("id");
     var count = $(this).closest(".ws-card-likes").find("span").text();
+    return;
     $.ajax({
       type: "post",
       dataType: "json",
@@ -79,9 +80,10 @@ jQuery(document).ready(function ($) {
         domain_id: domainId,
       },
       success: function (response) {
-        if (response.success == true) {
-          location.reload();
-        }
+        // if (response.success == true) {
+        //   console.log(response.data);
+        //   // location.reload();
+        // }
       },
     });
   });

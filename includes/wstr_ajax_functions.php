@@ -323,6 +323,9 @@ class Wstr_ajax_functions
         // Update the favorite count in post meta
         update_post_meta($domain_id, '_favourite_count', $favourite_count);
         update_user_meta(get_current_user_id(), '_favourite', $favourite_data);
+        wp_send_json_success(array(
+            'count' => $count,
+        ))
         wp_die();
     }
 }
