@@ -323,3 +323,49 @@ add_action('after_setup_theme', 'create_order_notes_table_on_theme_activation');
 //     // // var_dump($audio_player);
 //     // echo $audio_player;
 // });
+
+
+
+// register shortcode
+add_shortcode('wstr_register', 'wstr_register');
+function wstr_register()
+{
+    ob_start();
+    ?>
+    <form action="#" method="POST" class="wstr_signup">
+        <label for="username">Username*</label>
+        <input type="text" id="username" name="username" placeholder="Your Username" required>
+
+        <label for="full-name">First Name, Last Name</label>
+        <input type="text" id="full-name" name="full_name" placeholder="Enter first and last name" required>
+
+        <label for="email">Email Address*</label>
+        <input type="email" id="email" name="email" placeholder="@Email address " required>
+
+        <label for="password">Password*</label>
+        <input type="password" id="password" name="password" placeholder="Password" required>
+
+        <label for="confirm-password">Confirm Password*</label>
+        <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm Password " required>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="become-seller" name="become_seller">
+            <label for="become-seller">Become a Seller</label>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="terms" name="terms" required>
+            <label for="terms">I have read and accepted the <a href="#">terms and conditions</a></label>
+        </div>
+
+        <button type="submit">Register</button>
+
+        <div class="login-link">
+            <p>Already registered? <a href="#">Login</a></p>
+        </div>
+    </form>
+    <?php
+    $output = ob_get_contents();
+    ob_end_clean();
+    return $output;
+}
