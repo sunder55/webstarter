@@ -1,4 +1,5 @@
 <?php
+
 /**
  * For removing block editor from domain post type
  */
@@ -11,7 +12,7 @@ function wstr_disable_gutenberg($current_status, $post_type)
         return false;
     return $current_status;
 }
- 
+
 
 /*
  * For adding featured image column to the domain list in backend
@@ -89,10 +90,12 @@ function wstr_add_custom_user_roles()
  * Starting sestion
  */
 add_action('init', 'wstr_start_session');
-function wstr_start_session() {
+function wstr_start_session()
+{
     if (session_status() == PHP_SESSION_NONE) {
         session_start();
     }
+    $GLOBALS['user_id'] = get_current_user_id();
 }
 
 /**
@@ -106,3 +109,32 @@ add_filter('register_block_type_args', function ($settings, $name) {
     }
     return $settings;
 }, 10, 2);
+
+
+/**
+ * Preventing default wp login
+ */
+add_action('init', 'wstr_prevent_wp_login');
+function wstr_prevent_wp_login()
+{
+    global $pagenow;
+
+    $allowed_actions = ['logout', 'lostpassword', 'rp', 'resetpass', 'postpass']; // allowing action 
+
+    if ($pagenow == 'wp-login.php' && (!isset($_GET['action']) || !in_array($_GET['action'], $allowed_actions))) {
+        $page = get_home_url() . '/login';
+
+        wp_redirect($page);
+
+    }
+}
+
+/**
+ * passing login error codes as parameter
+ */
+add_filter('login_errors', function ($error) {
+    global $errors;
+    $err_codes = $errors->get_error_codes();
+    wp_redirect('/login?reason=' . $err_codes[0]);
+    return $error;
+});

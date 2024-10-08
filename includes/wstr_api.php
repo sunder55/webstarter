@@ -1,4 +1,5 @@
 <?php
+$user_id = '';
 if (!class_exists('wstr_rest_api')) {
     class wstr_rest_api
     {
@@ -6,7 +7,6 @@ if (!class_exists('wstr_rest_api')) {
         {
             add_action('wp_ajax_get_domain_age', [$this, 'get_domain_age']);
             add_action('wp_ajax_get_domain_da_pa', [$this, 'get_domain_da_pa']);
-            // add_action('wp_footer', array($this, 'get_curreny_rates'));
 
             add_action('rest_api_init', array($this, 'create_rest_api_endpoint'));
         }
@@ -69,10 +69,13 @@ if (!class_exists('wstr_rest_api')) {
             }
             return $res;
         }
-        public function get_domain_age()
+        public function get_domain_age($domain)
         {
+            if (wp_doing_ajax()) {
+                $domain = sanitize_text_field($_POST['domain_name']);
+            }
 
-            $domain = sanitize_text_field($_POST['domain_name']);
+            // $domain = sanitize_text_field($_POST['domain_name']);
             $domain = trim($domain); //remove space from start and end of domain
             if (substr(strtolower($domain), 0, 7) == "http://")
                 $domain = substr($domain, 7); // remove http:// if included
@@ -102,17 +105,26 @@ if (!class_exists('wstr_rest_api')) {
                     } else {
                         $d = $days . " days";
                     }
-                    wp_send_json_success($y . ' ' . $d);
-                    // return "$y, $d";
+                    // Handle AJAX response
+                    if (wp_doing_ajax()) {
+                        wp_send_json_success($y . ' ' . $d);
+                    }
+
+                    // Return value for non-AJAX call (like in footer)
+                    return $y . ' ' . $d;
                 } else
                     return false;
             } else
                 return false;
         }
 
-        public function get_domain_da_pa()
+        public function get_domain_da_pa($objectURL)
         {
-            $objectURL = sanitize_text_field($_POST['domain_name']); //getting domain url 
+
+            if (wp_doing_ajax()) {
+                $objectURL = sanitize_text_field($_POST['domain_name']); //getting domain url 
+            }
+
             $accessID = "mozscape-749dc5236c";
             $secretKey = "1ba09be0fea28f66f04fbe3779447219";
             $expires = time() + 300;
@@ -128,10 +140,95 @@ if (!class_exists('wstr_rest_api')) {
             $data = json_decode($content, true);
             $domainAuthority = $data['pda'];
             $pageAuthority = $data['upa'];
-            wp_send_json_success($domainAuthority . '/' . $pageAuthority);
+            if (wp_doing_ajax()) {
+                wp_send_json_success($domainAuthority . '/' . $pageAuthority);
+            }
+            return $domainAuthority . '/' . $pageAuthority;
             wp_die();
         }
 
+        public function get_desc($domain, $domain_length)
+        {
+            // require_once get_stylesheet_directory_uri().'/vendor/autoload.php';
+            require_once __DIR__ . '/vendor/autoload.php';
+
+            // $domain = $_POST['domain'];
+            // $domain_length = $_POST['domain_length'];
+            $client = new \GeminiAPI\Client('AIzaSyALuyApXEjTswAuXKB5iw-g3P_UBE6wMCw');
+            $response = $client->geminiPro()->generateContent(
+                // new \GeminiAPI\Resources\Parts\TextPart('explain domain name -> ' . $domain)
+                // new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name '.$domain.'. Include possible creative uses for the domain name, explaining why it is a good name and why its '.$domain_length.'-character length is advantageous. Provide specific examples and use a friendly and informative tone.')
+                new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name ' . $domain . 'What are some possible creative uses for this ' . $domain . '?  Explain the benefits of ' . $domain_length . 'character domain in paragraph.Explain, why it is a good domain name?
+                    ')
+            );
+
+            $desc = $response->text();
+            return $desc;
+            // wp_send_json_success($desc);
+            wp_die();
+        }
+
+        public function get_text_to_speech($text)
+        {
+            $api_url = "https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB"; // Adjust the output format as needed
+            $request_payload = [
+                "text" => $text,
+                "voice_settings" => [
+                    "similarity_boost" => 0.5,
+                    "stability" => 0.5,
+                    "style" => 0.5,
+                    "use_speaker_boost" => true
+                ]
+            ];
+
+            $apiKey = "sk_eedc67f1e1f786064f584e497acbe18c37cdb860905ca325"; // Replace with your actual API key
+            // $apiKey = "e33b60806d6db73e934768417380b324"; // Replace with your actual API key
+
+            $curl = curl_init();
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $api_url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => json_encode($request_payload),
+                CURLOPT_HTTPHEADER => [
+                    "Content-Type: application/json",
+                    "xi-api-key: " . $apiKey,
+                ],
+            ]);
+
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+
+            curl_close($curl);
+
+            // if ($err) {
+            //     return "Error #:" . $err;
+            // } else {
+            //     // var_dump($response);
+            //     return $response;
+            // }
+            // Define file name and path
+            $upload_dir = wp_upload_dir();
+            $file_name = $text . '.wav';
+            $file_path = $upload_dir['path'] . '/' . $file_name;
+            $file_url = $upload_dir['url'] . '/' . $file_name;
+
+            // Save audio data to the file
+            file_put_contents($file_path, $response);
+
+            // Display HTML audio player with file path
+            $audio_player = '<audio controls>';
+            $audio_player .= '<source src="' . $file_url . '" type="audio/wav">';
+            $audio_player .= 'Your browser does not support the audio tag.';
+            $audio_player .= '</audio>';
+
+            return $audio_player;
+        }
         /**
          * Function for getting current currency rate 
          * @return void
@@ -169,7 +266,6 @@ if (!class_exists('wstr_rest_api')) {
 
                         // Save the updated rates to the options table
                         update_option('wstr_currency_rates', $currency_rates);
-    
                     } else {
                         echo 'Failed to retrieve currency data.';
                     }
@@ -177,14 +273,408 @@ if (!class_exists('wstr_rest_api')) {
             }
         }
 
-            function create_rest_api_endpoint() {
-                register_rest_route('wstr/v1', '/domains/', array(
-                    'methods' => 'GET',
-                    'callback' => 'wstr_premium_domains_api',
-                    'permission_callback' => '__return_true', // If you want to restrict it, use a custom permission callback
-                ));
+        /**
+         *  Function for registering api endpoint
+         * @return void
+         */
+        public function create_rest_api_endpoint()
+        {
+            //<- add this
+
+            // for domain
+            register_rest_route('wstr/v1', '/domains/', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_premium_domains_api'],
+                'permission_callback' => '__return_true', // If you want to restrict it, use a custom permission callback
+            ));
+
+            register_rest_route('wstr/v1', '/domain_fields/', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_api_fields_callback'],
+                'permission_callback' => '__return_true'
+            ));
+
+            register_rest_route('wstr/v1', '/login/', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_logged_in_user_callback'],
+                // 'permission_callback' => function() {
+                //     return is_user_logged_in(); // Allow access only for logged-in users
+                // }
+                'permission_callback' => '__return_true'
+            ));
+        }
+
+        /**
+         * Function for home page premium domains via REST API
+         */
+        public function wstr_premium_domains_api($request)
+        {
+
+            $params = $request->get_params();
+            if (isset($params['type']) && $params['type'] === 'premium') {
+                $query_args = array(
+                    'posts_per_page' => 8,
+                    'post_type' => 'domain',
+                    'orderby' => 'rand',
+                    'order' => 'DESC',
+                    'fields' => 'ids',
+                    'meta_query' => array(
+                        array(
+                            'key' => '_stock_status',
+                            'value' => 'outofstock',
+                            'compare' => '!='
+                        )
+                    ),
+                    'tax_query' => array(
+                        array(
+                            'taxonomy' => 'domain_cat',
+                            'field' => 'term_id',
+                            'terms' => 57, // Example category ID
+                        ),
+                    ),
+                );
+
+                $premium_domains = get_posts($query_args);
+
+                // Prepare data to return as JSON
+                $premium_domains_data = array();
+
+                if ($premium_domains) {
+                    foreach ($premium_domains as $premium_domain) {
+                        // Get the basic domain details
+                        $domain_title = get_the_title($premium_domain);
+                        $domain_permalink = get_permalink($premium_domain);
+                        $domain_image = get_the_post_thumbnail_url($premium_domain, 'medium_large');
+
+                        if (!$domain_image) {
+                            $domain_image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
+                        }
+
+                        $logo = get_post_meta($premium_domain, '_logo_image', true);
+                        $logo_url = wp_get_attachment_url($logo);
+
+                        $sale_price = get_post_meta($premium_domain, '_sale_price', true);
+                        $regular_price = get_post_meta($premium_domain, '_regular_price', true);
+                        if (session_status() == PHP_SESSION_NONE) {
+                            session_start();
+                        }
+
+                        $currency = $_SESSION['currency'] ?? '';
+
+                        $regular_price = get_wstr_regular_price($premium_domain);
+                        $sale_price = get_wstr_sale_price($premium_domain);
+
+                        $percentage_discount = 0;
+
+                        if (!empty($regular_price) && !empty($sale_price) && $regular_price > $sale_price) {
+                            // Calculate the discount percentage
+                            $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
+                            $percentage_discount = round($percentage_discount); // Round to 2 decimal places for readability  
+                        }
+                        // Get the price using custom function (assuming it exists)
+                        $domain_price = get_wstr_price($premium_domain);
+                        $currency = get_wstr_currency();
+                        // Get DA / PA Ranking
+                        $da_pa = get_post_meta($premium_domain, '_da_pa', true);
+                        $da = $pa = '';
+                        if ($da_pa) {
+                            $da_pa_split = explode('/', $da_pa);
+                            $da = $da_pa_split[0];
+                            $pa = $da_pa_split[1];
+                        }
+
+                        // Add to the response array
+                        $premium_domains_data[] = array(
+                            'id' => $premium_domain,
+                            'title' => $domain_title,
+                            'permalink' => $domain_permalink,
+                            'featured_image' => $domain_image,
+                            'logo' => $logo_url,
+                            'price' => $domain_price,
+                            'da' => $da,
+                            'pa' => $pa,
+                            'currency' => $currency,
+                            'sale_price' => $sale_price,
+                            'regular_price' => $regular_price,
+                            'precentage_discount' => $percentage_discount,
+                        );
+                    }
+                }
+
+                // Return the data in JSON format
+                return new WP_REST_Response($premium_domains_data, 200);
+            } else if (isset($params['type']) && $params['type'] === 'new') {
+                $query_args = array(
+                    'posts_per_page' => 8,
+                    'post_type' => 'domain',
+                    'orderby' => 'rand', //rand
+                    'order' => 'DESC',
+                    'fields' => 'ids',
+                    'meta_query' => array(
+                        'relation' => 'AND',
+                        array(
+                            'key' => '_stock_status',
+                            'value' => 'outofstock',
+                            'compare' => '!='
+                        )
+                    ),
+                );
+
+                $domains = get_posts($query_args);
+
+                // Prepare data to return as JSON
+                $domains_data = array();
+
+                if ($domains) {
+                    foreach ($domains as $domain) {
+                        // Get the basic domain details
+                        $domain_title = get_the_title($domain);
+                        $domain_permalink = get_permalink($domain);
+                        $domain_image = get_the_post_thumbnail_url($domain, 'medium_large');
+
+                        if (!$domain_image) {
+                            $domain_image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
+                        }
+
+                        $logo = get_post_meta($domain, '_logo_image', true);
+                        $logo_url = wp_get_attachment_url($logo);
+
+
+                        $regular_price = get_wstr_regular_price($domain);
+                        $sale_price = get_wstr_sale_price($domain);
+
+                        $percentage_discount = 0;
+
+                        if (!empty($regular_price) && !empty($sale_price) && $regular_price > $sale_price) {
+                            // Calculate the discount percentage
+                            $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
+                            $percentage_discount = round($percentage_discount); // Round to 2 decimal places for readability  
+                        }
+                        // Get the price using custom function (assuming it exists)
+                        $domain_price = get_wstr_price($domain);
+                        $currency = get_wstr_currency();
+                        // Get DA / PA Ranking
+                        $da_pa = get_post_meta($domain, '_da_pa', true);
+                        $da = $pa = '';
+                        if ($da_pa) {
+                            $da_pa_split = explode('/', $da_pa);
+                            $da = $da_pa_split[0];
+                            $pa = $da_pa_split[1];
+                        }
+
+                        $term_exist = wstr_check_existing_term($domain, 'domain_cat', 'premium-names');
+
+                        // Add to the response array
+                        $domains_data[] = array(
+                            'id' => $domain,
+                            'title' => $domain_title,
+                            'permalink' => $domain_permalink,
+                            'featured_image' => $domain_image,
+                            'logo' => $logo_url,
+                            'price' => $domain_price,
+                            'da' => $da,
+                            'pa' => $pa,
+                            'currency' => $currency,
+                            'sale_price' => $sale_price,
+                            'regular_price' => $regular_price,
+                            'precentage_discount' => $percentage_discount,
+                            'term_exist' => $term_exist,
+                        );
+                    }
+                }
+
+                // Return the data in JSON format
+                return new WP_REST_Response($domains_data, 200);
+            } else if (isset($params['type']) && $params['type'] === 'recents') {
+
+                $args = array(
+                    'post_type' => 'domain_order',     // Custom post type
+                    'post_status' => 'publish',        // Post status
+                    'posts_per_page' => -1,                 // Get all posts
+                    'orderby' => 'date',             // Order by date
+                    'order' => 'DESC',             // Descending order
+                    'meta_query' => array(              // Meta query for custom fields
+                        array(
+                            'key' => '_order_status',   // Meta key
+                            'value' => 'completed',       // Meta value
+                            'compare' => '=',               // Comparison operator
+                        ),
+                    ),
+                );
+                $latest_solds = get_posts($args);
+                $product_data = array();
+                foreach ($latest_solds as $latest_sold) {
+                    $order_total = get_post_meta($latest_sold->ID, '_order_total', true);
+                    $update_total = wstr_get_updated_price($order_total);
+
+                    $domains = get_post_meta($latest_sold->ID, '_domain_ids', true);
+                    foreach ($domains as $domain_id) {
+
+                        $term = get_the_terms($domain_id, 'domain_industry');
+                        $term_name = $term[0]->name;
+
+                        $da_pa = get_post_meta($domain_id, '_da_pa', true);
+                        $da = $pa = '';
+                        if ($da_pa) {
+                            $da_pa_split = explode('/', $da_pa);
+                            $da = $da_pa_split[0];
+                            $pa = $da_pa_split[1];
+                        }
+                        $logo = get_post_meta($domain_id, '_logo_image', true);
+                        $logo_url = wp_get_attachment_url($logo);
+
+                        $product_thumbnail = get_the_post_thumbnail_url($domain_id, 'medium_large');
+                        if (!$product_thumbnail) {
+                            $product_thumbnail = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
+                        }
+                        $currency = get_wstr_currency();
+                        $term_exist = wstr_check_existing_term($domain_id, 'domain_cat', 'premium-names');
+
+                        $product_data[] = array(
+                            'id' => $domain_id,
+                            'title' => get_the_title($domain_id),
+                            'permalink' => get_permalink($domain_id),
+                            'featured_image' => $product_thumbnail,
+                            'logo' => $logo_url,
+                            'da' => $da,
+                            'pa' => $pa,
+                            'term_name' => $term_name,
+                            'term_exist' => $term_exist,
+                        );
+                    }
+                }
+                // Return the data in JSON format
+                return new WP_REST_Response($product_data, 200);
+            } else if (isset($params['type']) && $params['type'] === 'trending') {
+
+                $query_args = array(
+                    'posts_per_page' => 20,                  // Get all posts
+                    'post_type' => 'domain',            // Custom post type
+                    'orderby' => 'meta_value_num',    // Order by numeric meta value
+                    'order' => 'DESC',              // Descending order
+                    'meta_key' => 'ws_product_view_count', // Meta key to order by
+                    'fields' => 'ids',               // Only return post IDs
+                    'meta_query' => array(               // Meta query conditions
+                        array(
+                            'key' => '_stock_status',    // Meta key for stock status
+                            'value' => 'instock',       // Exclude posts with 'outofstock' status
+                            'compare' => '=',               // Not equal to 'outofstock'
+                        )
+                    ),
+                );
+                // Prepare data to return as JSON
+                $domains = get_posts($query_args);
+                $domains_data = array();
+
+                if ($domains) {
+                    foreach ($domains as $domain) {
+                        // Get the basic domain details
+                        $domain_title = get_the_title($domain);
+                        $domain_permalink = get_permalink($domain);
+                        $domain_image = get_the_post_thumbnail_url($domain, 'medium_large');
+
+                        if (!$domain_image) {
+                            $domain_image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
+                        }
+
+                        $logo = get_post_meta($domain, '_logo_image', true);
+                        $logo_url = wp_get_attachment_url($logo);
+
+
+                        $regular_price = get_wstr_regular_price($domain);
+                        $sale_price = get_wstr_sale_price($domain);
+
+                        $percentage_discount = 0;
+
+                        if (!empty($regular_price) && !empty($sale_price) && $regular_price > $sale_price) {
+                            // Calculate the discount percentage
+                            $percentage_discount = (($regular_price - $sale_price) / $regular_price) * 100;
+                            $percentage_discount = round($percentage_discount); // Round to 2 decimal places for readability  
+                        }
+                        // Get the price using custom function (assuming it exists)
+                        $domain_price = get_wstr_price($domain);
+                        $currency = get_wstr_currency();
+                        // Get DA / PA Ranking
+                        $da_pa = get_post_meta($domain, '_da_pa', true);
+                        $da = $pa = '';
+                        if ($da_pa) {
+                            $da_pa_split = explode('/', $da_pa);
+                            $da = $da_pa_split[0];
+                            $pa = $da_pa_split[1];
+                        }
+
+                        $term_exist = wstr_check_existing_term($domain, 'domain_cat', 'premium-names');
+
+                        // Add to the response array
+                        $domains_data[] = array(
+                            'id' => $domain,
+                            'title' => $domain_title,
+                            'permalink' => $domain_permalink,
+                            'featured_image' => $domain_image,
+                            'logo' => $logo_url,
+                            'price' => $domain_price,
+                            'da' => $da,
+                            'pa' => $pa,
+                            'currency' => $currency,
+                            'sale_price' => $sale_price,
+                            'regular_price' => $regular_price,
+                            'precentage_discount' => $percentage_discount,
+                            'term_exist' => $term_exist,
+                        );
+                    }
+                }
+                // Return the data in JSON format
+                return new WP_REST_Response($domains_data, 200);
+            }
+        }
+
+        public function wstr_api_fields_callback($request)
+        {
+
+            $params = $request->get_params();
+            if (isset($params['domain_name']) && $params['domain_name']) {
+                $domain_name = trim(sanitize_text_field($params['domain_name']));
+                $domain_age = $this->get_domain_age($domain_name);
+                $da_pa = $this->get_domain_da_pa($domain_name);
+
+                $domain_explode = explode('.', $domain_name);
+                $domain_length = strlen($domain_explode[0]);
+                $tld = $domain_explode[1];
+
+                $domain_desc = $this->get_desc($domain_name, $domain_length);
+
+                $audio = $this->get_text_to_speech($domain_name);
+
+                $data[] = [
+                    'age' => $domain_age,
+                    'da_pa' => $da_pa ? $da_pa : '',
+                    'length' => $domain_length ? $domain_length : '',
+                    'tld' => $tld ? $tld : '',
+                    // 'description' => $domain_desc ? $domain_desc : '',
+                    'audio' => $audio ? $audio : '',
+                ];
             }
 
+
+            // Return the data in JSON formatzz
+            return new WP_REST_Response($data, 200);
+        }
+
+        public function wstr_logged_in_user_callback($request)
+        {
+            // return get_current_user_id();
+            $user_details = get_user_by('id', $GLOBALS['user_id']);
+            $data[] = [
+                'id' => $user_details->data->ID ? $user_details->data->ID : '',
+                'user_login' => $user_details->data->user_login ? $user_details->data->user_login : '',
+                'user_email' => $user_details->data->user_email ? $user_details->data->user_email : '',
+                'cap_key' => $user_details->caps ? $user_details->caps : '',
+                'roles' => $user_details->roles ? $user_details->roles : '',
+            ];
+
+            // Return the data in JSON formatzz
+            return new WP_REST_Response($data, 200);
+        }
     }
 }
 new wstr_rest_api();

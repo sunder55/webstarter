@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Functions and definitions
  *
@@ -71,6 +72,21 @@ function wstr_enqueue_scripts()
     if (function_exists('wp_enqueue_media')) {
         wp_enqueue_media();
     }
+
+    // // react app 
+    // wp_enqueue_script(
+    //     'my-react-app',
+    //     WP_PLUGIN_DIR.'/react-plugin/my-account/build/static/main.1d965476.js', // Path to your React build JS file
+    //     ['wp-element'], // This depends on the WordPress `wp-element` library
+    //     filemtime(plugin_dir_path(__FILE__) . 'build/index.js'), // Cache busting
+    //     true
+    // );
+    // wp_enqueue_style(
+    //     'my-react-app-style',
+    //     WP_PLUGIN_DIR.'/react-plugin/my-account/build/static/main.f855e6bc.css', // Path to your React build CSS file (if any)
+    //     [],
+    //     filemtime(plugin_dir_path(__FILE__) . 'build/index.css')
+    // );
 }
 
 include(get_stylesheet_directory() . '/includes/wstr_post_type.php');
@@ -81,7 +97,6 @@ include(get_stylesheet_directory() . '/includes/wstr_shortcodes.php');
 include(get_stylesheet_directory() . '/includes/wstr_filters_hooks.php');
 include(get_stylesheet_directory() . '/includes/wstr_functions.php');
 include(get_stylesheet_directory() . '/includes/wstr_admin_menu.php');
-include(get_stylesheet_directory() . '/includes/wstr_api_functions.php');
 
 
 // font awesome
@@ -150,6 +165,161 @@ function create_order_notes_table_on_theme_activation()
 add_action('after_setup_theme', 'create_order_notes_table_on_theme_activation');
 
 
+// add_action('wp_footer', function () {
 
 
+//     $user_details = get_user_by('id',$GLOBALS['user_id']);
+//     echo '<pre>';
+//     // var_dump($user_details);
+//     // var_dump($user_details->data->ID);
 
+//     $data[] = [
+//         'id' => $user_details->data->ID ? $user_details->data->ID : '',
+//         'user_login' => $user_details->data->user_login ? $user_details->data->user_login : '',
+//         'user_email' => $user_details->data->user_email ? $user_details->data->user_email : '',
+//         'cap_key' =>$user_details->caps ? $user_details->caps : '',
+//         'roles' => $user_details->roles ? $user_details->roles : '',
+//     ];
+//     // var_dump($data);
+//     // $text = 'hello.com';
+//     // $apiKey = "sk_6f97cb3d8e487984ffa46daebf483dab8815a02ba7204d8b"; // Replace with your
+
+//     // // The API key for authentication
+//     // // $XI_API_KEY = "<xi-api-key>";
+
+//     // // The URL of the API endpoint
+//     // $url = "https://api.elevenlabs.io/v1/voices";
+
+//     // // Set up headers for the HTTP request
+//     // $headers = [
+//     //     "Accept: application/json",
+//     //     "xi-api-key: $XI_API_KEY",
+//     //     "Content-Type: application/json"
+//     // ];
+
+//     // // Initialize cURL session
+//     // $ch = curl_init($url);
+
+//     // // Set cURL options
+//     // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return the response as a string
+//     // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers); // Set the headers for the request
+
+//     // // Execute the GET request
+//     // $response = curl_exec($ch);
+
+//     // // Check if there was an error with the request
+//     // if (curl_errno($ch)) {
+//     //     echo 'Request Error:' . curl_error($ch);
+//     // } else {
+//     //     // Parse the JSON response into a PHP associative array
+//     //     $data = json_decode($response, true);
+
+//     //     // Loop through the 'voices' array and print 'name' and 'voice_id'
+//     //     foreach ($data['voices'] as $voice) {
+//     //         echo $voice['name'] . "; " . $voice['voice_id'] . "\n";
+//     //     }
+//     // }
+
+//     // // Close the cURL session
+//     // curl_close($ch);
+
+//     // $curl = curl_init();
+
+//     //    $request_payload = [
+//     //     "text" => $text,
+//     //     "voice_settings" => [
+//     //         "similarity_boost" => 0.5,
+//     //         "stability" => 0.5,
+//     //         "style" => 0.5,
+//     //         "use_speaker_boost" => true
+//     //     ]
+//     // ];
+
+//     // curl_setopt_array($curl, [
+//     //     CURLOPT_URL => "https://api.elevenlabs.io/v1/text-to-speech/onwK4e9ZLuTAKqWW03F9",
+//     //     CURLOPT_RETURNTRANSFER => true,
+//     //     CURLOPT_ENCODING => "",
+//     //     CURLOPT_MAXREDIRS => 10,
+//     //     CURLOPT_TIMEOUT => 30,
+//     //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+//     //     CURLOPT_CUSTOMREQUEST => "POST",
+//     //       CURLOPT_POSTFIELDS => json_encode($request_payload),
+//     //     CURLOPT_HTTPHEADER => [
+//     //         "Content-Type: application/json",
+//     //         "xi-api-key: " . $apiKey,
+//     //     ],
+//     // ]);
+
+//     // $response = curl_exec($curl);
+//     // $err = curl_error($curl);
+
+//     // curl_close($curl);
+
+//     // if ($err) {
+//     //     echo "cURL Error #:" . $err;
+//     // } else {
+//     //     echo $response;
+//     // }
+
+
+//     // $text = 'hello.com';
+//     // $api_url = "https://api.elevenlabs.io/v1/text-to-speech/onwK4e9ZLuTAKqWW03F9"; // Adjust the output format as needed
+//     // $request_payload = [
+//     //     "text" => $text,
+//     //     "voice_settings" => [
+//     //         "similarity_boost" => 0.5,
+//     //         "stability" => 0.5,
+//     //         "style" => 0.5,
+//     //         "use_speaker_boost" => true
+//     //     ]
+//     // ];
+
+//     // $apiKey = "sk_eedc67f1e1f786064f584e497acbe18c37cdb860905ca325"; // Replace with your actual API key
+
+//     // $curl = curl_init();
+
+//     // curl_setopt_array($curl, [
+//     //     CURLOPT_URL => $api_url,
+//     //     CURLOPT_RETURNTRANSFER => true,
+//     //     CURLOPT_ENCODING => "",
+//     //     CURLOPT_MAXREDIRS => 10,
+//     //     CURLOPT_TIMEOUT => 30,
+//     //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+//     //     CURLOPT_CUSTOMREQUEST => "POST",
+//     //     CURLOPT_POSTFIELDS => json_encode($request_payload),
+//     //     CURLOPT_HTTPHEADER => [
+//     //         "Content-Type: application/json",
+//     //         "xi-api-key: " . $apiKey,
+//     //     ],
+//     // ]);
+
+//     // $response = curl_exec($curl);
+//     // $err = curl_error($curl);
+
+//     // curl_close($curl);
+
+//     // // if ($err) {
+//     // //     return "Error #:" . $err;
+//     // // } else {
+//     // //     // var_dump($response);
+//     // //     return $response;
+//     // // }
+//     // var_dump($response);
+//     // // Define file name and path
+//     // $upload_dir = wp_upload_dir();
+//     // $file_name = $text . '.wav';
+//     // $file_path = $upload_dir['path'] . '/' . $file_name;
+//     // $file_url = $upload_dir['url'] . '/' . $file_name;
+
+//     // // Save audio data to the file
+//     // file_put_contents($file_path, $response);
+
+//     // // Display HTML audio player with file path
+//     // $audio_player = '<audio controls>';
+//     // $audio_player .= '<source src="' . $file_url . '" type="audio/wav">';
+//     // $audio_player .= 'Your browser does not support the audio tag.';
+//     // $audio_player .= '</audio>';
+
+//     // // var_dump($audio_player);
+//     // echo $audio_player;
+// });

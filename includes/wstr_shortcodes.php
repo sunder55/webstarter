@@ -14,6 +14,7 @@ class wstr_shortcodes
         add_shortcode('wstr-single-domain', array($this, 'wstr_single_domain_page'));
         add_shortcode('wstr-similar-industry-name', [$this, 'wstr_similar_industry_name']);
         add_shortcode('wstr-buy-domain', [$this, 'wstr_buy_domain']);
+        add_shortcode('wstr-login', [$this, 'wstr_login']);
     }
 
     public function wstr_banner_reviews_function()
@@ -785,7 +786,7 @@ class wstr_shortcodes
             }
             ?>
         </div>
-<?php
+    <?php
         return ob_get_clean();
     }
 
@@ -809,24 +810,103 @@ class wstr_shortcodes
         query_posts($args); ?>
         <!-- the loop -->
         <?php if (have_posts()) :
-         while (have_posts()) : 
-            the_post();
+            while (have_posts()) :
+                the_post();
         ?>
-        
-        <h5><?php echo get_the_title();  ?></h5>
 
-            <?php endwhile;
+                <h5><?php echo get_the_title();  ?></h5>
+
+        <?php endwhile;
             // <!-- pagination -->
 
-            the_posts_pagination( array(
+            the_posts_pagination(array(
                 'mid_size'  => 2,
-                'prev_text' => __( '<', 'webstarter' ),
-                'next_text' => __( '>', 'webstarter' ),
-            ) );
-            
+                'prev_text' => __('<', 'webstarter'),
+                'next_text' => __('>', 'webstarter'),
+            ));
+
         //  else : 
-            // <!-- No posts found -->
-         endif;
+        // <!-- No posts found -->
+        endif;
+        return ob_get_clean();
+    }
+
+    public function wstr_login()
+    {
+        ob_start();
+        // Check if the user is not logged in
+        if (is_user_logged_in()) {
+            // Redirect them to the wp-admin login page
+            $user_id = get_current_user_id();
+            // $author_url = get_author_posts_url($user_id);
+            wp_redirect(get_home_url());
+            exit;
+        }
+        ?>
+        <div class="user-details login-form-details forms_container" id="login-form">
+            <?php
+            if (isset($_GET['new_user']) && $_GET['new_user'] == 'yes') {
+                echo ' <span class=" sg_success_msg d-flex gap-10 mb-2"><i class="bi bi-exclamation-circle  " ></i> User has been successfully created. Please login.
+        </span>';
+            }
+            if (isset($_GET['reason'])) {
+                $login_err_msg = '';
+                switch ($_GET['reason']) {
+                    case 'invalid_username':
+                        $login_err_msg = 'Invalid username';
+                        break;
+
+                    case 'empty_password':
+                        $login_err_msg = 'Password is empty';
+                        break;
+
+                    case 'empty_username':
+                        $login_err_msg = 'Username is Empty';
+                        break;
+
+                    case 'incorrect_password':
+                        $login_err_msg = 'Incorrect Password';
+                        break;
+                }
+
+                echo '<span class="text-danger fw-bold">' . $login_err_msg . '</span>';
+            }
+            ?>
+            <h2 class="m-0">Welcome Back</h2>
+            <div class="col-lg-12 mb-4 login-redirect-to-register">
+                <p>Don't have an account yet. <span><a href="<?php echo home_url('/register') ?>">Sign
+                            up </a></span>
+                </p>
+            </div>
+            <?php
+            echo wp_login_form(
+                array(
+                    'redirect' => esc_url($_SERVER['REQUEST_URI']),
+                    'form_id' => 'loginform',
+                    'label_username' => '',
+                    'label_password' => '',
+                    //  'label_username' => __('Username', 'stat-genius'),
+                    //  'label_password' => __('Password', 'stat-genius'),
+                    'label_remember' => __('Remember Me', 'stat-genius'),
+                    'label_log_in' => __('Login', 'stat-genius'),
+                    'id_username' => 'sg-username',
+                    'id_password' => 'sg-password',
+                    'id_remember' => 'sg-rememberme',
+                    'id_submit' => 'sg-submit',
+                    'remember' => true,
+                    'value_username' => '',
+                    'value_remember' => false,
+                    'before' => '',
+                    'after' => '<p><input type="checkbox" id="show-password"> ' . __('Show Password', 'stat-genius') . '</p>'
+
+                )
+            );
+            ?>
+            <a href="<?php echo esc_url(wp_lostpassword_url()) ?>" class="login-forgot-password">
+                <p class="text-center mt-4">Forgot password?</p>
+            </a>
+        </div>
+<?
         return ob_get_clean();
     }
 }
