@@ -302,6 +302,16 @@ if (!class_exists('wstr_rest_api')) {
                 // }
                 'permission_callback' => '__return_true'
             ));
+
+            // for updating users 
+            register_rest_route('wstr/v1', '/update-user/(?P<user_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'custom_update_user_profile'],
+                // 'permission_callback' => function () {
+                //     return is_user_logged_in(); // Check if the user is logged in
+                // },
+                'permission_callback' => '__return_true'
+            ));
         }
 
         /**
@@ -664,16 +674,99 @@ if (!class_exists('wstr_rest_api')) {
         {
             // return get_current_user_id();
             $user_details = get_user_by('id', $GLOBALS['user_id']);
+            $user_image_id = (int) get_user_meta($GLOBALS['user_id'], 'ws_profile_pic', true);
+            $user_image = '';
+            if ($user_image_id) {
+                $user_image =  wp_get_attachment_url($user_image_id);
+            }
             $data[] = [
                 'id' => $user_details->data->ID ? $user_details->data->ID : '',
-                'user_login' => $user_details->data->user_login ? $user_details->data->user_login : '',
+                'display_name' => $user_details->data->display_name ? $user_details->data->display_name : '',
                 'user_email' => $user_details->data->user_email ? $user_details->data->user_email : '',
                 'cap_key' => $user_details->caps ? $user_details->caps : '',
                 'roles' => $user_details->roles ? $user_details->roles : '',
+                'first_name' => $user_details->first_name ? $user_details->first_name : '',
+                'last_name' => $user_details->last_name ? $user_details->last_name : '',
+                'user_image' => $user_image,
             ];
 
             // Return the data in JSON formatzz
             return new WP_REST_Response($data, 200);
+        }
+
+        /**
+         * Function for updating user details 
+         * @param mixed $user_id
+         * @return mixed
+         */
+        function custom_update_user_profile($request)
+        {
+            $current_user_id = $GLOBALS['user_id']; // Get the current logged-in user ID
+            $user_id = (int) $request->get_param('user_id'); // Get the user ID from the API request
+            // Check if the passed user ID matches the logged-in user ID
+
+            if ($current_user_id !== $user_id) {
+                return new WP_Error('not_allowed', 'You can only update your own profile.', array('status' => 403));
+            }
+
+            $user_data = get_userdata($user_id);
+            if (!$user_data) {
+                return new WP_Error('user_not_found', 'User not found.', array('status' => 404));
+            }
+
+            // Fetch the user info from the request
+            // $params = $request->get_json_params();
+            $params = $_POST;
+            $first_name = sanitize_text_field($params['first_name']);
+            $last_name = sanitize_text_field($params['last_name']);
+            $display_name = sanitize_text_field($params['display_name']);
+            $current_password = $params['current_password'];
+            $new_password = $params['new_password'];
+
+            // Verify the current password if provided
+            if ($current_password && !wp_check_password($current_password, $user_data->user_pass, $user_id)) {
+                return new WP_Error('incorrect_password', 'The current password you entered is incorrect.', array('status' => 400));
+            }
+
+            // Update user data fields
+            $user_update_data = array(
+                'ID' => $user_id,
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'display_name' => $display_name,
+            );
+
+            // Handle password update if new password is provided
+            if (!empty($new_password)) {
+                $user_update_data['user_pass'] = $new_password;
+            }
+
+            // Attempt to update the user data
+            $updated_user_id = wp_update_user($user_update_data);
+
+            if (is_wp_error($updated_user_id)) {
+                return new WP_Error('update_failed', 'Failed to update user details.', array('status' => 500));
+            }
+
+            // Handle profile image upload (optional, handle separately)
+
+            if (!empty($_FILES['profile_image']['name'])) {
+                // Process the file upload
+                require_once(ABSPATH . 'wp-admin/includes/file.php');
+                require_once(ABSPATH . 'wp-admin/includes/image.php');
+                require_once(ABSPATH . 'wp-admin/includes/media.php');
+
+                $attachment_id = media_handle_upload('profile_image', 0); // Use the name of the input
+
+                if (is_wp_error($attachment_id)) {
+                    return new WP_Error('upload_failed', 'Failed to upload profile image.', array('status' => 500));
+                }
+
+                // Set user meta for profile image
+                update_user_meta($user_id, 'ws_profile_pic', $attachment_id);
+            }
+
+            return new WP_REST_Response(array('message' => 'User profile updated successfully'), 200);
         }
     }
 }

@@ -15,6 +15,7 @@ class wstr_shortcodes
         add_shortcode('wstr-similar-industry-name', [$this, 'wstr_similar_industry_name']);
         add_shortcode('wstr-buy-domain', [$this, 'wstr_buy_domain']);
         add_shortcode('wstr-login', [$this, 'wstr_login']);
+        add_shortcode('wstr_register', [$this, 'wstr_register']);
     }
 
     public function wstr_banner_reviews_function()
@@ -54,7 +55,7 @@ class wstr_shortcodes
     }
     /**
      * Shortcode for getting currecy symbol for frontend
-     * @return void
+     * @return mixed
      */
     function wstr_multicurrency()
     {
@@ -816,7 +817,7 @@ class wstr_shortcodes
 
                 <h5><?php echo get_the_title();  ?></h5>
 
-        <?php endwhile;
+            <?php endwhile;
             // <!-- pagination -->
 
             the_posts_pagination(array(
@@ -834,79 +835,193 @@ class wstr_shortcodes
     public function wstr_login()
     {
         ob_start();
-        // Check if the user is not logged in
-        if (is_user_logged_in()) {
-            // Redirect them to the wp-admin login page
-            $user_id = get_current_user_id();
-            // $author_url = get_author_posts_url($user_id);
-            wp_redirect(get_home_url());
-            exit;
-        }
-        ?>
-        <div class="user-details login-form-details forms_container" id="login-form">
-            <?php
-            if (isset($_GET['new_user']) && $_GET['new_user'] == 'yes') {
-                echo ' <span class=" sg_success_msg d-flex gap-10 mb-2"><i class="bi bi-exclamation-circle  " ></i> User has been successfully created. Please login.
-        </span>';
+        if (isset($_POST['register_user'])) {
+            // Process the registration
+            $username = sanitize_user($_POST['username']);
+            $email = sanitize_email($_POST['email']);
+            $password = sanitize_text_field($_POST['password']);
+            $confirm_password = sanitize_text_field($_POST['confirm_password']);
+            $full_name = sanitize_text_field($_POST['full_name']);
+            $become_seller = isset($_POST['become_seller']) ? true : false;
+
+            $errors = [];
+
+            // Validate required fields
+            if (empty($username)) {
+                $errors[] = 'Username is required.';
             }
-            if (isset($_GET['reason'])) {
-                $login_err_msg = '';
-                switch ($_GET['reason']) {
-                    case 'invalid_username':
-                        $login_err_msg = 'Invalid username';
-                        break;
 
-                    case 'empty_password':
-                        $login_err_msg = 'Password is empty';
-                        break;
+            if (empty($email)) {
+                $errors[] = 'Email is required.';
+            } elseif (!is_email($email)) {
+                $errors[] = 'Invalid email address.';
+            }
 
-                    case 'empty_username':
-                        $login_err_msg = 'Username is Empty';
-                        break;
+            if (empty($password) || empty($confirm_password)) {
+                $errors[] = 'Password and confirm password are required.';
+            } elseif ($password !== $confirm_password) {
+                $errors[] = 'Passwords do not match.';
+            }
 
-                    case 'incorrect_password':
-                        $login_err_msg = 'Incorrect Password';
-                        break;
+            // Check if username or email already exists
+            if (username_exists($username)) {
+                $errors[] = 'Username already exists.';
+            }
+
+            if (email_exists($email)) {
+                $errors[] = 'Email already exists.';
+            }
+
+            // If no errors, proceed with user registration
+            if (empty($errors)) {
+                $user_data = [
+                    'user_login' => $username,
+                    'user_email' => $email,
+                    'user_pass' => $password,
+                    'first_name' => explode(' ', $full_name)[0], // First name
+                    'last_name' => explode(' ', $full_name)[1] ?? '', // Last name if available
+                ];
+
+                $user_id = wp_insert_user($user_data);
+
+                if (!is_wp_error($user_id)) {
+                    // Optionally, assign the user role as seller if checkbox is checked
+                    if ($become_seller) {
+                        $user = new WP_User($user_id);
+                        $user->set_role('seller');
+                    } else {
+                        $user = new WP_User($user_id);
+                        $user->set_role('buyer');
+                    }
+
+                    // Redirect after successful registration
+                    wp_redirect(home_url('/login?new_user=yes'));
+                    exit;
+                } else {
+                    $errors[] = $user_id->get_error_message(); // Display any WP error
                 }
+            }
+        }
 
-                echo '<span class="text-danger fw-bold">' . $login_err_msg . '</span>';
+
+        $register = $_GET['register'];
+        if ($register == true) {
+            if (!empty($errors)) {
+                foreach ($errors as $error) {
+                    echo '<p class="error">' . esc_html($error) . '</p>';
+                }
             }
             ?>
-            <h2 class="m-0">Welcome Back</h2>
-            <div class="col-lg-12 mb-4 login-redirect-to-register">
-                <p>Don't have an account yet. <span><a href="<?php echo home_url('/register') ?>">Sign
-                            up </a></span>
-                </p>
-            </div>
-            <?php
-            echo wp_login_form(
-                array(
-                    'redirect' => esc_url($_SERVER['REQUEST_URI']),
-                    'form_id' => 'loginform',
-                    'label_username' => '',
-                    'label_password' => '',
-                    //  'label_username' => __('Username', 'stat-genius'),
-                    //  'label_password' => __('Password', 'stat-genius'),
-                    'label_remember' => __('Remember Me', 'stat-genius'),
-                    'label_log_in' => __('Login', 'stat-genius'),
-                    'id_username' => 'sg-username',
-                    'id_password' => 'sg-password',
-                    'id_remember' => 'sg-rememberme',
-                    'id_submit' => 'sg-submit',
-                    'remember' => true,
-                    'value_username' => '',
-                    'value_remember' => false,
-                    'before' => '',
-                    'after' => '<p><input type="checkbox" id="show-password"> ' . __('Show Password', 'stat-genius') . '</p>'
+            <form action="#" method="POST" class="wstr_signup" id="wstr_signup">
+                <label for="username">Username*</label>
+                <input type="text" id="username" name="username" placeholder="Your Username" required>
 
-                )
-            );
-            ?>
-            <a href="<?php echo esc_url(wp_lostpassword_url()) ?>" class="login-forgot-password">
-                <p class="text-center mt-4">Forgot password?</p>
-            </a>
-        </div>
+                <label for="full-name">First Name, Last Name</label>
+                <input type="text" id="full-name" name="full_name" placeholder="Enter first and last name" required>
+
+                <label for="email">Email Address*</label>
+                <input type="email" id="email" name="email" placeholder="@Email address " required>
+                <p id="error-msg"></p>
+                <label for="password">Password*</label>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+
+                <label for="confirm-password">Confirm Password*</label>
+                <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm Password " required>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="become-seller" name="become_seller">
+                    <label for="become-seller">Become a Seller</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">I have read and accepted the <a href="#">terms and conditions</a></label>
+                </div>
+
+                <button type="submit" name="register_user">Register</button>
+
+                <div class="login-link">
+                    <p>Already registered? <a href="#">Login</a></p>
+                </div>
+            </form>
+
+        <?php
+        } else {
+            // Check if the user is not logged in
+            if (is_user_logged_in()) {
+                // Redirect them to the wp-admin login page
+                $user_id = get_current_user_id();
+                // $author_url = get_author_posts_url($user_id);
+                wp_redirect(get_home_url());
+                exit;
+            }
+        ?>
+            <div class="user-details login-form-details forms_container" id="login-form">
+                <?php
+                if (isset($_GET['new_user']) && $_GET['new_user'] == 'yes') {
+                    echo ' <span class=" sg_success_msg d-flex gap-10 mb-2"><i class="bi bi-exclamation-circle  " ></i> User has been successfully created. Please login.
+         </span>';
+                }
+                if (isset($_GET['reason'])) {
+                    $login_err_msg = '';
+                    switch ($_GET['reason']) {
+                        case 'invalid_username':
+                            $login_err_msg = 'Invalid username';
+                            break;
+
+                        case 'empty_password':
+                            $login_err_msg = 'Password is empty';
+                            break;
+
+                        case 'empty_username':
+                            $login_err_msg = 'Username is Empty';
+                            break;
+
+                        case 'incorrect_password':
+                            $login_err_msg = 'Incorrect Password';
+                            break;
+                    }
+
+                    echo '<span class="text-danger fw-bold">' . $login_err_msg . '</span>';
+                }
+                ?>
+                <h2 class="m-0">Welcome Back</h2>
+                <div class="col-lg-12 mb-4 login-redirect-to-register">
+                    <p>Don't have an account yet. <span><a href="<?php echo home_url('/login?register=true') ?>">Sign
+                                up </a></span>
+                    </p>
+                </div>
+                <?php
+                echo wp_login_form(
+                    array(
+                        'redirect' => esc_url($_SERVER['REQUEST_URI']),
+                        'form_id' => 'loginform',
+                        'label_username' => '',
+                        'label_password' => '',
+                        //  'label_username' => __('Username', 'stat-genius'),
+                        //  'label_password' => __('Password', 'stat-genius'),
+                        'label_remember' => __('Remember Me', 'stat-genius'),
+                        'label_log_in' => __('Login', 'stat-genius'),
+                        'id_username' => 'sg-username',
+                        'id_password' => 'sg-password',
+                        'id_remember' => 'sg-rememberme',
+                        'id_submit' => 'sg-submit',
+                        'remember' => true,
+                        'value_username' => '',
+                        'value_remember' => false,
+                        'before' => '',
+                        'after' => '<p><input type="checkbox" id="show-password"> ' . __('Show Password', 'stat-genius') . '</p>'
+
+                    )
+                );
+                ?>
+                <a href="<?php echo esc_url(wp_lostpassword_url()) ?>" class="login-forgot-password">
+                    <p class="text-center mt-4">Forgot password?</p>
+                </a>
+            </div>
+
 <?
+        }
         return ob_get_clean();
     }
 }

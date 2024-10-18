@@ -87,6 +87,10 @@ function wstr_enqueue_scripts()
     //     [],
     //     filemtime(plugin_dir_path(__FILE__) . 'build/index.css')
     // );
+
+    wp_localize_script('your-script-handle', 'wpApiSettings', array(
+        'nonce' => wp_create_nonce('wp_rest'),
+    ));
 }
 
 include(get_stylesheet_directory() . '/includes/wstr_post_type.php');
@@ -327,11 +331,11 @@ add_action('after_setup_theme', 'create_order_notes_table_on_theme_activation');
 
 
 // register shortcode
-add_shortcode('wstr_register', 'wstr_register');
+// add_shortcode('wstr_register', 'wstr_register');
 function wstr_register()
 {
     ob_start();
-    ?>
+?>
     <form action="#" method="POST" class="wstr_signup">
         <label for="username">Username*</label>
         <input type="text" id="username" name="username" placeholder="Your Username" required>
@@ -364,7 +368,7 @@ function wstr_register()
             <p>Already registered? <a href="#">Login</a></p>
         </div>
     </form>
-    <?php
+<?php
     $output = ob_get_contents();
     ob_end_clean();
     return $output;
