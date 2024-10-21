@@ -303,3 +303,88 @@ function wstr_get_favourite_count($domain_id)
 
     return $favourite_count;
 }
+
+/**
+ * Function for getting order details by order id
+ * @param  int order_id
+ * @return  mixed
+ */
+
+function wstr_get_order_details($order_id)
+{
+    $order_status = get_post_meta($order_id, '_order_status', true);
+    $order_total = get_post_meta($order_id, '_order_total', true);
+    $order_subtotal = get_post_meta($order_id, '_order_subtotal', true);
+
+    $order_date = get_post_meta($order_id, '_date_created', true);
+    $customer_id = get_post_meta($order_id, '_customer', true);
+    $transfer_to = get_post_meta($order_id, '_transfer_to', true);
+
+    $billing_first_name = get_post_meta($order_id, '_billing_first_name', true);
+    $billing_last_name = get_post_meta($order_id, '_billing_last_name', true);
+    $billing_company = get_post_meta($order_id, '_billing_company', true);
+    $billing_address_1 = get_post_meta($order_id, '_billing_address_1', true);
+    $billing_address_2 = get_post_meta($order_id, '_billing_address_2', true);
+    $billing_city = get_post_meta($order_id, '_billing_city', true);
+    $billing_postcode = get_post_meta($order_id, '_billing_postcode', true);
+    $billing_country = get_post_meta($order_id, '_billing_country', true);
+    $billing_state = get_post_meta($order_id, '_billing_state', true);
+    $billing_email = get_post_meta($order_id, '_billing_email', true);
+    $billing_phone = get_post_meta($order_id, '_billing_phone', true);
+
+    $shipping_first_name = get_post_meta($order_id, '_shipping_first_name', true);
+    $shipping_last_name = get_post_meta($order_id, '_shipping_last_name', true);
+    $shipping_company = get_post_meta($order_id, '_shipping_company', true);
+    $shipping_address_1 = get_post_meta($order_id, '_shipping_address_1', true);
+    $shipping_address_2 = get_post_meta($order_id, '_shipping_address_2', true);
+    $shipping_city = get_post_meta($order_id, '_shipping_city', true);
+    $shipping_postcode = get_post_meta($order_id, '_shipping_postcode', true);
+    $shipping_country = get_post_meta($order_id, '_shipping_country', true);
+    $shipping_state = get_post_meta($order_id, '_shipping_state', true);
+    $shipping_email = get_post_meta($order_id, '_shipping_email', true);
+    $shipping_phone = get_post_meta($order_id, '_shipping_phone', true);
+
+    $payment_method = get_post_meta($order_id, '_payment_method', true);
+    $transaction_id = get_post_meta($order_id, '_transaction_id', true);
+
+    $doamin_ids = get_post_meta($order_id, '_domain_ids', true);
+
+    $data = [
+        'order_status' => $order_status,
+        'order_total' => $order_total,
+        'order_subtotal' => $order_subtotal,
+        'order_date' => $order_date,
+        'customer_id' => $customer_id,
+        'transfer_to' => $transfer_to,
+        'payment_method' => $payment_method,
+        'transaction_id' => $transaction_id,
+        'doamin_ids' => $doamin_ids,
+        'billing_details' => [
+            'billing_first_name' => $billing_first_name,
+            'billing_last_name' => $billing_last_name,
+            'billing_company' => $billing_company,
+            'billing_address_1' => $billing_address_1,
+            'billing_address_2' => $billing_address_2,
+            'billing_city' => $billing_city,
+            'billing_postcode' => $billing_postcode,
+            'billing_country' => $billing_country,
+            'billing_state' => $billing_state,
+            'billing_email' => $billing_email,
+            'billing_phone' => $billing_phone,
+        ],
+        'shipping_details' => [
+            'shipping_first_name' => $shipping_first_name,
+            'shipping_last_name' => $shipping_last_name,
+            'shipping_company' => $shipping_company,
+            'shipping_address_1' => $shipping_address_1,
+            'shipping_address_2' => $shipping_address_2,
+            'shipping_city' => $shipping_city,
+            'shipping_postcode' => $shipping_postcode,
+            'shipping_country' => $shipping_country,
+            'shipping_state' => $shipping_state,
+            'shipping_email' => $shipping_email,
+            'shipping_phone' => $shipping_phone,
+        ],
+    ];
+    return $data;
+}

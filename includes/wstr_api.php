@@ -768,6 +768,55 @@ if (!class_exists('wstr_rest_api')) {
 
             return new WP_REST_Response(array('message' => 'User profile updated successfully'), 200);
         }
+
+        /**
+         * Function for getting order details by user id
+         */
+        public function wstr_get_orders($request)
+        {
+            $user_id = (int) $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('user_not_found', 'Sorry, user not found', array('status' => 404));
+            }
+
+            $args = [
+                'post_type' => 'domain_order',
+                'post_per_page' => -1,
+                'meta_query' => [
+                    [
+                        'key' => '_customer',
+                        'value' => $user_id,
+                        'compare' => '=',
+                    ],
+                ],
+            ];
+            $orders = new WP_Query($args);
+            if ($orders->have_posts()) {
+                $order_ids = [];
+                while ($orders->have_posts()) {
+                    $orders->the_post();
+                    $order_ids[] = get_the_ID();
+                    // $order_status = get_post_meta($order_id, '_order_status', true);
+                    // $order_data = wstr_get_order_details($order_id);
+                    // return $order_data;
+                    // $data[] = [
+                    //     'order_id' => $order_id ? $order_id : '',
+                    //     // 'display_name' => $user_details->data->display_name ? $user_details->data->display_name : '',
+                    //     // 'user_email' => $user_details->data->user_email ? $user_details->data->user_email : '',
+                    //     // 'cap_key' => $user_details->caps ? $user_details->caps : '',
+                    //     // 'roles' => $user_details->roles ? $user_details->roles : '',
+                    //     // 'first_name' => $user_details->first_name ? $user_details->first_name : '',
+                    //     // 'last_name' => $user_details->last_name ? $user_details->last_name : '',
+                    //     // 'user_image' => $user_image,
+                    // ];
+                }
+                return new WP_REST_Response($order_ids, 200);
+            } else {
+                //    return esc_html_e('Sorry, No orders found');
+                return new WP_Error('order_not_found', 'Sorry, No orders found', array('status' => 404));
+            }
+            // Re
+        }
     }
 }
 new wstr_rest_api();

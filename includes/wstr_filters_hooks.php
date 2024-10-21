@@ -122,10 +122,9 @@ function wstr_prevent_wp_login()
     $allowed_actions = ['logout', 'lostpassword', 'rp', 'resetpass', 'postpass']; // allowing action 
 
     if ($pagenow == 'wp-login.php' && (!isset($_GET['action']) || !in_array($_GET['action'], $allowed_actions))) {
-        $page = get_home_url() . '/login';
+        $page = get_home_url() . '/my-account';
 
         wp_redirect($page);
-
     }
 }
 
@@ -135,6 +134,6 @@ function wstr_prevent_wp_login()
 add_filter('login_errors', function ($error) {
     global $errors;
     $err_codes = $errors->get_error_codes();
-    wp_redirect('/login?reason=' . $err_codes[0]);
+    wp_redirect('/my-account?reason=' . $err_codes[0]);
     return $error;
 });
