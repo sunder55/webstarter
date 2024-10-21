@@ -410,6 +410,7 @@ div[role="progressbar"]::after:not(
 
 .ws_home_trending_cards .ws-cards-container-wrapper {
   display: block;
+  gap: 50px;
   position: relative;
 }
 
@@ -426,7 +427,7 @@ div[role="progressbar"]::after:not(
   padding-bottom: 50px;
 }
 .ws_home_trending_cards .scrolling-animation {
-  animation: scroll 30s linear infinite;
+  /* animation: scroll 30s linear infinite; */
 }
 
 /* Keyframes for continuous scrolling */
@@ -455,7 +456,8 @@ div[role="progressbar"]::after:not(
   cursor: pointer;
 }
 .ws_home_trending_cards .ws-cards-container-wrapper {
-  overflow: hidden;
+  overflow: auto;
+  scrollbar-width: none;
 }
 .ws_home_trending_cards .ws_card_hover_charts {
   position: absolute;

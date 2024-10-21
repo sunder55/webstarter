@@ -25,22 +25,23 @@ jQuery(document).ready(function ($) {
     });
   });
 
+
   // When the magnifying glass is clicked make the image whole screen single domain page  =================================
-  $(".fa-magnifying-glass").on("click", function () {
-    const imageSrc = $(".featured-image img").attr("src");
+  $('.fa-magnifying-glass').on('click', function () {
+    const imageSrc = $('.featured-image img').attr('src');
 
     // Set the image source in the modal
-    $("#modalImage").attr("src", imageSrc);
+    $('#modalImage').attr('src', imageSrc);
 
-    $("#imageModal").fadeIn();
+    $('#imageModal').fadeIn();
   });
 
-  $(".close").on("click", function () {
-    $("#imageModal").fadeOut();
+  $('.close').on('click', function () {
+    $('#imageModal').fadeOut();
   });
-  $(window).on("click", function (e) {
-    if ($(e.target).is("#imageModal")) {
-      $("#imageModal").fadeOut();
+  $(window).on('click', function (e) {
+    if ($(e.target).is('#imageModal')) {
+      $('#imageModal').fadeOut();
     }
   });
 
@@ -52,7 +53,9 @@ jQuery(document).ready(function ($) {
         .css({ transform: "scale(" + $(this).attr("data-scale") + ")" });
     })
     .on("mouseout", function () {
-      $(this).children(".img_producto").css({ transform: "scale(1)" });
+      $(this)
+        .children(".img_producto")
+        .css({ transform: "scale(1)" });
     })
     .on("mousemove", function (e) {
       $(this)
@@ -62,14 +65,17 @@ jQuery(document).ready(function ($) {
             ((e.pageX - $(this).offset().left) / $(this).width()) * 100 +
             "% " +
             ((e.pageY - $(this).offset().top) / $(this).height()) * 100 +
-            "%",
+            "%"
         });
     });
 });
 
-jQuery(".swiper-wrapper").slick({
+
+
+jQuery('.swiper-wrapper').slick({
+
   centerMode: true,
-  centerPadding: "100px",
+  centerPadding: '100px',
   slidesToShow: 4,
   slidesToScroll: 1,
   infinite: true,
@@ -80,52 +86,124 @@ jQuery(".swiper-wrapper").slick({
       settings: {
         arrows: false,
         centerMode: true,
-        centerPadding: "40px",
-        slidesToShow: 3,
-      },
+        centerPadding: '40px',
+        slidesToShow: 3
+      }
     },
     {
       breakpoint: 600,
       settings: {
         arrows: false,
         centerMode: true,
-        centerPadding: "40px",
-        slidesToShow: 1,
-      },
-    },
-  ],
+        centerPadding: '40px',
+        slidesToShow: 1
+      }
+    }
+  ]
 });
+
+
 
 // trending cards aniamtion effect
 
+
+
 jQuery(document).ready(function ($) {
-  var $container = $(".ws_home_trending_cards .ws-cards-container-wrapper");
+
+  var $container = $('.ws_home_trending_cards .ws-cards-container-wrapper');
   var $contents = $container.html();
 
-  $container.html('<div class="scrolling">' + $contents + "</div>");
+  $container.html('<div class="scrolling">' + $contents + '</div>');
 
-  var $scrolling = $container.find(".scrolling");
+  var $scrolling = $container.find('.scrolling');
 
+  // Clone the contents for seamless scrolling (optional)
   for (let i = 0; i < 1; i++) {
     $scrolling.append($scrolling.children().clone());
   }
 
   var isPaused = false; // Track the paused state
 
-  $(".toggleMarquee").on("click", function () {
+  $('.toggleMarquee').on('click', function () {
     isPaused = !isPaused;
 
     // Update button icon based on the paused state
     if (isPaused) {
       $(this).html('<i class="fa-solid fa-circle-play"></i>');
-      $scrolling.css("animation-play-state", "paused");
+      $scrolling.css('animation-play-state', 'paused');
     } else {
       $(this).html('<i class="fa-regular fa-circle-pause"></i>');
-      $scrolling.css("animation-play-state", "running");
+      $scrolling.css('animation-play-state', 'running');
     }
   });
 
-  $scrolling.addClass("scrolling-animation");
+  // Add mouse grab scrolling functionality
+  let isDragging = false;
+  let startX;
+  let scrollLeft;
+
+  // Mouse down event to initiate dragging
+  $container.on('mousedown', function (e) {
+    isDragging = true;
+    startX = e.pageX - $container.offset().left; // Get the mouse position relative to the container
+    scrollLeft = $container.scrollLeft(); // Get the current scroll position
+    $container.css('cursor', 'grabbing'); // Change cursor to grabbing
+  });
+
+  // Mouse leave event to stop dragging
+  $container.on('mouseleave', function () {
+    isDragging = false;
+    $container.css('cursor', 'grab'); // Reset cursor
+  });
+
+  // Mouse up event to stop dragging
+  $container.on('mouseup', function () {
+    isDragging = false;
+    $container.css('cursor', 'grab'); // Reset cursor
+  });
+
+  // Mouse move event to handle the dragging
+  $container.on('mousemove', function (e) {
+    if (!isDragging) return; // Do nothing if not dragging
+    e.preventDefault(); // Prevent default text selection
+    const x = e.pageX - $container.offset().left; // Get the current mouse position
+    const walk = (x - startX) * 2; // Calculate distance to scroll
+    $container.scrollLeft(scrollLeft - walk); // Scroll the container
+  });
+
+  $scrolling.addClass('scrolling-animation');
+
+  // var $container = $('.ws_home_trending_cards .ws-cards-container-wrapper');
+  // var $contents = $container.html();
+
+  // $container.html('<div class="scrolling">' + $contents + '</div>');
+
+  // var $scrolling = $container.find('.scrolling');
+
+
+  // for (let i = 0; i < 1; i++) {
+  //   $scrolling.append($scrolling.children().clone());
+  // }
+
+  // var isPaused = false; // Track the paused state
+
+
+  // $('.toggleMarquee').on('click', function () {
+  //   isPaused = !isPaused;
+
+  //   // Update button icon based on the paused state
+  //   if (isPaused) {
+  //     $(this).html('<i class="fa-solid fa-circle-play"></i>');
+  //     $scrolling.css('animation-play-state', 'paused');
+  //   } else {
+  //     $(this).html('<i class="fa-regular fa-circle-pause"></i>');
+  //     $scrolling.css('animation-play-state', 'running');
+  //   }
+
+  // });
+
+  // $scrolling.addClass('scrolling-animation');
+
 
   // favourite section ===========================
   $(".ws-card-likes i").on("click", function () {
@@ -175,9 +253,9 @@ jQuery(document).ready(function ($) {
     });
   });
 
-  // password validation
+  // // password validation
   $("#wstr_signup").on("submit", function (e) {
-    e.preventDefault();
+
 
     var password = $("#password").val();
     var confirmPassword = $("#confirm-password").val();
@@ -194,10 +272,12 @@ jQuery(document).ready(function ($) {
 
     if (errorMessage !== "") {
       $("#error-msg").text(errorMessage);
+      e.preventDefault();
     } else {
       $("#error-msg").text("");
       // Submit the form if validation passes
-      this.submit();
+      // this.submit();
     }
   });
+
 });
