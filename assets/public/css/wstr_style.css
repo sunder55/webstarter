@@ -871,20 +871,24 @@ form#mc4wp-form-1 {
   object-fit: cover;
 }
 /* register login css */
-.wstr_signup input::placeholder {
+.wstr_signup input::placeholder,
+#loginform input::placeholder {
   color: #001f3e;
   font-weight: 400;
 }
-.wstr_signup h2 {
+.wstr_signup h2,
+#loginform h2 {
   text-align: center;
 }
-.wstr_signup label {
+.wstr_signup label,
+#loginform label {
   display: block;
   margin-bottom: 5px;
   font-weight: 600;
   color: #001f3e;
 }
-.checkbox-group label {
+.checkbox-group label,
+.login-remember label {
   font-weight: 400;
 }
 .checkbox-group label[for="terms"] a {
@@ -896,7 +900,9 @@ form#mc4wp-form-1 {
 }
 .wstr_signup input[type="text"],
 .wstr_signup input[type="email"],
-.wstr_signup input[type="password"] {
+.wstr_signup input[type="password"],
+#loginform input[type="text"],
+#loginform input[type="password"] {
   width: 100%;
   padding: 15px;
   margin-bottom: 20px;
@@ -911,19 +917,19 @@ form#mc4wp-form-1 {
 .wstr_signup .checkbox-group input {
   margin-right: 10px;
 }
-.wstr_signup button {
+.wstr_signup button,
+#loginform input[type="submit"] {
   width: 100%;
-  padding: 10px;
+  padding: 20px;
   background: linear-gradient(to right, #3a7ad9 0%, #3a94d9 100%);
   border: none;
   color: white;
   font-size: 16px;
   border-radius: 50px;
   cursor: pointer;
+  margin: 10px 0;
 }
-.wstr_signup button:hover {
-  background-color: #218838;
-}
+
 .wstr_signup .login-link {
   margin-top: 10px;
 }
@@ -933,4 +939,45 @@ form#mc4wp-form-1 {
 }
 .wstr_signup .login-link a:hover {
   text-decoration: underline;
+}
+.login-form-details h2,
+#loginform p,
+.login-form-details p {
+  margin: 10px 0;
+}
+.wstr_login_wrapper .wp-block-group {
+  flex: 1;
+}
+
+.wstr_login_column {
+  max-width: 500px;
+}
+.login-page-wrapper,
+.register-page-wrapper {
+  display: flex;
+  gap: 50px;
+}
+.login-page-wrapper .login-form-details,
+.login-page-wrapper .login-img,
+.register-page-wrapper form,
+.register-page-wrapper .login-img {
+  flex: 1;
+}
+.login-page-wrapper .login-img img,
+.register-page-wrapper .login-img img {
+  max-width: 100%;
+}
+.login-form-details div:first-child {
+  max-width: 500px;
+  margin: auto;
+  margin-top: 100px;
+}
+.login-form-details .text-danger,
+.register-page-wrapper .text-danger,
+#error-msg {
+  color: red;
+  font-weight: 500;
+}
+.register-page-wrapper .login-form-details {
+  flex: 1;
 }

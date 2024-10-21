@@ -21,7 +21,7 @@ class wstr_shortcodes
     public function wstr_banner_reviews_function()
     {
         ob_start();
-?>
+        ?>
         <!-- reviews banner -->
         <div class="banner-reviews ws_min_container ws_flex gap_20 jc_center margin_v_30 fd_mob_col">
             <div class=" reviews_images_lists ws_flex jc_center ai_center">
@@ -77,7 +77,7 @@ class wstr_shortcodes
             }
 
             // Output the select box
-        ?>
+            ?>
             <select id="wstr-mulitcurrency">
                 <!-- USD option -->
                 <option value="USD" <?php selected($selected_currency, 'USD'); ?>>$</option>
@@ -86,15 +86,15 @@ class wstr_shortcodes
                 foreach ($currency_codes as $currency_code) {
                     // Assuming get_wstr_currency_symbol() fetches the appropriate symbol for each currency code
                     $currency_symbol = get_wstr_currency_symbol($currency_code);
-                ?>
+                    ?>
                     <option value="<?php echo esc_attr($currency_code); ?>" <?php selected($selected_currency, $currency_code); ?>>
                         <?php echo esc_html($currency_symbol); ?>
                     </option>
-                <?php
+                    <?php
                 }
                 ?>
             </select>
-        <?php
+            <?php
         }
         $output = ob_get_contents();
         ob_end_clean();
@@ -127,7 +127,7 @@ class wstr_shortcodes
 
                 foreach ($industries as $industry) {
 
-            ?>
+                    ?>
                     <div class="ws-industry_details">
                         <?php
                         // Query domains for each industry (term)
@@ -154,37 +154,37 @@ class wstr_shortcodes
 
                         if ($domains_query->have_posts()) {
 
-                        ?>
+                            ?>
                             <span>New</span>
-                        <?php
+                            <?php
                         }
 
                         $term_image_id = get_term_meta($industry->term_id, 'taxonomy-image-id', true);
 
                         if ($term_image_id) {
                             $term_image_url = wp_get_attachment_url($term_image_id);
-                        ?>
+                            ?>
                             <img src="<?php echo $term_image_url ? $term_image_url : '' ?>">
-                        <?php
+                            <?php
                         }
                         ?>
 
                         <a href="<?php echo $domains_list_page . '?industry=' . $industry->slug ?>"><?php echo $industry->name; ?></a>
                     </div>
-                <?php
+                    <?php
                 }
                 ?>
                 <div class="ws-industry_details">
 
                     <a href="<?php echo $domains_list_page; ?>">Browse All</a>
                 </div>
-            <?php
+                <?php
 
             }
             ?>
 
         </div>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -263,7 +263,7 @@ class wstr_shortcodes
 
     public function wstr_estimation()
     {
-    ?>
+        ?>
         <div class="wstr_estimate_domain_wrapper ws_home_banner" id="wstr_domain_estimate">
             <div class="reviews_images_lists ws_flex jc_center ai_center">
                 <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/clients-1.jpeg" alt="Client Image" />
@@ -278,7 +278,7 @@ class wstr_shortcodes
                 <button type="submit" value="Estimate">Estmate
             </div>
         </div>
-    <?php
+        <?php
     }
 
     /**
@@ -300,7 +300,7 @@ class wstr_shortcodes
             'orderby' => 'meta_value_num',
             'order' => 'DESC',
             'meta_key' => 'ws_product_view_count',
-            'post__not_in'   => array($post->ID),
+            'post__not_in' => array($post->ID),
             'meta_query' => array(
                 array(
                     'key' => '_stock_status',
@@ -310,7 +310,7 @@ class wstr_shortcodes
             )
         );
 
-    ?>
+        ?>
         <div class="you-may-like-main">
             <div class="you_may_like_heading_wrapper ws_flex">
                 <h4 class="ws_flex ai_center gap_5">
@@ -336,7 +336,7 @@ class wstr_shortcodes
                         $pa = $da_pa_split[1];
                     }
 
-                ?>
+                    ?>
 
 
                     <div class="ws-cards-container">
@@ -384,14 +384,14 @@ class wstr_shortcodes
                             </div>
                         </div>
                     </div>
-                <?php
+                    <?php
                 }
 
                 // $domains_list_page = get_page_link(get_option('ws_domain_list_page'));
                 ?>
             </div>
         </div>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -402,7 +402,7 @@ class wstr_shortcodes
     public function wstr_single_domain_page()
     {
         ob_start();
-    ?>
+        ?>
         <div class="single-container ws-container">
             <?php
             // Start the Loop.
@@ -442,13 +442,13 @@ class wstr_shortcodes
 
                 update_post_meta(get_the_ID(), 'ws_product_view_count', $new_post_count);
 
-            ?>
+                ?>
                 <div class="single_domain_details ws_flex fd_mob_col ">
                     <!-- Featured Image -->
                     <div class="featured-image p_relative img_producto_container" data-scale="1.6">
 
-                        <img src="<?php echo $featured_image ? esc_url($featured_image) : get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png' ?>" alt="<?php echo esc_attr($title); ?>"
-                            class="img_producto">
+                        <img src="<?php echo $featured_image ? esc_url($featured_image) : get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png' ?>"
+                            alt="<?php echo esc_attr($title); ?>" class="img_producto">
 
                         <div class="single_featured_image_footer ws_flex">
                             <span class="domain_online ws_flex gap_10 ai_center online">
@@ -461,13 +461,13 @@ class wstr_shortcodes
                                 <p>Message</p>
                             </a>
                         </div><?php
-                                if ($term_exist) {
-                                ?>
+                        if ($term_exist) {
+                            ?>
                             <div class="premium_icon">
                                 <img src="/wp-content/plugins/card-block/images/diamond.png" alt="Diamond Icon" />
                             </div> <?php
-                                }
-                                    ?>
+                        }
+                        ?>
                         <div class="ws_flex ai_center single_domain_meta_search">
                             <div class="single_domain_search">
 
@@ -490,15 +490,14 @@ class wstr_shortcodes
                         <div class="ws_flex gap_20 ai_center p_relative">
                             <div>
                                 <?php if (!$logo && !$featured_image) {
-                                ?>
+                                    ?>
                                     <img src="<?php echo get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png' ?>"
                                         alt="<?php echo $title ?>">
-                                <?php
+                                    <?php
                                 } else {
 
-                                ?>
-                                    <img src="<?php echo $logo ? $logo : $featured_image ?>"
-                                        alt="<?php echo $title; ?> ">
+                                    ?>
+                                    <img src="<?php echo $logo ? $logo : $featured_image ?>" alt="<?php echo $title; ?> ">
                                 <?php }
                                 ?>
 
@@ -519,7 +518,7 @@ class wstr_shortcodes
                                             echo get_wstr_regular_price(get_the_ID());
                                             ?>
                                         </p>
-                                    <?php
+                                        <?php
                                     }
                                     if (!empty($sale_price)) { ?>
                                         <p class="sale_price">
@@ -528,7 +527,7 @@ class wstr_shortcodes
                                             echo get_wstr_sale_price(get_the_ID());
                                             ?>
                                         </p>
-                                    <?php
+                                        <?php
                                     } ?>
                                 </div>
                             </div>
@@ -660,14 +659,14 @@ class wstr_shortcodes
                                 <ul class="related_tag_list_wrapper ws_flex gap_10">
                                     <?php
                                     foreach ($tags as $tag) {
-                                    ?>
+                                        ?>
                                         <li>
                                             <?php
                                             $tag_name = $tag->name;
                                             echo $tag_name;
                                             ?>
                                         </li>
-                                    <?php
+                                        <?php
                                     }
                                     ?>
                                 </ul>
@@ -698,14 +697,15 @@ class wstr_shortcodes
                                 <h5>Professionally Crafter Logo</h5>
                             </div>
                             <div class="single_domain_highlights_card">
-                                <img src="<?php echo $cat_image_url ? $cat_image_url : get_stylesheet_directory_uri() . '/assets/images/highlight-alternate.png'; ?> " alt="<?php echo $category_name ?>">
+                                <img src="<?php echo $cat_image_url ? $cat_image_url : get_stylesheet_directory_uri() . '/assets/images/highlight-alternate.png'; ?> "
+                                    alt="<?php echo $category_name ?>">
                                 <h5><?php echo $category_name ?></h5>
                             </div>
                         </div>
                         <?php
                         echo do_shortcode('[wstr_estimation]');
                         echo do_shortcode('[wstr-similar-industry-name category_id =' . $category_id . ']')
-                        ?>
+                            ?>
                     </div>
                 </div>
 
@@ -715,11 +715,11 @@ class wstr_shortcodes
                     ?>
                 </div>
 
-            <?php
+                <?php
             endwhile; // End the Loop.
             ?>
         </div>
-    <?php
+        <?php
 
         $output = ob_get_contents();
         ob_end_clean();
@@ -734,7 +734,7 @@ class wstr_shortcodes
     public function wstr_similar_industry_name($atts)
     {
         ob_start();
-        $category_id  = $atts['category_id'];
+        $category_id = $atts['category_id'];
         $similar_domain_args = array(
             'post_type' => 'domain',
             'fields' => 'ids',
@@ -749,7 +749,7 @@ class wstr_shortcodes
                 )
             )
         );
-    ?>
+        ?>
         <div class="similar-industry-names-main ws_trending_cards margin_v_35">
             <h5>Similar Industry Names</h5>
             <?php
@@ -761,18 +761,18 @@ class wstr_shortcodes
                 $logo_image_id = get_post_meta($similar_domain_id, '_logo_image', true);
                 $logo_image_url = wp_get_attachment_url($logo_image_id);
                 $permalink = get_permalink($similar_domain_id);
-            ?>
+                ?>
                 <a href="<?php echo $permalink ?>">
                     <div class="similar-industry-names ws-card-contents ws_flex">
 
                         <?php if (!$logo_image_url && !$featured_image_url) {
-                        ?>
+                            ?>
                             <img src="<?php echo get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png' ?>"
                                 alt="<?php echo $similar_domain_title ?>">
-                        <?php
+                            <?php
                         } else {
 
-                        ?>
+                            ?>
                             <img src="<?php echo $logo_image_url ? $logo_image_url : $featured_image_url ?>"
                                 alt="<?php echo $similar_domain_title; ?> ">
                         <?php }
@@ -783,11 +783,11 @@ class wstr_shortcodes
                         </div>
                     </div>
                 </a>
-            <?php
+                <?php
             }
             ?>
         </div>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -810,24 +810,24 @@ class wstr_shortcodes
         ];
         query_posts($args); ?>
         <!-- the loop -->
-        <?php if (have_posts()) :
-            while (have_posts()) :
+        <?php if (have_posts()):
+            while (have_posts()):
                 the_post();
-        ?>
+                ?>
 
-                <h5><?php echo get_the_title();  ?></h5>
+                <h5><?php echo get_the_title(); ?></h5>
 
             <?php endwhile;
             // <!-- pagination -->
 
             the_posts_pagination(array(
-                'mid_size'  => 2,
+                'mid_size' => 2,
                 'prev_text' => __('<', 'webstarter'),
                 'next_text' => __('>', 'webstarter'),
             ));
 
-        //  else : 
-        // <!-- No posts found -->
+            //  else : 
+            // <!-- No posts found -->
         endif;
         return ob_get_clean();
     }
@@ -895,7 +895,7 @@ class wstr_shortcodes
                     }
 
                     // Redirect after successful registration
-                    wp_redirect(home_url('/login?new_user=yes'));
+                    wp_redirect(home_url('/my-account?new_user=yes'));
                     exit;
                 } else {
                     $errors[] = $user_id->get_error_message(); // Display any WP error
@@ -912,115 +912,133 @@ class wstr_shortcodes
                 }
             }
             ?>
-            <form action="#" method="POST" class="wstr_signup" id="wstr_signup">
-                <label for="username">Username*</label>
-                <input type="text" id="username" name="username" placeholder="Your Username" required>
+            <div class="register-page-wrapper">
+                <div class="login-form-details">
+                    <div>
+                        <form action="#" method="POST" class="wstr_signup" id="wstr_signup">
+                            <label for="username">Username*</label>
+                            <input type="text" id="username" name="username" placeholder="Your Username" required>
 
-                <label for="full-name">First Name, Last Name</label>
-                <input type="text" id="full-name" name="full_name" placeholder="Enter first and last name" required>
+                            <label for="full-name">First Name, Last Name</label>
+                            <input type="text" id="full-name" name="full_name" placeholder="Enter first and last name" required>
 
-                <label for="email">Email Address*</label>
-                <input type="email" id="email" name="email" placeholder="@Email address " required>
-                <p id="error-msg"></p>
-                <label for="password">Password*</label>
-                <input type="password" id="password" name="password" placeholder="Password" required>
+                            <label for="email">Email Address*</label>
+                            <input type="email" id="email" name="email" placeholder="@Email address " required>
+                            <p id="error-msg"></p>
+                            <label for="password">Password*</label>
+                            <input type="password" id="password" name="password" placeholder="Password" required>
 
-                <label for="confirm-password">Confirm Password*</label>
-                <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm Password " required>
+                            <label for="confirm-password">Confirm Password*</label>
+                            <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm Password "
+                                required>
 
-                <div class="checkbox-group">
-                    <input type="checkbox" id="become-seller" name="become_seller">
-                    <label for="become-seller">Become a Seller</label>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="become-seller" name="become_seller">
+                                <label for="become-seller">Become a Seller</label>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="terms" name="terms" required>
+                                <label for="terms">I have read and accepted the <a href="#">terms and conditions</a></label>
+                            </div>
+
+                            <button type="submit" name="register_user">Register</button>
+
+                            <div class="login-link">
+                                <p>Already registered? <a href="<?php echo get_home_url() . '/my-account/' ?>">Login</a></p>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" id="terms" name="terms" required>
-                    <label for="terms">I have read and accepted the <a href="#">terms and conditions</a></label>
+                <div class="login-img">
+                    <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/login-img.png" alt="login Image">
                 </div>
+            </div>
 
-                <button type="submit" name="register_user">Register</button>
-
-                <div class="login-link">
-                    <p>Already registered? <a href="#">Login</a></p>
-                </div>
-            </form>
-
-        <?php
+            <?php
         } else {
             // Check if the user is not logged in
             if (is_user_logged_in()) {
                 // Redirect them to the wp-admin login page
-                $user_id = get_current_user_id();
-                // $author_url = get_author_posts_url($user_id);
-                wp_redirect(get_home_url());
-                exit;
+                // $user_id = get_current_user_id();
+                // // $author_url = get_author_posts_url($user_id);
+                // wp_redirect(get_home_url());
+                // exit;
+                return;
             }
-        ?>
-            <div class="user-details login-form-details forms_container" id="login-form">
-                <?php
-                if (isset($_GET['new_user']) && $_GET['new_user'] == 'yes') {
-                    echo ' <span class=" sg_success_msg d-flex gap-10 mb-2"><i class="bi bi-exclamation-circle  " ></i> User has been successfully created. Please login.
+            ?>
+            <div class="login-page-wrapper">
+                <div class="user-details login-form-details forms_container wstr_login_column" id="login-form">
+                    <div>
+                        <?php
+                        if (isset($_GET['new_user']) && $_GET['new_user'] == 'yes') {
+                            echo ' <span class=" sg_success_msg d-flex gap-10 mb-2"><i class="bi bi-exclamation-circle  " ></i> User has been successfully created. Please login.
          </span>';
-                }
-                if (isset($_GET['reason'])) {
-                    $login_err_msg = '';
-                    switch ($_GET['reason']) {
-                        case 'invalid_username':
-                            $login_err_msg = 'Invalid username';
-                            break;
+                        }
+                        if (isset($_GET['reason'])) {
+                            $login_err_msg = '';
+                            switch ($_GET['reason']) {
+                                case 'invalid_username':
+                                    $login_err_msg = 'Invalid username';
+                                    break;
 
-                        case 'empty_password':
-                            $login_err_msg = 'Password is empty';
-                            break;
+                                case 'empty_password':
+                                    $login_err_msg = 'Password is empty';
+                                    break;
 
-                        case 'empty_username':
-                            $login_err_msg = 'Username is Empty';
-                            break;
+                                case 'empty_username':
+                                    $login_err_msg = 'Username is Empty';
+                                    break;
 
-                        case 'incorrect_password':
-                            $login_err_msg = 'Incorrect Password';
-                            break;
-                    }
+                                case 'incorrect_password':
+                                    $login_err_msg = 'Incorrect Password';
+                                    break;
+                            }
 
-                    echo '<span class="text-danger fw-bold">' . $login_err_msg . '</span>';
-                }
-                ?>
-                <h2 class="m-0">Welcome Back</h2>
-                <div class="col-lg-12 mb-4 login-redirect-to-register">
-                    <p>Don't have an account yet. <span><a href="<?php echo home_url('/login?register=true') ?>">Sign
-                                up </a></span>
-                    </p>
+                            echo '<span class="text-danger fw-bold">' . $login_err_msg . '</span>';
+                        }
+                        ?>
+                        <h2 class="m-0">Welcome Back</h2>
+                        <div class="col-lg-12 mb-4 login-redirect-to-register">
+                            <p>Don't have an account yet. <span><a href="<?php echo home_url('/my-account?register=true') ?>">Sign
+                                        up </a></span>
+                            </p>
+                        </div>
+                        <?php
+                        echo wp_login_form(
+                            array(
+                                'redirect' => esc_url($_SERVER['REQUEST_URI']),
+                                'form_id' => 'loginform',
+                                'label_username' => '',
+                                'label_password' => '',
+                                //  'label_username' => __('Username', 'stat-genius'),
+                                //  'label_password' => __('Password', 'stat-genius'),
+                                'label_remember' => __('Remember Me', 'stat-genius'),
+                                'label_log_in' => __('Login', 'stat-genius'),
+                                'id_username' => 'sg-username',
+                                'id_password' => 'sg-password',
+                                'id_remember' => 'sg-rememberme',
+                                'id_submit' => 'sg-submit',
+                                'remember' => true,
+                                'value_username' => '',
+                                'value_remember' => false,
+                                'before' => '',
+                                'after' => '<p><input type="checkbox" id="show-password"> ' . __('Show Password', 'stat-genius') . '</p>'
+
+                            )
+                        );
+                        ?>
+                        <a href="<?php echo esc_url(wp_lostpassword_url()) ?>" class="login-forgot-password">
+                            <p class="text-center mt-4">Forgot password?</p>
+                        </a>
+                    </div>
                 </div>
-                <?php
-                echo wp_login_form(
-                    array(
-                        'redirect' => esc_url($_SERVER['REQUEST_URI']),
-                        'form_id' => 'loginform',
-                        'label_username' => '',
-                        'label_password' => '',
-                        //  'label_username' => __('Username', 'stat-genius'),
-                        //  'label_password' => __('Password', 'stat-genius'),
-                        'label_remember' => __('Remember Me', 'stat-genius'),
-                        'label_log_in' => __('Login', 'stat-genius'),
-                        'id_username' => 'sg-username',
-                        'id_password' => 'sg-password',
-                        'id_remember' => 'sg-rememberme',
-                        'id_submit' => 'sg-submit',
-                        'remember' => true,
-                        'value_username' => '',
-                        'value_remember' => false,
-                        'before' => '',
-                        'after' => '<p><input type="checkbox" id="show-password"> ' . __('Show Password', 'stat-genius') . '</p>'
-
-                    )
-                );
-                ?>
-                <a href="<?php echo esc_url(wp_lostpassword_url()) ?>" class="login-forgot-password">
-                    <p class="text-center mt-4">Forgot password?</p>
-                </a>
+                <div class="login-img">
+                    <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/login-img.png" alt="login Image">
+                </div>
             </div>
 
-<?
+            <?
         }
         return ob_get_clean();
     }
