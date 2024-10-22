@@ -894,8 +894,3 @@ class wstr_domain_order_meta_boxes
     }
 }
 new wstr_domain_order_meta_boxes();
-
-
-add_action('wp_footer', function () {
-    var_dump($_SESSION['currency']);
-});
