@@ -335,7 +335,7 @@ add_action('after_setup_theme', 'create_order_notes_table_on_theme_activation');
 function wstr_register()
 {
     ob_start();
-?>
+    ?>
     <form action="#" method="POST" class="wstr_signup">
         <label for="username">Username*</label>
         <input type="text" id="username" name="username" placeholder="Your Username" required>
@@ -368,8 +368,197 @@ function wstr_register()
             <p>Already registered? <a href="#">Login</a></p>
         </div>
     </form>
-<?php
+    <?php
     $output = ob_get_contents();
     ob_end_clean();
     return $output;
 }
+
+
+
+// buy page shortcode
+function domain_filter_shortcode()
+{
+    ob_start();
+    ?>
+    <div class="domain-filters-container">
+        <!-- Category Section -->
+        <section class="category-section">
+            <ul class="categories-list">
+                <li>Trending</li>
+                <li>4 Letters</li>
+                <li>Retail</li>
+                <li>Short Names</li>
+                <li>Short Names</li>
+                <li>Short Names</li>
+                <li>Short Names</li>
+                <li>Short Names</li>
+            </ul>
+        </section>
+
+        <!-- Filters Section -->
+        <section class="filters-section">
+            <div class="filter-item">
+                <label for="sort-by">Sort By:</label>
+                <div class="filter-item-aligned filter_item_name">
+                    <select id="sort-by" name="sort-by">
+                        <option value="a-z">A-Z</option>
+                        <option value="z-a">Z-A</option>
+                    </select>
+                    <select id="domain-type" name="domain-type">
+                        <option value=".com">.com</option>
+                        <option value=".org">.org</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-item">
+                <label for="industry">By Industry:</label>
+                <select id="industry" name="industry">
+                    <option value="any">Any</option>
+                    <option value="agriculture">Agriculture and Farming</option>
+                    <option value="cosmetics">Cosmetics</option>
+                    <option value="art-design">Art & Design</option>
+                    <option value="fashion">Fashion & Beauty</option>
+                </select>
+            </div>
+
+            <div class="filter-item">
+                <label for="style">By Style:</label>
+                <select id="style" name="style">
+                    <option value="any">Any</option>
+                    <option value="trending">Trending & Popular</option>
+                    <option value="premium">Premium Names</option>
+                    <option value="aged">Aged Domains</option>
+                </select>
+            </div>
+
+            <div class="filter-item">
+                <label for="price-range-min">Price Range:</label>
+                <div class="filter-item-aligned">
+                    <input type="number" id="price-range-min" name="price-range-min" placeholder="Min">
+                    <input type="number" id="price-range-max" name="price-range-max" placeholder="Max">
+                </div>
+            </div>
+
+            <div class="filter-item">
+                <label for="length-slider">Length <i class="fa-solid fa-arrow-right"></i><span id="length-output">
+                        3</span>
+                    letters </label>
+                <input type="range" id="length-slider" name="length-slider" min="0" max="50" value="3"
+                    oninput="updateLengthOutput(this.value)">
+
+            </div>
+
+        </section>
+        <div class="reset-filter">
+            <button type="button" id="reset-filters" onclick="resetFilters()"><i
+                    class="fa-solid fa-arrow-rotate-right"></i>Reset Filters</button>
+        </div>
+    </div>
+
+    <style>
+        .domain-filters-container {
+            margin: 20px 0;
+        }
+
+        .domain-filters-container .categories-list li {
+            font-weight: 400;
+            background: #fff;
+            padding: 10px;
+            border-radius: 20px;
+            color: #00d9f5;
+        }
+
+        .category-section {
+            margin-bottom: 2rem;
+        }
+
+        .categories-list {
+            list-style-type: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        .categories-list li {
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .filters-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+            width: calc(20% - 15px);
+            border-radius: 20px;
+            box-shadow: 0px 30px 101px 0px rgba(0, 69, 162, 0.11);
+            border: 2px solid rgb(237, 240, 247);
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .filter-item label {
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .filter-item select,
+        .filter-item input {
+            padding: 8px;
+            font-size: 14px;
+            border: 2px solid rgb(237, 240, 247);
+            border-radius: 10px;
+        }
+
+        .filter-item select::placeholder,
+        .filter-item input::placeholder {
+            color: #00214c;
+        }
+
+
+
+        .filter-item-aligned {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter_item_name select:first-child {
+            flex: 2;
+        }
+
+        .filter_item_name select:last-child {
+            flex: 1;
+        }
+
+        .filter-item-aligned input {
+            width: 50%;
+        }
+
+        #reset-filters {
+            border: transparent;
+            background-color: #fff;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 50px;
+            margin-top: 20px;
+        }
+    </style>
+    <script>
+        function updateLengthOutput(value) {
+            document.getElementById('length-output').textContent = value;
+        }
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('domain_filters', 'domain_filter_shortcode');
