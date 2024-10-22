@@ -762,6 +762,9 @@ class wstr_domain_order_meta_boxes
         $currency = $_SESSION['currency'] ?: 'USD';
         update_post_meta($post_id, '_currency', $currency);
 
+        $currency_symbol = get_wstr_currency_symbol($currency);
+        update_post_meta($post_id, '_currency_symbol', $currency_symbol);
+
         $customer = sanitize_text_field($_POST['customer']);
         update_post_meta($post_id, '_customer', $customer);
 
