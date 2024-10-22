@@ -306,11 +306,19 @@ if (!class_exists('wstr_rest_api')) {
             // for updating users 
             register_rest_route('wstr/v1', '/update-user/(?P<user_id>\d+)', array(
                 'methods' => 'POST',
-                'callback' => [$this, 'custom_update_user_profile'],
-                // 'permission_callback' => function () {
-                //     return is_user_logged_in(); // Check if the user is logged in
-                // },
+                'callback' => [$this, 'wstr_update_user_profile'],
                 'permission_callback' => '__return_true'
+            ));
+            register_rest_route('wstr/v1', '/orders/(?P<user_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_get_orders'],
+                'permission_callback' => '__return_true'
+            ));
+
+            register_rest_field('domain_order', 'meta', array(
+                'get_callback' => function ($data) {
+                    return get_post_meta($data['id'], '', '');
+                },
             ));
         }
 
@@ -699,7 +707,7 @@ if (!class_exists('wstr_rest_api')) {
          * @param mixed $user_id
          * @return mixed
          */
-        function custom_update_user_profile($request)
+        function wstr_update_user_profile($request)
         {
             $current_user_id = $GLOBALS['user_id']; // Get the current logged-in user ID
             $user_id = (int) $request->get_param('user_id'); // Get the user ID from the API request
