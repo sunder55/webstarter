@@ -759,6 +759,8 @@ class wstr_domain_order_meta_boxes
             update_post_meta($post_id, '_order_status', $order_status);
         }
 
+        $currency = $_SESSION['currency'] ?: 'USD';
+        update_post_meta($post_id, '_currency', $currency);
 
         $customer = sanitize_text_field($_POST['customer']);
         update_post_meta($post_id, '_customer', $customer);
@@ -892,3 +894,8 @@ class wstr_domain_order_meta_boxes
     }
 }
 new wstr_domain_order_meta_boxes();
+
+
+add_action('wp_footer', function () {
+    var_dump($_SESSION['currency']);
+});
