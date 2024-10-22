@@ -320,6 +320,12 @@ if (!class_exists('wstr_rest_api')) {
                     return get_post_meta($data['id'], '', '');
                 },
             ));
+
+            register_rest_field('domain', 'meta', array(
+                'get_callback' => function ($data) {
+                    return get_post_meta($data['id'], '', '');
+                },
+            ));
         }
 
         /**
@@ -804,19 +810,6 @@ if (!class_exists('wstr_rest_api')) {
                 while ($orders->have_posts()) {
                     $orders->the_post();
                     $order_ids[] = get_the_ID();
-                    // $order_status = get_post_meta($order_id, '_order_status', true);
-                    // $order_data = wstr_get_order_details($order_id);
-                    // return $order_data;
-                    // $data[] = [
-                    //     'order_id' => $order_id ? $order_id : '',
-                    //     // 'display_name' => $user_details->data->display_name ? $user_details->data->display_name : '',
-                    //     // 'user_email' => $user_details->data->user_email ? $user_details->data->user_email : '',
-                    //     // 'cap_key' => $user_details->caps ? $user_details->caps : '',
-                    //     // 'roles' => $user_details->roles ? $user_details->roles : '',
-                    //     // 'first_name' => $user_details->first_name ? $user_details->first_name : '',
-                    //     // 'last_name' => $user_details->last_name ? $user_details->last_name : '',
-                    //     // 'user_image' => $user_image,
-                    // ];
                 }
                 return new WP_REST_Response($order_ids, 200);
             } else {
