@@ -200,7 +200,7 @@ function get_wstr_currency_symbol($string, $for_api = false)
 }
 
 /**
- * Fuction for check if product is on sale
+ * Fuction for checking if product is on sale
  * @param mixed $domain_id 
  * @return bool
  */

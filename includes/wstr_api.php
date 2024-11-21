@@ -118,54 +118,74 @@ if (!class_exists('wstr_rest_api')) {
                 return false;
         }
 
-        public function get_domain_da_pa($objectURL)
+        public function get_domain_da_pa($domain_name)
         {
 
-            if (wp_doing_ajax()) {
-                $objectURL = sanitize_text_field($_POST['domain_name']); //getting domain url 
-            }
+            $curl = curl_init();
 
-            $accessID = "mozscape-749dc5236c";
-            $secretKey = "1ba09be0fea28f66f04fbe3779447219";
-            $expires = time() + 300;
-            $stringToSign = $accessID . "\n" . $expires;
-            $binarySignature = hash_hmac('sha1', $stringToSign, $secretKey, true);
-            $urlSafeSignature = urlencode(base64_encode($binarySignature));
-            $cols = "103079215108"; // Bit flag for Domain Authority
-            $requestUrl = "http://lsapi.seomoz.com/linkscape/url-metrics/" . urlencode($objectURL) . "?Cols=" . $cols . "&AccessID=" . $accessID . "&Expires=" . $expires . "&Signature=" . $urlSafeSignature;
-            $ch = curl_init($requestUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $content = curl_exec($ch);
-            curl_close($ch);
-            $data = json_decode($content, true);
-            $domainAuthority = $data['pda'];
-            $pageAuthority = $data['upa'];
-            if (wp_doing_ajax()) {
-                wp_send_json_success($domainAuthority . '/' . $pageAuthority);
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://domain-da-pa-check.p.rapidapi.com/?target=' . $domain_name,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "GET",
+                CURLOPT_HTTPHEADER => [
+                    "x-rapidapi-host: domain-da-pa-check.p.rapidapi.com",
+                    "x-rapidapi-key: 4134775c01msh171bb4aa3bebbb2p167713jsna04a97133aff"
+                ],
+            ]);
+
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+
+            curl_close($curl);
+
+            if ($err) {
+                echo "cURL Error #:" . $err;
+            } else {
+                $json_response = json_decode($response);
+                if ($json_response->result == 'success') {
+                    $data = $json_response->body;
+
+                    $domainAuthority = $data->da_score;
+                    $pageAuthority = $data->pa_score;
+                    return $domainAuthority . '/' . $pageAuthority;
+                }
             }
-            return $domainAuthority . '/' . $pageAuthority;
-            wp_die();
         }
-
-        public function get_desc($domain, $domain_length)
+        /**
+         * generating  domain description from gemini ai
+         * @param mixed $domain
+         * @param mixed $domain_length
+         * @return mixed
+         */
+        public function get_desc($request)
         {
-            // require_once get_stylesheet_directory_uri().'/vendor/autoload.php';
-            require_once __DIR__ . '/vendor/autoload.php';
+            $params = $request->get_params();
+            if (isset($params['domain_name']) && $params['domain_name']) {
+                $domain_name = trim(sanitize_text_field($params['domain_name']));
 
-            // $domain = $_POST['domain'];
-            // $domain_length = $_POST['domain_length'];
-            $client = new \GeminiAPI\Client('AIzaSyALuyApXEjTswAuXKB5iw-g3P_UBE6wMCw');
-            $response = $client->geminiPro()->generateContent(
-                // new \GeminiAPI\Resources\Parts\TextPart('explain domain name -> ' . $domain)
-                // new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name '.$domain.'. Include possible creative uses for the domain name, explaining why it is a good name and why its '.$domain_length.'-character length is advantageous. Provide specific examples and use a friendly and informative tone.')
-                new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name ' . $domain . 'What are some possible creative uses for this ' . $domain . '?  Explain the benefits of ' . $domain_length . 'character domain in paragraph.Explain, why it is a good domain name?
+                $domain_explode = explode('.', $domain_name);
+                $domain_length = strlen(string: $domain_explode[0]);
+
+                // require_once get_stylesheet_directory_uri().'/vendor/autoload.php';
+                require_once __DIR__ . '/vendor/autoload.php';
+
+                // $domain = $_POST['domain'];
+                // $domain_length = $_POST['domain_length'];
+                $client = new \GeminiAPI\Client('AIzaSyCYqZrBySHCfBH_L_1fcTflE8utK0zdJl4');
+                $response = $client->geminiPro()->generateContent(
+                    // new \GeminiAPI\Resources\Parts\TextPart('explain domain name -> ' . $domain)
+                    // new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name '.$domain.'. Include possible creative uses for the domain name, explaining why it is a good name and why its '.$domain_length.'-character length is advantageous. Provide specific examples and use a friendly and informative tone.')
+                    new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name ' . $domain_name . 'What are some possible creative uses for this ' . $domain_name . '?  Explain the benefits of ' . $domain_length . 'character domain in paragraph.Explain, why it is a good domain name?
                     ')
-            );
-
-            $desc = $response->text();
-            return $desc;
-            // wp_send_json_success($desc);
-            wp_die();
+                );
+                $desc = $response->text();
+                return new WP_REST_Response($desc, 200);
+                wp_die();
+            }
         }
 
         public function get_text_to_speech($text)
@@ -315,6 +335,18 @@ if (!class_exists('wstr_rest_api')) {
                 'permission_callback' => '__return_true'
             ));
 
+            register_rest_route('wstr/v1', '/domain_meta/(?P<domain_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_add_domain_meta'],
+                'permission_callback' => '__return_true'
+            ));
+
+            register_rest_route('wstr/v1', '/domain_description/', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'get_desc'],
+                'permission_callback' => '__return_true'
+            ));
+
             register_rest_field('domain_order', 'meta', array(
                 'get_callback' => function ($data) {
                     return get_post_meta($data['id'], '', '');
@@ -326,6 +358,36 @@ if (!class_exists('wstr_rest_api')) {
                     return get_post_meta($data['id'], '', '');
                 },
             ));
+
+            register_meta('term', 'taxonomy_image_id', array(
+                'type' => 'string',
+                'single' => true,
+                'show_in_rest' => true
+            ));
+
+            // register_meta(
+            //     'domain',
+            //     '_enable_offers',
+            //     array(
+            //         'type' => 'string',
+            //         'single' => true,
+            //         'show_in_rest' => true,
+            //     )
+            // );
+            // register_rest_field('domain', '_enable_offers', [
+            //     'get_callback' => function ($post_arr) {
+            //         return get_post_meta($post_arr['id'], '_enable_offers', true);
+            //     },
+            //     'update_callback' => function ($meta_value, $post) {
+            //         update_post_meta($post->ID, '_enable_offers', sanitize_text_field($meta_value));
+            //     },
+            //     'schema' => [
+            //         'type' => 'string',
+            //         'description' => 'A custom meta field',
+            //         'context' => ['view', 'edit'],
+            //     ],
+            // ]);
+
         }
 
         /**
@@ -661,21 +723,24 @@ if (!class_exists('wstr_rest_api')) {
                 $domain_age = $this->get_domain_age($domain_name);
                 $da_pa = $this->get_domain_da_pa($domain_name);
 
+
                 $domain_explode = explode('.', $domain_name);
-                $domain_length = strlen($domain_explode[0]);
+                $domain_length = strlen(string: $domain_explode[0]);
                 $tld = $domain_explode[1];
 
-                $domain_desc = $this->get_desc($domain_name, $domain_length);
+                // $domain_desc = $this->get_desc($domain_name, $domain_length);
+                $estimated_value = $this->wstr_get_domain_estimation($domain_name);
 
-                $audio = $this->get_text_to_speech($domain_name);
+                // $audio = $this->get_text_to_speech($domain_name);
 
                 $data[] = [
                     'age' => $domain_age,
-                    'da_pa' => $da_pa ? $da_pa : '',
-                    'length' => $domain_length ? $domain_length : '',
-                    'tld' => $tld ? $tld : '',
+                    'da_pa' => $da_pa ?: '',
+                    'length' => $domain_length ?: '',
+                    'tld' => $tld ?: '',
                     // 'description' => $domain_desc ? $domain_desc : '',
-                    'audio' => $audio ? $audio : '',
+                    'estimated_value' => $estimated_value ? $estimated_value : ''
+                    // 'audio' => $audio ? $audio : '',
                 ];
             }
 
@@ -692,7 +757,10 @@ if (!class_exists('wstr_rest_api')) {
             $user_image = '';
             if ($user_image_id) {
                 $user_image =  wp_get_attachment_url($user_image_id);
+            } else {
+                $user_image = get_avatar_url($user_details->data->ID);
             }
+
             $data[] = [
                 'id' => $user_details->data->ID ? $user_details->data->ID : '',
                 'display_name' => $user_details->data->display_name ? $user_details->data->display_name : '',
@@ -817,6 +885,83 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('order_not_found', 'Sorry, No orders found', array('status' => 404));
             }
             // Re
+        }
+
+        /**
+         * Function for adding meta value
+         * @param mixed $request
+         * @return WP_Error|WP_REST_Response
+         */
+        public function wstr_add_domain_meta($request)
+        {
+            $domain_id = (int) $request->get_param('domain_id');
+            if (!$domain_id) {
+                return new WP_Error('no_domain_found', 'Sorry, domain not found', array('status' => 404));
+            }
+
+            // Get the request body data
+            $domain_meta_info = $request->get_json_params();
+            if (!$domain_meta_info) {
+                return new WP_Error('no_data_found', 'No data provided in request body', array('status' => 400));
+            }
+
+            // Loop through each key-value pair in the request body and update meta
+            foreach ($domain_meta_info as $meta_key => $meta_value) {
+                update_post_meta($domain_id, $meta_key, $meta_value);
+            }
+
+            // Return success response with updated meta info
+            return rest_ensure_response(array(
+                'message' => 'Domain meta updated successfully',
+                'domain_id' => $domain_id,
+                'updated_meta' => $domain_meta_info
+            ));
+        }
+
+        /**
+         * Function for getting domain value estimation
+         * @param string $domain_name 
+         * @return mixed
+         */
+        public function wstr_get_domain_estimation($domain_name)
+        {
+            $secret_key = "UV2dC7vpqmbq52yEvwKDXi";
+            $api_key = "dLDSCnx7Qxdy_GpU25xjYvVNoMFtdbeawZN";
+
+            try {
+                // Adjusted endpoint to use GoDaddy's domain appraisal API, assuming `hello.com` as the domain name to be estimated.
+                $response = wp_remote_get('https://api.godaddy.com/v1/domains/govalues?domainName=' . $domain_name . '
+
+', array(
+                    'headers' => array(
+                        'Authorization' => 'sso-key ' . $api_key . ':' . $secret_key,
+                    )
+                ));
+
+                // Check for errors in the response.
+                if (is_wp_error($response)) {
+                    return 'Error: ' . $response->get_error_message();
+                }
+
+                // Retrieve response code and body.
+                $response_code = wp_remote_retrieve_response_code($response);
+                $response_body = wp_remote_retrieve_body($response);
+
+                // Check if the response code is 200 (success).
+                if ($response_code === 200) {
+                    $data = json_decode($response_body, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        // Successfully parsed JSON; output the data.
+                        return $data['goValue']['value'];
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            } catch (Exception $ex) {
+                return 'Exception: ' . $ex->getMessage();
+            }
         }
     }
 }

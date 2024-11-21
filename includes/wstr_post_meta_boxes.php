@@ -856,10 +856,66 @@ class wstr_domain_order_meta_boxes
         if (isset($_POST['domain_ids'])) {
 
             $domain_ids = array_map('sanitize_text_field', $_POST['domain_ids']);
+
             update_post_meta($post_id, '_domain_ids', $domain_ids);
         }
 
         $get_domain_ids = get_post_meta($post_id, '_domain_ids', true);
+
+        // handelling seller starts 
+        $seller_id = [];
+        $ordered_products = []; // Initialize array for ordered products
+        $products_price = [];
+        foreach ($get_domain_ids as $get_domain_id) {
+            $domain = get_post($get_domain_id);
+            $author_id = $domain->post_author;
+
+            $seller_id[] = $author_id;
+
+            // Add product and seller details to the ordered products array
+            $ordered_products[] = [
+                'product_id' => $get_domain_id,
+                'seller_id'  => $author_id,
+            ];
+
+            // handeling products price
+            $regular_price = get_post_meta($get_domain_id, '_regular_price', true);
+            $sale_price = get_post_meta($get_domain_id, '_sale_price', true);
+            $sale_end_date = get_post_meta($get_domain_id, '_sale_price_dates_to', true);
+            $price = '';
+            $current_date = date('Y-m-d');
+
+            if ($sale_price) {
+                if ($sale_end_date && $sale_end_date >= $current_date) {
+                    $price = $sale_price;
+                } else if ($sale_end_date && $sale_end_date <= $current_date) {
+                    $price = $regular_price;
+                } else {
+                    $price = $sale_price;
+                }
+            } else {
+                $price = $regular_price;
+            }
+
+
+            // saving ordered product price to the order meta 
+            $products_price[] = [
+                'product_id' => $get_domain_id,
+                'price'  => $price,
+            ];
+        }
+
+        // Save the consolidated ordered products under a single meta key
+        update_post_meta($post_id, '_ordered_products', $ordered_products);
+
+        // saving products price to the order meta
+        update_post_meta($post_id, '_products_price', $products_price);
+
+        // saving unique seller IDs 
+        $unique_seller_id = array_unique($seller_id);
+        update_post_meta($post_id, '_seller', $unique_seller_id);
+
+        // handelling seller ends 
 
         $get_order_status = get_post_meta($post_id, '_order_status', true);
 

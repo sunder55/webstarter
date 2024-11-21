@@ -72,7 +72,7 @@ function wstr_add_custom_user_roles()
         'delete_posts' => false,
         // Add any other capabilities 
     ));
-
+    remove_role('seller');
     // Add Seller role
     add_role('seller', __('Seller', 'webstarter'), array(
         'read' => true,
@@ -80,11 +80,55 @@ function wstr_add_custom_user_roles()
         'delete_posts' => true,
         'publish_posts' => true,
         'upload_files' => true,
-        'edit_others_posts' => false,
+        'edit_others_posts' => true,
         'delete_others_posts' => false,
-        // Add any other capabilities you need
+
+        // 'read' => true,
+        'edit_domains' => true,
+        'delete_domains' => true,
+        'publish_domains' => true,
+        // 'upload_files' => true,
+        'edit_others_domains' => true,
+        'delete_others_domains' => false,
     ));
 }
+
+// adding seller capablities for allowing edit and delete to their own domains
+function add_seller_domain_capabilities()
+{
+    // Get the role
+
+    $roles = array('seller');
+
+    // Loop through each role and assign capabilities
+    foreach ($roles as $the_role) {
+
+        $role = get_role($the_role);
+
+        if ($role) {
+            // Capabilities for managing their own posts
+            $role->add_cap('read'); // Basic read capability
+            $role->add_cap('edit_posts'); // Edit their own posts
+            $role->add_cap('delete_posts'); // Delete their own posts
+            $role->add_cap('publish_posts'); // Publish their own posts
+
+            // Additional capabilities to edit and delete published posts
+            $role->add_cap('edit_published_posts'); // Edit their own published posts
+            $role->add_cap('delete_published_posts'); // Delete their own published posts
+
+            // Prevent capabilities that allow managing others' posts
+            $role->remove_cap('edit_others_posts');
+            $role->remove_cap('delete_others_posts');
+            // Optionally remove private post capabilities if needed
+            $role->remove_cap('edit_private_posts');
+            $role->remove_cap('delete_private_posts');
+        }
+    }
+}
+
+add_action('init', 'add_seller_domain_capabilities');
+
+
 
 /**
  * Starting sestion
@@ -137,3 +181,79 @@ add_filter('login_errors', function ($error) {
     wp_redirect('/my-account?reason=' . $err_codes[0]);
     return $error;
 });
+
+
+//  new changes 
+
+
+// for getting number of post in rest api
+add_filter('rest_domain_collection_params', function ($params, $post_type) {
+    if (isset($params['per_page'])) {
+        $params['per_page']['maximum'] = 9999; //edit it as you want
+    }
+
+    return $params;
+}, 10, 2);
+
+
+// for getting number of post in rest api
+add_filter('rest_domain_order_collection_params', function ($params, $post_type) {
+    if (isset($params['per_page'])) {
+        $params['per_page']['maximum'] = 999; //edit it as you want
+    }
+
+    return $params;
+}, 10, 2);
+
+
+function allow_rest_access_for_admins($result)
+{
+    // if (is_user_logged_in() && current_user_can('manage_options')) {
+    if (is_user_logged_in()) {
+        return true;
+    }
+    return $result;
+}
+add_filter('rest_authentication_errors', 'allow_rest_access_for_admins');
+
+// function allow_public_post_creation($can_edit, $post, $user_id)
+// {
+//     // Bypass the capability check for creating new posts.
+//     if (is_user_logged_in()) {
+//         return true;
+//     }
+// }
+
+// add_filter('rest_domain_collection_params', 'allow_public_post_creation', 10, 3);
+
+
+add_action('rest_api_init', 'register_custom_meta_fields');
+function register_custom_meta_fields()
+{
+    register_post_meta('domain', '_enable_offers', array(
+        'single'       => true,
+        'type'         => 'string',
+        'default'      => '',
+        'show_in_rest' => true,
+        'auth_callback' => '__return_true'
+    ));
+
+    register_post_meta('domain', '_regular_price', array(
+        'single'       => true,
+        'type'         => 'string',
+        'default'      => '',
+        'show_in_rest' => true,
+        'auth_callback' => '__return_true'
+    ));
+}
+
+function rest_api_permissions($result)
+{
+    $current_user = wp_get_current_user();
+    if ($current_user->has_cap('seller')) {
+        $result['read'] = true;
+        $result['create_posts'] = true;
+    }
+    return $result;
+}
+add_filter('rest_domain_collection_params', 'rest_api_permissions');

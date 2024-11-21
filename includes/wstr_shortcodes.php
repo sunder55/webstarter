@@ -16,12 +16,13 @@ class wstr_shortcodes
         add_shortcode('wstr-buy-domain', [$this, 'wstr_buy_domain']);
         add_shortcode('wstr-login', [$this, 'wstr_login']);
         add_shortcode('wstr_register', [$this, 'wstr_register']);
+        add_shortcode('wstr-faq', [$this, 'wstr_faq']);
     }
 
     public function wstr_banner_reviews_function()
     {
         ob_start();
-        ?>
+?>
         <!-- reviews banner -->
         <div class="banner-reviews ws_min_container ws_flex gap_20 jc_center margin_v_30 fd_mob_col">
             <div class=" reviews_images_lists ws_flex jc_center ai_center">
@@ -77,7 +78,7 @@ class wstr_shortcodes
             }
 
             // Output the select box
-            ?>
+        ?>
             <select id="wstr-mulitcurrency">
                 <!-- USD option -->
                 <option value="USD" <?php selected($selected_currency, 'USD'); ?>>$</option>
@@ -86,15 +87,15 @@ class wstr_shortcodes
                 foreach ($currency_codes as $currency_code) {
                     // Assuming get_wstr_currency_symbol() fetches the appropriate symbol for each currency code
                     $currency_symbol = get_wstr_currency_symbol($currency_code);
-                    ?>
+                ?>
                     <option value="<?php echo esc_attr($currency_code); ?>" <?php selected($selected_currency, $currency_code); ?>>
                         <?php echo esc_html($currency_symbol); ?>
                     </option>
-                    <?php
+                <?php
                 }
                 ?>
             </select>
-            <?php
+        <?php
         }
         $output = ob_get_contents();
         ob_end_clean();
@@ -127,7 +128,7 @@ class wstr_shortcodes
 
                 foreach ($industries as $industry) {
 
-                    ?>
+            ?>
                     <div class="ws-industry_details">
                         <?php
                         // Query domains for each industry (term)
@@ -154,37 +155,37 @@ class wstr_shortcodes
 
                         if ($domains_query->have_posts()) {
 
-                            ?>
+                        ?>
                             <span>New</span>
-                            <?php
+                        <?php
                         }
 
-                        $term_image_id = get_term_meta($industry->term_id, 'taxonomy-image-id', true);
+                        $term_image_id = get_term_meta($industry->term_id, 'taxonomy_image_id', true);
 
                         if ($term_image_id) {
                             $term_image_url = wp_get_attachment_url($term_image_id);
-                            ?>
+                        ?>
                             <img src="<?php echo $term_image_url ? $term_image_url : '' ?>">
-                            <?php
+                        <?php
                         }
                         ?>
 
                         <a href="<?php echo $domains_list_page . '?industry=' . $industry->slug ?>"><?php echo $industry->name; ?></a>
                     </div>
-                    <?php
+                <?php
                 }
                 ?>
                 <div class="ws-industry_details">
 
                     <a href="<?php echo $domains_list_page; ?>">Browse All</a>
                 </div>
-                <?php
+            <?php
 
             }
             ?>
 
         </div>
-        <?php
+    <?php
         return ob_get_clean();
     }
 
@@ -263,7 +264,7 @@ class wstr_shortcodes
 
     public function wstr_estimation()
     {
-        ?>
+    ?>
         <div class="wstr_estimate_domain_wrapper ws_home_banner" id="wstr_domain_estimate">
             <div class="reviews_images_lists ws_flex jc_center ai_center">
                 <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/clients-1.jpeg" alt="Client Image" />
@@ -278,7 +279,7 @@ class wstr_shortcodes
                 <button type="submit" value="Estimate">Estmate
             </div>
         </div>
-        <?php
+    <?php
     }
 
     /**
@@ -310,7 +311,7 @@ class wstr_shortcodes
             )
         );
 
-        ?>
+    ?>
         <div class="you-may-like-main">
             <div class="you_may_like_heading_wrapper ws_flex">
                 <h4 class="ws_flex ai_center gap_5">
@@ -336,9 +337,7 @@ class wstr_shortcodes
                         $pa = $da_pa_split[1];
                     }
 
-                    ?>
-
-
+                ?>
                     <div class="ws-cards-container">
                         <div class="ws_card_hover_charts ws_flex">
                             <div class="circular-progress page-trust">
@@ -384,14 +383,14 @@ class wstr_shortcodes
                             </div>
                         </div>
                     </div>
-                    <?php
+                <?php
                 }
 
                 // $domains_list_page = get_page_link(get_option('ws_domain_list_page'));
                 ?>
             </div>
         </div>
-        <?php
+    <?php
         return ob_get_clean();
     }
 
@@ -402,7 +401,7 @@ class wstr_shortcodes
     public function wstr_single_domain_page()
     {
         ob_start();
-        ?>
+    ?>
         <div class="single-container ws-container">
             <?php
             // Start the Loop.
@@ -442,7 +441,7 @@ class wstr_shortcodes
 
                 update_post_meta(get_the_ID(), 'ws_product_view_count', $new_post_count);
 
-                ?>
+            ?>
                 <div class="single_domain_details ws_flex fd_mob_col ">
                     <!-- Featured Image -->
                     <div class="featured-image p_relative img_producto_container" data-scale="1.6">
@@ -461,13 +460,13 @@ class wstr_shortcodes
                                 <p>Message</p>
                             </a>
                         </div><?php
-                        if ($term_exist) {
-                            ?>
+                                if ($term_exist) {
+                                ?>
                             <div class="premium_icon">
                                 <img src="/wp-content/plugins/card-block/images/diamond.png" alt="Diamond Icon" />
                             </div> <?php
-                        }
-                        ?>
+                                }
+                                    ?>
                         <div class="ws_flex ai_center single_domain_meta_search">
                             <div class="single_domain_search">
 
@@ -490,13 +489,13 @@ class wstr_shortcodes
                         <div class="ws_flex gap_20 ai_center p_relative">
                             <div>
                                 <?php if (!$logo && !$featured_image) {
-                                    ?>
+                                ?>
                                     <img src="<?php echo get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png' ?>"
                                         alt="<?php echo $title ?>">
-                                    <?php
+                                <?php
                                 } else {
 
-                                    ?>
+                                ?>
                                     <img src="<?php echo $logo ? $logo : $featured_image ?>" alt="<?php echo $title; ?> ">
                                 <?php }
                                 ?>
@@ -518,7 +517,7 @@ class wstr_shortcodes
                                             echo get_wstr_regular_price(get_the_ID());
                                             ?>
                                         </p>
-                                        <?php
+                                    <?php
                                     }
                                     if (!empty($sale_price)) { ?>
                                         <p class="sale_price">
@@ -527,7 +526,7 @@ class wstr_shortcodes
                                             echo get_wstr_sale_price(get_the_ID());
                                             ?>
                                         </p>
-                                        <?php
+                                    <?php
                                     } ?>
                                 </div>
                             </div>
@@ -659,14 +658,14 @@ class wstr_shortcodes
                                 <ul class="related_tag_list_wrapper ws_flex gap_10">
                                     <?php
                                     foreach ($tags as $tag) {
-                                        ?>
+                                    ?>
                                         <li>
                                             <?php
                                             $tag_name = $tag->name;
                                             echo $tag_name;
                                             ?>
                                         </li>
-                                        <?php
+                                    <?php
                                     }
                                     ?>
                                 </ul>
@@ -705,7 +704,7 @@ class wstr_shortcodes
                         <?php
                         echo do_shortcode('[wstr_estimation]');
                         echo do_shortcode('[wstr-similar-industry-name category_id =' . $category_id . ']')
-                            ?>
+                        ?>
                     </div>
                 </div>
 
@@ -715,11 +714,11 @@ class wstr_shortcodes
                     ?>
                 </div>
 
-                <?php
+            <?php
             endwhile; // End the Loop.
             ?>
         </div>
-        <?php
+    <?php
 
         $output = ob_get_contents();
         ob_end_clean();
@@ -749,7 +748,7 @@ class wstr_shortcodes
                 )
             )
         );
-        ?>
+    ?>
         <div class="similar-industry-names-main ws_trending_cards margin_v_35">
             <h5>Similar Industry Names</h5>
             <?php
@@ -761,18 +760,18 @@ class wstr_shortcodes
                 $logo_image_id = get_post_meta($similar_domain_id, '_logo_image', true);
                 $logo_image_url = wp_get_attachment_url($logo_image_id);
                 $permalink = get_permalink($similar_domain_id);
-                ?>
+            ?>
                 <a href="<?php echo $permalink ?>">
                     <div class="similar-industry-names ws-card-contents ws_flex">
 
                         <?php if (!$logo_image_url && !$featured_image_url) {
-                            ?>
+                        ?>
                             <img src="<?php echo get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png' ?>"
                                 alt="<?php echo $similar_domain_title ?>">
-                            <?php
+                        <?php
                         } else {
 
-                            ?>
+                        ?>
                             <img src="<?php echo $logo_image_url ? $logo_image_url : $featured_image_url ?>"
                                 alt="<?php echo $similar_domain_title; ?> ">
                         <?php }
@@ -783,11 +782,11 @@ class wstr_shortcodes
                         </div>
                     </div>
                 </a>
-                <?php
+            <?php
             }
             ?>
         </div>
-        <?php
+    <?php
         return ob_get_clean();
     }
 
@@ -813,7 +812,7 @@ class wstr_shortcodes
         <?php if (have_posts()):
             while (have_posts()):
                 the_post();
-                ?>
+        ?>
 
                 <h5><?php echo get_the_title(); ?></h5>
 
@@ -826,8 +825,8 @@ class wstr_shortcodes
                 'next_text' => __('>', 'webstarter'),
             ));
 
-            //  else : 
-            // <!-- No posts found -->
+        //  else : 
+        // <!-- No posts found -->
         endif;
         return ob_get_clean();
     }
@@ -955,7 +954,7 @@ class wstr_shortcodes
                 </div>
             </div>
 
-            <?php
+        <?php
         } else {
             // Check if the user is not logged in
             if (is_user_logged_in()) {
@@ -966,7 +965,7 @@ class wstr_shortcodes
                 // exit;
                 return;
             }
-            ?>
+        ?>
             <div class="login-page-wrapper">
                 <div class="user-details login-form-details forms_container wstr_login_column" id="login-form">
                     <div>
@@ -1038,9 +1037,58 @@ class wstr_shortcodes
                 </div>
             </div>
 
-            <?
+        <?
         }
         return ob_get_clean();
+    }
+
+    // not pushed yet
+    public function wstr_faq($args)
+    {
+        ob_start();
+        $category = $args['category']; // Get the category argument
+        $faq_args = [
+            'posts_per_page' => -1,
+            'post_type'      => 'faq',
+            'tax_query'      => [
+                [
+                    'taxonomy' => 'faq_cat', // FAQ category taxonomy
+                    'field'    => 'slug',
+                    'terms'    => $category,
+                ],
+            ],
+        ];
+
+        $query = new WP_Query($faq_args);
+        ?>
+        <div class="wstr-faq-accordion">
+
+            <?php
+            if ($query->have_posts()) :
+                while ($query->have_posts()) : $query->the_post(); ?>
+                    <div class="wstr-faq-accordion-item">
+                        <div class="wstr-faq-accordion-header">
+                            <h3><?php the_title(); ?></h3>
+                            <span class="wstr-faq-icon">
+                                <i class="fa-solid fa-plus"></i>
+                            </span>
+                        </div>
+                        <div class="wstr-faq-accordion-content">
+                            <p>
+                                <?php the_content(); ?>
+                            </p>
+                        </div>
+                    </div>
+            <?php endwhile;
+            else :
+                echo '<p>No FAQs found.</p>';
+            endif;
+            ?>
+        </div>
+<?php
+        wp_reset_postdata();
+
+        return ob_get_clean(); // Return the output buffer
     }
 }
 new wstr_shortcodes();

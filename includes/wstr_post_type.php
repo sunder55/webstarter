@@ -76,7 +76,7 @@ class wstr_post_types
             'has_archive'        => true,
             'hierarchical'       => false,
             'menu_position'      => null,
-            'supports'           => array('title', 'editor', 'author', 'thumbnail'),
+            'supports'           => array('title', 'editor', 'author', 'thumbnail', 'status', 'custom-fields'),
             'show_in_rest'       => true,
         );
 
@@ -206,9 +206,9 @@ class wstr_post_types
     public function edit_taxonomy_image_field($term)
     {
         // Retrieve the existing value(s) for the term meta.
-        $image_id = get_term_meta($term->term_id, 'taxonomy-image-id', true);
+        $image_id = get_term_meta($term->term_id, 'taxonomy_image_id', true);
         $is_popular = get_term_meta($term->term_id, '_is_popular', true);
-        
+
     ?>
         <tr class="form-field term-group-wrap">
             <td>
@@ -248,9 +248,9 @@ class wstr_post_types
         }
         if (isset($_POST['taxonomy-image-id']) && '' !== $_POST['taxonomy-image-id']) {
             $image = intval($_POST['taxonomy-image-id']);
-            update_term_meta($term_id, 'taxonomy-image-id', $image);
+            update_term_meta($term_id, 'taxonomy_image_id', $image);
         } else {
-            delete_term_meta($term_id, 'taxonomy-image-id');
+            delete_term_meta($term_id, 'taxonomy_image_id');
         }
     }
 
