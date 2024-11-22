@@ -1089,44 +1089,6 @@ add_shortcode('wstr-buy-domain', 'wstr_buy_domain');
 // add_shortcode('get-order', 'wstr_get_product_of_seller_by_order_id');
 
 // add_action('wp_footer', 'wstr_get_order_by_seller');
-function wstr_get_order_id_by_seller_id()
-{
-    $user_id = 1; // Example user ID
-
-    $args = [
-        'post_type'      => 'domain_order',
-        'posts_per_page' => -1,
-    ];
-
-    if ($user_id) {
-        $args['meta_query'] = [
-            [
-                'key'     => '_seller',
-
-                'value' => serialize(strval($user_id)),
-                'compare' => 'LIKE',
-            ],
-        ];
-    }
-
-    // Start output buffering
-    ob_start();
-
-    $query = new WP_Query($args);
-    $order_id = [];
-
-    if ($query->have_posts()) {
-
-        while ($query->have_posts()) {
-            $query->the_post(); // Set up global post data
-            var_dump(get_the_ID()); // Correct usage
-            $order_id[] = get_the_ID();
-        }
-        wp_reset_postdata(); // Reset global post data
-    }
-    var_dump($order_id);
-}
-
 
 function wstr_get_seller_products_by_order_and_seller_id()
 {

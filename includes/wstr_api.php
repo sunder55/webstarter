@@ -347,6 +347,12 @@ if (!class_exists('wstr_rest_api')) {
                 'permission_callback' => '__return_true'
             ));
 
+            register_rest_route('wstr/v1', '/sales-order/(?P<seller_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_get_order_id_by_seller_id'],
+                'permission_callback' => '__return_true'
+            ));
+
             register_rest_field('domain_order', 'meta', array(
                 'get_callback' => function ($data) {
                     return get_post_meta($data['id'], '', '');
@@ -961,6 +967,49 @@ if (!class_exists('wstr_rest_api')) {
                 }
             } catch (Exception $ex) {
                 return 'Exception: ' . $ex->getMessage();
+            }
+        }
+
+        /**
+         * Function for getting order id buy seller id
+         */
+        public function wstr_get_order_id_by_seller_id($request)
+        {
+            // $user_id = 1; // Example user ID
+            $seller_id = (int) $request->get_param('seller_id');
+            if (!$seller_id) {
+                return new WP_Error('no_seller_id', 'Sorry, seller not found', array('status' => 404));
+            }
+            $args = [
+                'post_type'      => 'domain_order',
+                'posts_per_page' => -1,
+            ];
+
+            if ($seller_id) {
+                $args['meta_query'] = [
+                    [
+                        'key'     => '_seller',
+
+                        'value' => serialize(strval($seller_id)),
+                        'compare' => 'LIKE',
+                    ],
+                ];
+            }
+
+            $query = new WP_Query($args);
+            $order_ids = [];
+
+            if ($query->have_posts()) {
+
+                while ($query->have_posts()) {
+                    $query->the_post(); // Set up global post data
+                    $order_ids[] = get_the_ID();
+                }
+                wp_reset_postdata(); // Reset global post data
+                return new WP_REST_Response($order_ids, 200);
+            } else {
+                //    return esc_html_e('Sorry, No orders found');
+                return new WP_Error('order_not_found', 'Sorry, No orders found', array('status' => 404));
             }
         }
     }
