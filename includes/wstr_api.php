@@ -352,6 +352,17 @@ if (!class_exists('wstr_rest_api')) {
                 'callback' => [$this, 'wstr_get_order_id_by_seller_id'],
                 'permission_callback' => '__return_true'
             ));
+            register_rest_route('wstr/v1', '/user-profile/(?P<user_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_get_user_profile'],
+                'permission_callback' => '__return_true'
+            ));
+
+            register_rest_route('wstr/v1', '/domain-registar/(?P<domain_name>[\w\.\-]+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_get_domain_registar'],
+                'permission_callback' => '__return_true'
+            ));
 
             register_rest_field('domain_order', 'meta', array(
                 'get_callback' => function ($data) {
@@ -989,7 +1000,6 @@ if (!class_exists('wstr_rest_api')) {
                 $args['meta_query'] = [
                     [
                         'key'     => '_seller',
-
                         'value' => serialize(strval($seller_id)),
                         'compare' => 'LIKE',
                     ],
@@ -1012,6 +1022,113 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('order_not_found', 'Sorry, No orders found', array('status' => 404));
             }
         }
+
+        /**
+         * Function for getting user profile by user id 
+         */
+
+        public function wstr_get_user_profile($request)
+        {
+            // return get_current_user_id();
+            $user_id = (int) $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('missing_user_id', 'User id is missing');
+            }
+
+            $user_details = get_user_by('id', $user_id);
+
+            $user_image_id = (int) get_user_meta($user_id, 'ws_profile_pic', true);
+            $user_image = '';
+            if ($user_image_id) {
+                $user_image =  wp_get_attachment_url($user_image_id);
+            } else {
+                $user_image = get_avatar_url($user_details->data->ID);
+            }
+
+            $data = [
+                'id' => $user_details->data->ID ? $user_details->data->ID : '',
+                'display_name' => $user_details->data->display_name ? $user_details->data->display_name : '',
+                'user_email' => $user_details->data->user_email ? $user_details->data->user_email : '',
+                'cap_key' => $user_details->caps ? $user_details->caps : '',
+                'roles' => $user_details->roles ? $user_details->roles : '',
+                'first_name' => $user_details->first_name ? $user_details->first_name : '',
+                'last_name' => $user_details->last_name ? $user_details->last_name : '',
+                'user_image' => $user_image,
+            ];
+
+            // Return the data in JSON formatzz
+            return new WP_REST_Response($data, 200);
+        }
+
+        /**
+         * Function for getting an domains registar information via api
+         */
+
+        public function wstr_get_domain_registar($request)
+        {
+
+            $domain_name = $request->get_param('domain_name');
+
+            if (!$domain_name) {
+                return new WP_Error('missing_domain_name', 'domain name is missing');
+            }
+
+            $r         = "whois";          // API request type
+            $apikey    = "0000000000000000000";        // your API key
+
+            // API call
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://api.whoapi.com/?domain=$domain_name&r=$r&apikey=$apikey");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $output = json_decode(curl_exec($ch), true);
+            curl_close($ch);
+
+            // Success
+            if (isset($output['status']) && $output['status'] == 0) {
+                return new WP_REST_Response($output, 200);
+            } elseif (!empty($output['status_desc'])) {
+                return new WP_Error('missing_domain_name', $output['status_desc']);
+            } else {
+                return new WP_Error('missing_domain_name', 'error occured');
+            }
+        }
     }
 }
 new wstr_rest_api();
+
+// add_action('wp_footer', 'get_desc');
+function get_desc($request)
+{
+    // $params = $request->get_params();
+
+    // if (isset($params['domain_name']) && $params['domain_name']) {
+    // $domain_name = trim(sanitize_text_field($params['domain_name']));
+    // try {
+    //     $domain_name = 'webstarter.com';
+
+    //     $domain_explode = explode('.', $domain_name);
+    //     $domain_length = strlen(string: $domain_explode[0]);
+
+    //     // require_once get_stylesheet_directory_uri().'/vendor/autoload.php';
+    //     require_once __DIR__ . '/vendor/autoload.php';
+
+    //     // $domain = $_POST['domain'];
+    //     // $domain_length = $_POST['domain_length'];
+    //     $client = new \GeminiAPI\Client('AIzaSyCYqZrBySHCfBH_L_1fcTflE8utK0zdJl4');
+    //     $response = $client->geminiPro()->generateContent(
+    //         // new \GeminiAPI\Resources\Parts\TextPart('explain domain name -> ' . $domain)
+    //         // new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name '.$domain.'. Include possible creative uses for the domain name, explaining why it is a good name and why its '.$domain_length.'-character length is advantageous. Provide specific examples and use a friendly and informative tone.')
+    //         new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name ' . $domain_name . 'What are some possible creative uses for this ' . $domain_name . '?  Explain the benefits of ' . $domain_length . 'character domain in paragraph.Explain, why it is a good domain name?
+    //         ')
+    //     );
+    //     $desc = $response->text();
+    //     var_dump($desc);
+    // } catch (Exception $err) {
+    //     var_dump($err);
+    // }
+    // // return new WP_REST_Response($desc, 200);
+    // wp_die();
+    // // }
+
+
+}
