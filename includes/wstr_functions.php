@@ -388,3 +388,28 @@ function wstr_get_order_details($order_id)
     ];
     return $data;
 }
+
+/**
+ * Function for getting currency rates
+ */
+
+// function wstr_get_currency_rates($currency)
+// {
+//     $access_key = 'cur_live_RFDFd4STzeV5MnBBE3MFokvZmnaKEWpfAB1wT1iP';
+//     $response = wp_remote_get('https://api.currencyapi.com/v3/latest?apikey=' . $access_key . '&currencies=' . $currency);
+
+//     if (is_wp_error($response)) {
+//         // Handle the error
+//         $error_message = $response->get_error_message();
+//         echo "Something went wrong: $error_message";
+//     } else {
+//         $body = wp_remote_retrieve_body($response);
+//         $data = json_decode($body, true);
+
+//         if (isset($data['data'])) {
+//             var_dump($data['data'][$currency]['value']);
+//         } else {
+//             error_log('Failed to update currency rate .');
+//         }
+//     }
+// }

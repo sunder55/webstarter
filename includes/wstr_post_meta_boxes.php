@@ -569,6 +569,7 @@ class wstr_domain_order_meta_boxes
         $payment_method = get_post_meta($post->ID, '_payment_method', true);
         $transaction_id = get_post_meta($post->ID, '_transaction_id', true);
         $customer_note = get_post_meta($post->ID, '_customer_note', true);
+        $order_type =  get_post_meta($post->ID, '_order_type', true);
 
     ?>
         <div class="orderPaymentInfo">
@@ -585,6 +586,11 @@ class wstr_domain_order_meta_boxes
                 <label for="customer_note"><?php _e('Customer Note', 'webstarter'); ?></label>
                 <textarea id="customer_note" name="customer_note" class="widefat"><?php echo esc_textarea($customer_note); ?></textarea>
             </p>
+            <select class="widefat" name="order_type">
+                <option value="one_time" <?php echo $order_type == 'one_time' ? 'selected' : "" ?>>One Time</option>
+                <option value="lease_to_own" <?php echo $order_type == 'lease_to_own' ? 'selected' : "" ?>>Lease to own</option>
+                <option value="offer" <?php echo $order_type == 'offer' ? 'selected' : "" ?>>offer</option>
+            </select>
         </div>
         <?php
     }
@@ -635,9 +641,21 @@ class wstr_domain_order_meta_boxes
                     <?php foreach ($saved_domains as $domain_id): ?>
                         <?php $domain_post = get_post($domain_id); ?>
                         <?php if ($domain_post):
-                            $price = get_post_meta($domain_post->ID, '_sale_price', true);
-                            if (!$price) {
-                                $price = get_post_meta($domain_post->ID, '_regular_price', true);
+                            $regular_price = get_post_meta($domain_post->ID, '_regular_price', true);
+                            $sale_price = get_post_meta($domain_post->ID, '_sale_price', true);
+                            $sale_end_date = get_post_meta($domain_post->ID, '_sale_price_dates_to', true);
+                            $current_date = date('Y-m-d');
+                            $price = '';
+                            if ($sale_price) {
+                                if ($sale_end_date && $sale_end_date >= $current_date) {
+                                    $price = $sale_price;
+                                } else if ($sale_end_date && $sale_end_date <= $current_date) {
+                                    $price = $regular_price;
+                                } else {
+                                    $price = $sale_price;
+                                }
+                            } else {
+                                $price = $regular_price;
                             }
                             // $subtotal += (float) $price; // Add the price to the subtotal
                         ?>
@@ -758,12 +776,27 @@ class wstr_domain_order_meta_boxes
             $order_status = sanitize_text_field($_POST['order_status']);
             update_post_meta($post_id, '_order_status', $order_status);
         }
-
-        $currency = $_SESSION['currency'] ?: 'USD';
+        if (isset($_POST['order_type'])) {
+            update_post_meta($post_id, '_order_type', $_POST['order_type']);
+        }
+        // $currency = $_SESSION['currency'] ?: 'EUR';
+        $currency = 'USD';
         update_post_meta($post_id, '_currency', $currency);
 
         $currency_symbol = get_wstr_currency_symbol($currency);
         update_post_meta($post_id, '_currency_symbol', $currency_symbol);
+
+        if ($currency != 'USD') {
+            // $currency_rates = get_option('wstr_currency_rates', []);
+            // $currency_rate = $currency_rates[$currency] ?? 1;
+            // if ($currency && $currency != 'USD') {
+            //     $currency_rate = wstr_truncate_number((float) $currency_rate);
+
+            //     // Calculate the prices in the specified currency
+            //     // $regular_price = $regular_price > 0 ? $regular_price * $currency_rate : 0;
+            // }
+            // return wstr_truncate_number($regular_price);
+        }
 
         $customer = sanitize_text_field($_POST['customer']);
         update_post_meta($post_id, '_customer', $customer);

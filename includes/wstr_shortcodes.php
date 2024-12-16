@@ -17,6 +17,7 @@ class wstr_shortcodes
         add_shortcode('wstr-login', [$this, 'wstr_login']);
         add_shortcode('wstr_register', [$this, 'wstr_register']);
         add_shortcode('wstr-faq', [$this, 'wstr_faq']);
+        add_shortcode('wstr-otp', [$this, 'wstr_otp']);
     }
 
     public function wstr_banner_reviews_function()
@@ -1006,7 +1007,8 @@ class wstr_shortcodes
                         <?php
                         echo wp_login_form(
                             array(
-                                'redirect' => esc_url($_SERVER['REQUEST_URI']),
+                                // 'redirect' => esc_url($_SERVER['REQUEST_URI']),
+                                'redirect' => get_home_url() . '/otp',
                                 'form_id' => 'loginform',
                                 'label_username' => '',
                                 'label_password' => '',
@@ -1085,10 +1087,30 @@ class wstr_shortcodes
             endif;
             ?>
         </div>
-<?php
+    <?php
         wp_reset_postdata();
 
         return ob_get_clean(); // Return the output buffer
+    }
+
+
+    public function wstr_otp()
+    {
+        ob_start();
+    ?>
+        <div class="otp-verification-wrapper">
+            <h2>OTP Verification</h2>
+            <p>We have sent an OTP to your registered email. Please enter the OTP to continue.</p>
+            <form method="POST" id="otp-verification-form">
+                <input type="text" name="otp_code" id="otp_code" placeholder="Enter OTP" required>
+                <button type="submit" name="verify_otp">Verify OTP</button>
+            </form>
+            <form method="POST" id="resend-otp-form">
+                <button type="submit" name="resend_otp">Resend OTP</button>
+            </form>
+        </div>
+<?php
+        return ob_get_clean();
     }
 }
 new wstr_shortcodes();

@@ -1107,3 +1107,16 @@ function wstr_get_seller_products_by_order_and_seller_id()
     }
     var_dump($product_id);
 }
+
+
+add_action('wp_footer', 'generate_random_number');
+function generate_random_number()
+{
+    $to = 'sunderkandel789@gmail.com';
+    $subject = 'OTP Webstarter';
+    $body = 'Please find the opt below';
+    $headers = array('Content-Type: text/html; charset=UTF-8', 'Webstarter.com <support@example.com>');
+
+    $mail =  wp_mail($to, $subject, $body, $headers);
+    var_dump($mail);
+}

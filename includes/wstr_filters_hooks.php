@@ -21,7 +21,7 @@ add_filter('manage_domain_posts_columns', 'misha_featured_image_column');
 function misha_featured_image_column($column_array)
 {
 
-    // I want to add my column at the beginning, so I use array_slice()
+
     // in other cases $column_array['featured_image'] = 'Featured Image' will be enough
     $column_array = array_slice($column_array, 0, 1, true)
         + array('featured_image' => 'Featured Image') // our new column for featured images
@@ -72,7 +72,7 @@ function wstr_add_custom_user_roles()
         'delete_posts' => false,
         // Add any other capabilities 
     ));
-    remove_role('seller');
+    // remove_role('seller');
     // Add Seller role
     add_role('seller', __('Seller', 'webstarter'), array(
         'read' => true,
@@ -126,7 +126,7 @@ function add_seller_domain_capabilities()
     }
 }
 
-add_action('init', 'add_seller_domain_capabilities');
+// add_action('init', 'add_seller_domain_capabilities');
 
 
 
@@ -172,6 +172,43 @@ function wstr_prevent_wp_login()
     }
 }
 
+add_filter("login_redirect", function ($redirect_to, $requested_redirect_to, $user) {
+    global $pagenow;
+    $allowed_actions = ['logout', 'lostpassword', 'rp', 'resetpass', 'postpass']; // allowing action 
+    // Check if the user is logged in successfully
+    if (is_wp_error($user) || empty($user->ID)) {
+        return $redirect_to; // Return default if the user is not logged in
+    }
+
+    if ($pagenow == 'wp-login.php' && (!isset($_GET['action']) || !in_array($_GET['action'], $allowed_actions))) {
+        $user_id = $user->ID;
+        // die(var_dump($pagenow));
+        $twoFa_enabled = get_user_meta($user_id, '2fa_enabled', true);
+        // Set the redirect URL to the my-account page with the user ID as a query parameter
+
+        // Check if the login is successful
+        if (is_wp_error($user) || empty($user->ID)) {
+            return $redirect_to; // Return default if login failed
+        }
+
+        if ($twoFa_enabled) {
+            $user_details = get_user_by('id', 1);
+            $user_email  = $user_details->data->user_email;
+
+            $result = '';
+            $length = 6;
+            for ($i = 0; $i < $length; $i++) {
+                $result .= random_int(0, 9);
+            }
+
+            return home_url('/otp');
+        } else {
+            return home_url('/my-account');
+        }
+    }
+    // Redirect to the my-account page
+
+}, 10, 3);
 /**
  * passing login error codes as parameter
  */
@@ -256,4 +293,25 @@ function rest_api_permissions($result)
     }
     return $result;
 }
-add_filter('rest_domain_collection_params', 'rest_api_permissions');
+// add_filter('rest_domain_collection_params', 'rest_api_permissions');
+
+
+// add_filter('rest_domain_query', 'allow_seller_draft_domains', 10, 2);
+function allow_seller_draft_domains($args, $request)
+{
+    // Check if the current user is logged in
+    if (is_user_logged_in()) {
+        $current_user = wp_get_current_user();
+
+        // Check if the user has the 'seller' role
+        if (in_array('seller', $current_user->roles)) {
+            // If the request doesn't specify a status, or if it's requesting drafts
+            if (!isset($args['post_status']) || $args['post_status'] === 'draft') {
+                // Allow access to draft posts
+                $args['post_status'] = 'draft';
+            }
+        }
+    }
+
+    return $args;
+}

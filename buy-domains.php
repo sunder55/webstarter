@@ -424,9 +424,9 @@ function wstr_domain_filter()
     }
 
     $args = [
-
         'post_type' => 'domain',
         'meta_query' => [
+            'relation' => 'AND',
             [
                 'key' => '_stock_status',
                 'value' => 'outofstock',
@@ -442,13 +442,13 @@ function wstr_domain_filter()
     // Initialize the tax_query array
     $tax_query = [];
     // Initialize meta_query if it's not already
-    if (!isset($args['meta_query'])) {
-        $args['meta_query'] = [];
-    }
+    // if (!isset($args['meta_query'])) {
+    //     $args['meta_query'] = [];
+    // }
 
-    $args['meta_query'] = [
-        'relation' => 'AND', // Ensures both min and max constraints are applied together
-    ];
+    // $args['meta_query'] = [
+    //     'relation' => 'AND', // Ensures both min and max constraints are applied together
+    // ];
 
     if (!empty($industry) && is_array($industry)) {
         // Add a separate subquery for each industry term with an 'AND' relation
@@ -569,9 +569,12 @@ function wstr_domain_filter()
 
     $response = '';
     $query = new WP_Query($args);
+
     if ($query->have_posts()) {
         while ($query->have_posts()) {
             $query->the_post();
+
+
             $domain_image = get_the_post_thumbnail_url(get_the_ID(), 'medium_large');
 
             if (!$domain_image) {

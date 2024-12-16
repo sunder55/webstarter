@@ -382,6 +382,12 @@ if (!class_exists('wstr_rest_api')) {
                 'show_in_rest' => true
             ));
 
+            register_rest_route('wstr/v1', '/become-seller/(?P<user_id>[\w\.\-]+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_become_seller'],
+                'permission_callback' => '__return_true'
+            ));
+
             // register_meta(
             //     'domain',
             //     '_enable_offers',
@@ -994,6 +1000,8 @@ if (!class_exists('wstr_rest_api')) {
             $args = [
                 'post_type'      => 'domain_order',
                 'posts_per_page' => -1,
+                'order' => 'DESC',
+                'orderby' => 'ID',
             ];
 
             if ($seller_id) {
@@ -1074,9 +1082,8 @@ if (!class_exists('wstr_rest_api')) {
             }
 
             $r         = "whois";          // API request type
-            $apikey    = "0000000000000000000";        // your API key
+            $apikey    = "75e2f2c1ceba1bd4e21d461001ce25f1";
 
-            // API call
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, "https://api.whoapi.com/?domain=$domain_name&r=$r&apikey=$apikey");
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -1092,43 +1099,89 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('missing_domain_name', 'error occured');
             }
         }
+
+        /**
+         * Function for adding seller role
+         * 
+         */
+
+        public function wstr_become_seller($request)
+        {
+            $user_id = $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('missing_user_id', 'Missing user id.');
+            }
+
+            $body_params = $request->get_json_params();
+
+            // Access user_id and other parameters
+            $become_seller = isset($body_params['become_seller']) ? $body_params['become_seller'] : null;
+            if ($become_seller) {
+                $user = new WP_User($user_id);
+                $user->add_role('seller');
+
+                if (in_array('seller', $user->roles)) {
+                    $user->remove_role('buyer');
+                }
+
+                return new WP_REST_Response('Role added successfully', 200);
+            }
+        }
     }
 }
 new wstr_rest_api();
 
-// add_action('wp_footer', 'get_desc');
-function get_desc($request)
+// add_action('wp_footer', 'assign_buyer_and_seller_roles');
+
+function assign_buyer_and_seller_roles($user_id)
 {
-    // $params = $request->get_params();
+    // $user_id =  15;
+    $user_id =  15;
+    // Fetch the WP_User object of our user.
+    $u = new WP_User(15);
 
-    // if (isset($params['domain_name']) && $params['domain_name']) {
-    // $domain_name = trim(sanitize_text_field($params['domain_name']));
-    // try {
-    //     $domain_name = 'webstarter.com';
+    // Replace the current role with 'editor' role
+    // $u->add_role('seller');
+    $u->add_role('seller');
+    return;
+    // Get the user object
+    // $user = new WP_User($user_id);
 
-    //     $domain_explode = explode('.', $domain_name);
-    //     $domain_length = strlen(string: $domain_explode[0]);
-
-    //     // require_once get_stylesheet_directory_uri().'/vendor/autoload.php';
-    //     require_once __DIR__ . '/vendor/autoload.php';
-
-    //     // $domain = $_POST['domain'];
-    //     // $domain_length = $_POST['domain_length'];
-    //     $client = new \GeminiAPI\Client('AIzaSyCYqZrBySHCfBH_L_1fcTflE8utK0zdJl4');
-    //     $response = $client->geminiPro()->generateContent(
-    //         // new \GeminiAPI\Resources\Parts\TextPart('explain domain name -> ' . $domain)
-    //         // new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name '.$domain.'. Include possible creative uses for the domain name, explaining why it is a good name and why its '.$domain_length.'-character length is advantageous. Provide specific examples and use a friendly and informative tone.')
-    //         new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name ' . $domain_name . 'What are some possible creative uses for this ' . $domain_name . '?  Explain the benefits of ' . $domain_length . 'character domain in paragraph.Explain, why it is a good domain name?
-    //         ')
-    //     );
-    //     $desc = $response->text();
-    //     var_dump($desc);
-    // } catch (Exception $err) {
-    //     var_dump($err);
+    // // Assign "buyer" role if not already assigned
+    // if (!in_array('buyer', $user->rol;es)) {
+    //     $user->add_role('buyer');
     // }
-    // // return new WP_REST_Response($desc, 200);
-    // wp_die();
-    // // }
+
+    // // Assign "seller" role if not already assigned
+    // if (!in_array('seller', $user->roles)) {
+    //     $user->add_role('seller');
+    // }
 
 
+    // return get_current_user_id();
+    $user_details = get_user_by('id', $user_id);
+    $user_image_id = (int) get_user_meta($user_id, 'ws_profile_pic', true);
+    $user_image = '';
+    if ($user_image_id) {
+        $user_image =  wp_get_attachment_url($user_image_id);
+    } else {
+        $user_image = get_avatar_url($user_details->data->ID);
+    }
+    echo '<pre>';
+    var_dump($user_details);
+
+    // $data[] = [
+    //     'id' => $user_details->data->ID ? $user_details->data->ID : '',
+    //     'display_name' => $user_details->data->display_name ? $user_details->data->display_name : '',
+    //     'user_email' => $user_details->data->user_email ? $user_details->data->user_email : '',
+    //     'cap_key' => $user_details->caps ? $user_details->caps : '',
+    //     'roles' => $user_details->roles ? $user_details->roles : '',
+    //     'first_name' => $user_details->first_name ? $user_details->first_name : '',
+    //     'last_name' => $user_details->last_name ? $user_details->last_name : '',
+    //     'user_image' => $user_image,
+    // ];
 }
+
+// Example usage: Replace with the actual user ID
+// $user_id = 123; // Replace with your user's ID
+// assign_buyer_and_seller_roles($user_id);

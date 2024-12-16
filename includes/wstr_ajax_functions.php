@@ -66,6 +66,13 @@ class Wstr_ajax_functions
                 's' => $search_term,
                 'posts_per_page' => -1, // Adjust this if you want to limit the number of results
                 'fields' => 'ids', // Only retrieve post IDs
+                'meta_query' => array(               // Meta query conditions
+                    array(
+                        'key' => '_stock_status',    // Meta key for stock status
+                        'value' => 'outofstock',       // Exclude posts with 'outofstock' status
+                        'compare' => '!=',               // Not equal to 'outofstock'
+                    )
+                ),
             ));
 
             $domains = $domain_query->get_posts();
@@ -108,9 +115,23 @@ class Wstr_ajax_functions
                         foreach ($saved_domains as $domain) {
                             $domain_post = get_post($domain);
                             if ($domain_post && $domain_post->post_type === 'domain') {
-                                $price = get_post_meta($domain_post->ID, '_sale_price', true);
-                                if (!$price) {
-                                    $price = get_post_meta($domain_post->ID, '_regular_price', true);
+
+                                $regular_price = get_post_meta($domain_post->ID, '_regular_price', true);
+                                $sale_price = get_post_meta($domain_post->ID, '_sale_price', true);
+                                $sale_end_date = get_post_meta($domain_post->ID, '_sale_price_dates_to', true);
+                                $price = '';
+                                $current_date = date('Y-m-d');
+
+                                if ($sale_price) {
+                                    if ($sale_end_date && $sale_end_date >= $current_date) {
+                                        $price = $sale_price;
+                                    } else if ($sale_end_date && $sale_end_date <= $current_date) {
+                                        $price = $regular_price;
+                                    } else {
+                                        $price = $sale_price;
+                                    }
+                                } else {
+                                    $price = $regular_price;
                                 }
                                 $subtotal += (float) $price;
                             }
@@ -126,9 +147,22 @@ class Wstr_ajax_functions
                 }
                 $image_url = get_the_post_thumbnail_url($domain_post->ID, 'full');
                 // Get the amount 
-                $price = get_post_meta($domain_post->ID, '_sale_price', true);
-                if (!$price) {
-                    $price = get_post_meta($domain_post->ID, '_regular_price', true);
+
+                $regular_price = get_post_meta($domain_post->ID, '_regular_price', true);
+                $sale_price = get_post_meta($domain_post->ID, '_sale_price', true);
+                $sale_end_date = get_post_meta($domain_post->ID, '_sale_price_dates_to', true);
+                $current_date = date('Y-m-d');
+                $price = '';
+                if ($sale_price) {
+                    if ($sale_end_date && $sale_end_date >= $current_date) {
+                        $price = $sale_price;
+                    } else if ($sale_end_date && $sale_end_date <= $current_date) {
+                        $price = $regular_price;
+                    } else {
+                        $price = $sale_price;
+                    }
+                } else {
+                    $price = $regular_price;
                 }
 
                 // Prepare the response data

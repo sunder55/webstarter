@@ -235,21 +235,6 @@ jQuery(document).ready(function ($) {
           order_id: orderId,
         },
         success: function (data) {
-          // if (Array.isArray(data) && data.length > 0) {
-          // var domain = data[0]; // Get the first item from the array
-
-          var domainDetail =
-            '<div class="domainDetail" data-id="' +
-            data.id +
-            '">' +
-            "<p>Domain Name: " +
-            data.name +
-            "</p>" +
-            '<input type="hidden" name="domain_ids[]" value="' +
-            data.id +
-            '">' +
-            "</div>";
-
           var domainDetails =
             "<tr class='domainDetail' data-id='" +
             data.id +
@@ -283,6 +268,8 @@ jQuery(document).ready(function ($) {
           // Update subtotal and total
           $(".orderSubtotal input").val(data.subtotal);
           $(".orderTotal input").val(data.total);
+          $("#domainId").empty();
+
           // }
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -408,10 +395,9 @@ jQuery(document).ready(function ($) {
   // for deleting order notes ends
   $("#currencyList").select2({
     placeholder: "Select currencies",
-    allowClear: true
+    allowClear: true,
+  });
 });
-});
-
 
 function openCity(cityName) {
   var i;
