@@ -172,43 +172,45 @@ function wstr_prevent_wp_login()
     }
 }
 
-add_filter("login_redirect", function ($redirect_to, $requested_redirect_to, $user) {
-    global $pagenow;
-    $allowed_actions = ['logout', 'lostpassword', 'rp', 'resetpass', 'postpass']; // allowing action 
-    // Check if the user is logged in successfully
-    if (is_wp_error($user) || empty($user->ID)) {
-        return $redirect_to; // Return default if the user is not logged in
-    }
+// add_filter("login_redirect", function ($redirect_to, $requested_redirect_to, $user) {
+//     $page = get_home_url() . '/my-account';
+//     return $page;
+//     wp_redirect($page);
+//     $allowed_actions = ['logout', 'lostpassword', 'rp', 'resetpass', 'postpass']; // allowing action 
+//     // Check if the user is logged in successfully
+//     if (is_wp_error($user) || empty($user->ID)) {
+//         return $redirect_to; // Return default if the user is not logged in
+//     }
 
-    if ($pagenow == 'wp-login.php' && (!isset($_GET['action']) || !in_array($_GET['action'], $allowed_actions))) {
-        $user_id = $user->ID;
-        // die(var_dump($pagenow));
-        $twoFa_enabled = get_user_meta($user_id, '2fa_enabled', true);
-        // Set the redirect URL to the my-account page with the user ID as a query parameter
+//     if ($pagenow == 'wp-login.php' && (!isset($_GET['action']) || !in_array($_GET['action'], $allowed_actions))) {
+//         $user_id = $user->ID;
+//         // die(var_dump($pagenow));
+//         $twoFa_enabled = get_user_meta($user_id, '2fa_enabled', true);
+//         // Set the redirect URL to the my-account page with the user ID as a query parameter
 
-        // Check if the login is successful
-        if (is_wp_error($user) || empty($user->ID)) {
-            return $redirect_to; // Return default if login failed
-        }
+//         // Check if the login is successful
+//         if (is_wp_error($user) || empty($user->ID)) {
+//             return $redirect_to; // Return default if login failed
+//         }
 
-        if ($twoFa_enabled) {
-            $user_details = get_user_by('id', 1);
-            $user_email  = $user_details->data->user_email;
+//         if ($twoFa_enabled) {
+//             $user_details = get_user_by('id', 1);
+//             $user_email  = $user_details->data->user_email;
 
-            $result = '';
-            $length = 6;
-            for ($i = 0; $i < $length; $i++) {
-                $result .= random_int(0, 9);
-            }
+//             $result = '';
+//             $length = 6;
+//             for ($i = 0; $i < $length; $i++) {
+//                 $result .= random_int(0, 9);
+//             }
 
-            return home_url('/otp');
-        } else {
-            return home_url('/my-account');
-        }
-    }
-    // Redirect to the my-account page
+//             return home_url('/otp');
+//         } else {
+//             return home_url('/my-account');
+//         }
+//     }
+//     // Redirect to the my-account page
 
-}, 10, 3);
+// }, 10, 3);
 /**
  * passing login error codes as parameter
  */

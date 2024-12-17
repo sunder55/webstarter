@@ -388,6 +388,12 @@ if (!class_exists('wstr_rest_api')) {
                 'permission_callback' => '__return_true'
             ));
 
+            register_rest_route('wstr/v1', '/2fa-verification/(?P<user_id>[\w\.\-]+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_2fa_verfication'],
+                'permission_callback' => '__return_true'
+            ));
+
             // register_meta(
             //     'domain',
             //     '_enable_offers',
@@ -1125,6 +1131,32 @@ if (!class_exists('wstr_rest_api')) {
                 }
 
                 return new WP_REST_Response('Role added successfully', 200);
+            }
+        }
+
+        public function wstr_2fa_verfication($request)
+        {
+            $user_id = $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('missing_user_id', 'Missing user id.');
+            }
+            $body_params = $request->get_json_params();
+
+            // Access user_id and other parameters
+            $two_fa_enabled = isset($body_params['two_fa_enabled']) ? $body_params['two_fa_enabled'] : null;
+            //    if($two_fa_enabled)
+            // Update user meta
+            $result = update_user_meta($user_id, '_two_fa_enabled', $two_fa_enabled);
+
+            if ($result) {
+                // Meta update was successful
+                return new WP_REST_Response([
+                    'message' => '2FA settings updated successfully.',
+                    'two_fa_enabled' => $two_fa_enabled
+                ], 200);
+            } else {
+                // Meta update failed
+                return new WP_Error('update_failed', 'Failed to update 2FA settings.', ['status' => 500]);
             }
         }
     }

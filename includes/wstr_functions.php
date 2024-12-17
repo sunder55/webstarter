@@ -413,3 +413,105 @@ function wstr_get_order_details($order_id)
 //         }
 //     }
 // }
+
+
+
+/**
+ * function for handling custom login and 2fa otp
+ * @return mixed
+ */
+function wstr_handle_login_and_otp()
+{
+    if (isset($_POST['custom_login_submit'])) {
+        $username = sanitize_text_field($_POST['log']);
+        $password = sanitize_text_field($_POST['pwd']);
+        $remember = isset($_POST['rememberme']) ? true : false;
+
+        $user = wp_authenticate($username, $password);
+
+        // die(var_dump($user));
+
+        if (is_wp_error($user)) {
+            // Redirect with error
+            // wp_redirect(add_query_arg('login_error', urlencode($user->get_error_message()), wp_login_url()));
+            wp_redirect(add_query_arg('reason', urlencode($user->get_error_code()), home_url('/my-account')));
+            exit;
+        }
+
+        $twoFa_enabled = true;
+
+        // Generate OTP and store it in a transient
+        // $otp = rand(100000, 999999); // Example OTP
+        if ($twoFa_enabled) {
+            $otp = 456783; // Example OTP
+            set_transient('custom_otp_' . $user->ID, $otp, 300); // Store OTP for 5 minutes
+
+            // Optionally, send OTP via email (or SMS)
+            wp_mail($user->user_email, 'Your OTP Code', 'Your OTP is: ' . $otp);
+
+            // Store user ID in session to track their progress
+            if (!session_id()) {
+                session_start();
+            }
+            $_SESSION['pending_user_id'] = $user->ID;
+            $_SESSION['remember_me'] = $remember;
+            // Redirect to OTP verification step
+            wp_redirect(add_query_arg('step', 'otp', home_url('/my-account')));
+            exit;
+        } else {
+            // Directly log the user in without OTP
+            wp_set_current_user($user->ID);
+            wp_set_auth_cookie($user->ID, $remember); // Log in with or without "Remember Me"
+
+            // Redirect to homepage or dashboard
+            wp_redirect(home_url('/my-account'));
+            exit;
+        }
+    }
+}
+add_action('init', 'wstr_handle_login_and_otp');
+
+
+
+
+function wstr_handle_otp_verification()
+{
+    if (isset($_POST['verify_otp_submit'])) {
+        if (!session_id()) {
+            session_start();
+        }
+
+        // Retrieve the pending user ID from the session
+        $user_id = isset($_SESSION['pending_user_id']) ? $_SESSION['pending_user_id'] : 0;
+        $remember = isset($_SESSION['remember_me']) ? $_SESSION['remember_me'] : false;
+
+        if (!$user_id) {
+            // wp_redirect(add_query_arg('login_error', urlencode(__('Session expired. Please log in again.')), wp_login_url()));
+            wp_redirect(add_query_arg('otp_reason', urlencode(__('Session expired. Please log in again.')), home_url('/my-account?step=otp')));
+            exit;
+        }
+
+        $otp_code = sanitize_text_field($_POST['otp_code']);
+        $stored_otp = get_transient('custom_otp_' . $user_id);
+
+        if (empty($stored_otp) || $otp_code !== $stored_otp) {
+            // wp_redirect(add_query_arg('otp_reason', urlencode(__('Invalid OTP code.')), wp_login_url()));
+            wp_redirect(add_query_arg('otp_reason', urlencode(__('Invalid OTP code.')), home_url('/my-account?step=otp')));
+            exit;
+        }
+
+        // OTP is valid, log in the user and clean up
+        wp_set_current_user($user_id);
+        wp_set_auth_cookie($user_id, $remember); // Use the "Remember Me" value
+
+        // Clean up
+        delete_transient('custom_otp_' . $user_id);
+        unset($_SESSION['pending_user_id']);
+        unset($_SESSION['remember_me']);
+
+        // Redirect to the dashboard or desired page
+        wp_redirect(home_url('/my-account'));
+        exit;
+    }
+}
+add_action('init', 'wstr_handle_otp_verification');
