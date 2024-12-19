@@ -1107,18 +1107,3 @@ function wstr_get_seller_products_by_order_and_seller_id()
     }
     var_dump($product_id);
 }
-
-
-add_action('wp_footer', 'generate_random_number');
-function generate_random_number()
-{
-    // the message
-    $msg = "First line of text\nSecond line of text";
-
-    // use wordwrap() if lines are longer than 70 characters
-    $msg = wordwrap($msg, 70);
-
-    // send email
-    $mail =  mail("boreco5800@cctoolz.com", "My subject", $msg);
-    var_dump($mail);
-}

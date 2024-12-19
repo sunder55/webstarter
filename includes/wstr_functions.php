@@ -438,16 +438,27 @@ function wstr_handle_login_and_otp()
             exit;
         }
 
-        $twoFa_enabled = true;
+        $twoFa_enabled = get_user_meta($user->ID, '_two_fa_enabled', true);
 
         // Generate OTP and store it in a transient
-        // $otp = rand(100000, 999999); // Example OTP
         if ($twoFa_enabled) {
-            $otp = 456783; // Example OTP
-            set_transient('custom_otp_' . $user->ID, $otp, 300); // Store OTP for 5 minutes
+            $otp = '';
+            $length = 6;
+            for ($i = 0; $i < $length; $i++) {
+                $otp .= random_int(0, 9);
+            }
+
+            set_transient('custom_otp_' . $user->ID, $otp, 600); // Store OTP for 5 minutes
+
+            $to = $user->user_email;
+            $subject = "Otp Code";
+            $txt = 'Your opt code is ' . $otp;
+            $headers = "From: webstarter.com" . "\r\n" .
+                "CC: somebodyelse@example.com";
+
+            mail($to, $subject, $txt, $headers);
 
             // Optionally, send OTP via email (or SMS)
-            wp_mail($user->user_email, 'Your OTP Code', 'Your OTP is: ' . $otp);
 
             // Store user ID in session to track their progress
             if (!session_id()) {
@@ -473,7 +484,10 @@ add_action('init', 'wstr_handle_login_and_otp');
 
 
 
-
+/**
+ * Function for handeling otp verfication
+ * @return mixed
+ */
 function wstr_handle_otp_verification()
 {
     if (isset($_POST['verify_otp_submit'])) {
@@ -491,7 +505,17 @@ function wstr_handle_otp_verification()
             exit;
         }
 
-        $otp_code = sanitize_text_field($_POST['otp_code']);
+        // $otp_code = sanitize_text_field($_POST['otp_code']);
+        $otp_input1 = sanitize_text_field($_POST['otp_input1']);
+        $otp_input2 = sanitize_text_field($_POST['otp_input2']);
+        $otp_input3 = sanitize_text_field($_POST['otp_input3']);
+        $otp_input4 = sanitize_text_field($_POST['otp_input4']);
+        $otp_input5 = sanitize_text_field($_POST['otp_input5']);
+        $otp_input6 = sanitize_text_field($_POST['otp_input6']);
+
+        $otp_code = (int) $otp_input1 . $otp_input2 . $otp_input3 . $otp_input4 . $otp_input5 . $otp_input6;
+        // die(var_dump($otp_inputs));
+
         $stored_otp = get_transient('custom_otp_' . $user_id);
 
         if (empty($stored_otp) || $otp_code !== $stored_otp) {
@@ -515,3 +539,35 @@ function wstr_handle_otp_verification()
     }
 }
 add_action('init', 'wstr_handle_otp_verification');
+
+
+add_action('wp_footer', 'generate_random_number');
+function generate_random_number()
+{
+
+
+    var_dump('starts');
+?>
+    <script>
+        console.log('footersss');
+    </script>
+<?php
+    var_dump('ends');
+    return;
+
+    // $to = 'sendto@example.com';
+    // $subject = 'The subject';
+    // $body = 'The email body content';
+    // $headers = array('Content-Type: text/html; charset=UTF-8');
+
+    // $mail =  mail($to, $subject, $body, $headers);
+    // var_dump($mail);
+    $msg = "First line of text\nSecond line of text";
+
+    // use wordwrap() if lines are longer than 70 characters
+    $msg = wordwrap($msg, 70);
+
+    // send email
+    $mail =  mail("someone@example.com", "My subject", $msg);
+    var_dump($mail);
+}

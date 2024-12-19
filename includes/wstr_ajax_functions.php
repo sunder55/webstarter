@@ -14,6 +14,9 @@ class Wstr_ajax_functions
         add_action('wp_ajax_nopriv_set_currency_session', array($this, 'set_currency_session'));
 
         add_action('wp_ajax_wstr_favourite', array($this, 'wstr_favourite'));
+
+        add_action('wp_ajax_wstr_resend_otp', array($this, 'wstr_resend_otp'));
+        add_action('wp_ajax_nopriv_wstr_resend_otp', array($this, 'wstr_resend_otp'));
     }
 
     /**
@@ -361,6 +364,53 @@ class Wstr_ajax_functions
             'count' => $count,
         ));
         wp_die();
+    }
+
+    /** 
+     * function for resending   OTP
+     */
+    public function wstr_resend_otp()
+    {
+        $user_id = (int) sanitize_text_field($_POST['userId']);
+        $user =  get_userdata($user_id);
+        if ($user_id) {
+
+            $otp = '';
+            $length = 6;
+            for ($i = 0; $i < $length; $i++) {
+                $otp .= random_int(0, 9);
+            }
+
+            set_transient('custom_otp_' . $user->ID, $otp, 600); // Store OTP for 5 minutes
+
+            $to = $user->user_email;
+            $subject = "Otp Code";
+            $txt = 'Your opt code is ' . $otp;
+            $headers = "From: webstarter.com" . "\r\n" .
+                "CC: somebodyelse@example.com";
+            $mail = mail($to, $subject, $txt, $headers);
+            // $mail = false;
+            if ($mail) {
+                $response = [
+                    'type' => 'success',
+                    'message' => 'OTP sent successfully'
+                ];
+                wp_send_json_success($response, 200);
+            } else {
+                $response = [
+                    'type' => 'failed',
+                    'message' => 'Unable to send an email. Please try again later'
+                ];
+                wp_send_json_success($response, 200);
+            }
+        } else {
+            $response = [
+                'type' => 'failed',
+                'message' => 'Missing user id. Please try login again.'
+            ];
+            wp_send_json_success($response, 200);
+            // wp_send_json('Missing user id. Please try login again.', 500);
+        }
     }
 }
 

@@ -65,6 +65,117 @@ jQuery(document).ready(function ($) {
             "%",
         });
     });
+
+  // ============================ resend otp starts
+  $(".resend_otp").on("click", function () {
+    const user_id = $(this).attr("id");
+    $("#resend_error").text("");
+    $("#resend_success").text("");
+    $.ajax({
+      type: "post",
+      dataType: "json",
+      url: cpmAjax.ajax_url,
+      data: {
+        action: "wstr_resend_otp",
+        userId: user_id,
+      },
+      success: function (response) {
+        console.log("responose", response);
+        if (response.data) {
+          console.log(response.data);
+          if (response.data.type == "failed") {
+            $("#resend_error").text(response.data.message);
+          }
+          if (response.data.type == "success") {
+            $("#resend_success").text(response.data.message);
+          }
+          // location.reload();
+        }
+      },
+    });
+  });
+  // otp inputs
+  const inputs = document.getElementById("otp_inputs");
+
+  inputs.addEventListener("input", function (e) {
+    const target = e.target;
+    const val = target.value;
+
+    if (isNaN(val)) {
+      target.value = "";
+      return;
+    }
+
+    if (val != "") {
+      const next = target.nextElementSibling;
+      if (next) {
+        next.focus();
+      }
+    }
+  });
+
+  inputs.addEventListener("keyup", function (e) {
+    const target = e.target;
+    const key = e.key.toLowerCase();
+
+    if (key == "backspace" || key == "delete") {
+      target.value = "";
+      const prev = target.previousElementSibling;
+      if (prev) {
+        prev.focus();
+      }
+      return;
+    }
+  });
+
+  // pasting mulitple numbers starts
+  var $inputs = $(".input");
+  var intRegex = /^\d+$/;
+
+  // Prevents user from manually entering non-digits.
+  $inputs.on("input.fromManual", function () {
+    if (!intRegex.test($(this).val())) {
+      $(this).val("");
+    }
+  });
+
+  // Prevents pasting non-digits and if value is 6 characters long will parse each character into an individual box.
+  $inputs.on("paste", function () {
+    var $this = $(this);
+    var originalValue = $this.val();
+
+    $this.val("");
+
+    $this.one("input.fromPaste", function () {
+      $currentInputBox = $(this);
+
+      var pastedValue = $currentInputBox.val();
+
+      if (pastedValue.length == 6 && intRegex.test(pastedValue)) {
+        pasteValues(pastedValue);
+      } else {
+        $this.val(originalValue);
+      }
+
+      $inputs.attr("maxlength", 1);
+    });
+
+    $inputs.attr("maxlength", 6);
+  });
+
+  // Parses the individual digits into the individual boxes.
+  function pasteValues(element) {
+    var values = element.split("");
+
+    $(values).each(function (index) {
+      var $inputBox = $('.input[name="otp_input' + (index + 1) + '"]');
+      $inputBox.val(values[index]);
+    });
+  }
+
+  // pasting mulitple numbers ends
+
+  // ============================ resend otp ends
 });
 
 jQuery(".swiper-wrapper").slick({

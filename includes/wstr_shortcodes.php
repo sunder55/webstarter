@@ -17,7 +17,6 @@ class wstr_shortcodes
         add_shortcode('wstr-login', [$this, 'wstr_login']);
         add_shortcode('wstr_register', [$this, 'wstr_register']);
         add_shortcode('wstr-faq', [$this, 'wstr_faq']);
-        add_shortcode('wstr-otp', [$this, 'wstr_otp']);
     }
 
     public function wstr_banner_reviews_function()
@@ -1004,7 +1003,6 @@ class wstr_shortcodes
                                         up </a></span>
                             </p>
                         </div>
-                        <p>Custom login starts</p>
                         <?php
                         // Check if this is the OTP step
                         if (isset($_GET['step']) && $_GET['step'] === 'otp' &&  isset($_SESSION['pending_user_id'])) {
@@ -1016,47 +1014,64 @@ class wstr_shortcodes
                                 <form method="post" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
                                     <p>
                                         <label for="otp_code"><?php _e('Enter OTP'); ?></label>
-                                        <input type="text" name="otp_code" id="otp_code" required />
+                                        <!-- <input type="text" name="otp_code" id="otp_code" required /> -->
+
+                                    <div id="otp_inputs" class="inputs" name="otp_inputs">
+                                        <input class="input" type="text"
+                                            inputmode="numeric" maxlength="1" name="otp_input1" required />
+                                        <input class="input" type="text"
+                                            inputmode="numeric" maxlength="1" name="otp_input2" required />
+                                        <input class="input" type="text"
+                                            inputmode="numeric" maxlength="1" name="otp_input3" required />
+                                        <input class="input" type="text"
+                                            inputmode="numeric" maxlength="1" name="otp_input4" required />
+                                        <input class="input" type="text"
+                                            inputmode="numeric" maxlength="1" name="otp_input5" required />
+                                        <input class="input" type="text"
+                                            inputmode="numeric" maxlength="1" name="otp_input6" required />
+                                    </div>
+
                                     </p>
                                     <p>
                                         <button type="submit" name="verify_otp_submit"><?php _e('Verify OTP'); ?></button>
                                     </p>
                                 </form>
+                                <p id="resend_error"></p>
+                                <p id="resend_success"></p>
+                                <p>
+                                    Didn't get an OTP code?
+                                    <button class="resend_otp" id="<?php echo $_SESSION['pending_user_id'] ?>">Resend OTP</button>
+                                </p>
                             </div>
                         <?php
                         } else {
                             // Display username and password login form
                         ?>
                             <div class="login-page-wrapper">
-                                <div class="user-details login-form-details forms_container wstr_login_column" id="login-form">
-                                    <h2 class="m-0">Welcome Back</h2>
-                                    <p>Custom Login Starts</p>
-                                    <form method="post" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
-                                        <p>
-                                            <label for="username"><?php _e('Username'); ?></label>
-                                            <input type="text" name="log" id="username" required />
-                                        </p>
-                                        <p>
-                                            <label for="password"><?php _e('Password'); ?></label>
-                                            <input type="password" name="pwd" id="password" required />
-                                        </p>
-                                        <p>
-                                            <input type="checkbox" name="rememberme" id="rememberme" value="forever" />
-                                            <label for="rememberme"><?php _e('Remember Me'); ?></label>
-                                        </p>
-                                        <p>
-                                            <button type="submit" name="custom_login_submit"><?php _e('Log In'); ?></button>
-                                        </p>
-                                    </form>
-                                    <p>Custom Login Ends</p>
-                                </div>
+
+                                <form method="post" id="loginform" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
+                                    <p>
+                                        <!-- <label for="username"><?php //_e('Username'); 
+                                                                    ?></label> -->
+                                        <input type="text" name="log" id="sg-username" required />
+                                    </p>
+                                    <p>
+                                        <!-- <label for="password"><?php //_e('Password'); 
+                                                                    ?></label> -->
+                                        <input type="password" name="pwd" id="sg-password" required />
+                                    </p>
+                                    <p>
+                                        <input type="checkbox" name="rememberme" id="rememberme" value="forever" />
+                                        <label for="rememberme"><?php _e('Remember Me'); ?></label>
+                                    </p>
+                                    <p>
+                                        <button type="submit" id="sg-submit" name="custom_login_submit" class="button button-primary"><?php _e('login'); ?></button>
+                                    </p>
+                                </form>
+
                             </div>
                         <?php
                         }
-                        ?>
-                        <p>Custom login ends</p>
-
-                        <?php
 
                         echo wp_login_form(
                             array(
@@ -1140,30 +1155,10 @@ class wstr_shortcodes
             endif;
             ?>
         </div>
-    <?php
+<?php
         wp_reset_postdata();
 
         return ob_get_clean(); // Return the output buffer
-    }
-
-
-    public function wstr_otp()
-    {
-        ob_start();
-    ?>
-        <div class="otp-verification-wrapper">
-            <h2>OTP Verification</h2>
-            <p>We have sent an OTP to your registered email. Please enter the OTP to continue.</p>
-            <form method="POST" id="otp-verification-form">
-                <input type="text" name="otp_code" id="otp_code" placeholder="Enter OTP" required>
-                <button type="submit" name="verify_otp">Verify OTP</button>
-            </form>
-            <form method="POST" id="resend-otp-form">
-                <button type="submit" name="resend_otp">Resend OTP</button>
-            </form>
-        </div>
-<?php
-        return ob_get_clean();
     }
 }
 new wstr_shortcodes();

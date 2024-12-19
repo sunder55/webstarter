@@ -393,6 +393,11 @@ if (!class_exists('wstr_rest_api')) {
                 'callback' => [$this, 'wstr_2fa_verfication'],
                 'permission_callback' => '__return_true'
             ));
+            register_rest_route('wstr/v1', '/logout-all-device/(?P<user_id>[\w\.\-]+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_logout_all_device'],
+                'permission_callback' => '__return_true'
+            ));
 
             // register_meta(
             //     'domain',
@@ -789,6 +794,7 @@ if (!class_exists('wstr_rest_api')) {
             } else {
                 $user_image = get_avatar_url($user_details->data->ID);
             }
+            $two_fa_enabled = get_user_meta($GLOBALS['user_id'], '_two_fa_enabled', true);
 
             $data[] = [
                 'id' => $user_details->data->ID ? $user_details->data->ID : '',
@@ -799,6 +805,7 @@ if (!class_exists('wstr_rest_api')) {
                 'first_name' => $user_details->first_name ? $user_details->first_name : '',
                 'last_name' => $user_details->last_name ? $user_details->last_name : '',
                 'user_image' => $user_image,
+                'two_fa_enabled' => $two_fa_enabled
             ];
 
             // Return the data in JSON formatzz
@@ -1159,9 +1166,34 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('update_failed', 'Failed to update 2FA settings.', ['status' => 500]);
             }
         }
+        public function wstr_logout_all_device($request)
+        {
+            $user_id = $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('missing_user_id', 'Missing user id.');
+            }
+            $body_params = $request->get_json_params();
+
+            var_dump($body_params);
+            return;
+            // Access user_id and other parameters
+            $logout = isset($body_params['logout']) ? $body_params['logout'] : null;
+            //    if($two_fa_enabled)
+            // Update user meta
+            $result = delete_user_meta($user_id, '_session_tokens');
+
+            if ($result) {
+                // Meta update was successful
+                header("Refresh:0");
+            } else {
+                // Meta update failed
+                return new WP_Error('update_failed', 'Failed to update 2FA settings.', ['status' => 500]);
+            }
+        }
     }
 }
 new wstr_rest_api();
+
 
 // add_action('wp_footer', 'assign_buyer_and_seller_roles');
 
