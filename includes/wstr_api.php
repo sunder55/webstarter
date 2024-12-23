@@ -399,6 +399,23 @@ if (!class_exists('wstr_rest_api')) {
                 'permission_callback' => '__return_true'
             ));
 
+            register_rest_route('wstr/v1', '/login-activity/(?P<user_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_get_login_activity'],
+                'permission_callback' => '__return_true'
+            ));
+            register_rest_route('wstr/v1', '/preferences/(?P<user_id>[\w\.\-]+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_preferences'],
+                'permission_callback' => '__return_true'
+            ));
+
+
+            register_rest_route('wstr/v1', '/currency/(?P<user_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_currency_api_callback'],
+                'permission_callback' => '__return_true'
+            ));
             // register_meta(
             //     'domain',
             //     '_enable_offers',
@@ -622,7 +639,7 @@ if (!class_exists('wstr_rest_api')) {
                     ),
                 );
                 $latest_solds = get_posts($args);
-                $product_data = array();
+                $product_datas = array();
                 foreach ($latest_solds as $latest_sold) {
                     $order_total = get_post_meta($latest_sold->ID, '_order_total', true);
                     $update_total = wstr_get_updated_price($order_total);
@@ -650,7 +667,7 @@ if (!class_exists('wstr_rest_api')) {
                         $currency = get_wstr_currency();
                         $term_exist = wstr_check_existing_term($domain_id, 'domain_cat', 'premium-names');
 
-                        $product_data[] = array(
+                        $product_datas[] = array(
                             'id' => $domain_id,
                             'title' => get_the_title($domain_id),
                             'permalink' => get_permalink($domain_id),
@@ -663,8 +680,20 @@ if (!class_exists('wstr_rest_api')) {
                         );
                     }
                 }
+                $uniqueArray = [];
+                $seenIds = [];
+                if ($product_datas) {
+
+
+                    foreach ($product_datas as $item) {
+                        if (!in_array($item['id'], $seenIds)) {
+                            $uniqueArray[] = $item;
+                            $seenIds[] = $item['id'];
+                        }
+                    }
+                }
                 // Return the data in JSON format
-                return new WP_REST_Response($product_data, 200);
+                return new WP_REST_Response($uniqueArray, 200);
             } else if (isset($params['type']) && $params['type'] === 'trending') {
 
                 $query_args = array(
@@ -795,6 +824,11 @@ if (!class_exists('wstr_rest_api')) {
                 $user_image = get_avatar_url($user_details->data->ID);
             }
             $two_fa_enabled = get_user_meta($GLOBALS['user_id'], '_two_fa_enabled', true);
+            $domain_enquery_offers = get_user_meta($GLOBALS['user_id'], '_domain_enquery_offers', true);
+            $payment_update = get_user_meta($GLOBALS['user_id'], '_payment_update', true);
+            $language = get_user_meta($GLOBALS['user_id'], '_language', true);
+            $currency = get_user_meta($GLOBALS['user_id'], '_currency', true);
+
 
             $data[] = [
                 'id' => $user_details->data->ID ? $user_details->data->ID : '',
@@ -805,7 +839,12 @@ if (!class_exists('wstr_rest_api')) {
                 'first_name' => $user_details->first_name ? $user_details->first_name : '',
                 'last_name' => $user_details->last_name ? $user_details->last_name : '',
                 'user_image' => $user_image,
-                'two_fa_enabled' => $two_fa_enabled
+                'two_fa_enabled' => $two_fa_enabled,
+                'domain_enquery_offers' => $domain_enquery_offers,
+                'payment_update' => $payment_update,
+                'language' => $language,
+                'currency' => $currency
+
             ];
 
             // Return the data in JSON formatzz
@@ -1172,80 +1211,133 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
-            $body_params = $request->get_json_params();
 
-            var_dump($body_params);
-            return;
-            // Access user_id and other parameters
-            $logout = isset($body_params['logout']) ? $body_params['logout'] : null;
-            //    if($two_fa_enabled)
-            // Update user meta
-            $result = delete_user_meta($user_id, '_session_tokens');
+            $result = delete_user_meta($user_id, 'session_tokens');
 
             if ($result) {
-                // Meta update was successful
-                header("Refresh:0");
+                return new WP_REST_Response('Logout successfully', 200);
             } else {
                 // Meta update failed
                 return new WP_Error('update_failed', 'Failed to update 2FA settings.', ['status' => 500]);
             }
         }
+
+        /**
+         * Fuction for getting login activity: location
+         * @param mixed $request
+         * @return WP_Error|WP_REST_Response
+         */
+        public function wstr_get_login_activity($request)
+        {
+            $user_id = (int) $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('missing_user_id', 'User id is missing');
+            }
+            $get_login_details = get_user_meta($user_id, 'session_tokens', true);
+
+            $ip_addresses = [];
+            if ($get_login_details) {
+                foreach ($get_login_details as $get_login_detail) {
+                    $ip_addresses[] = $get_login_detail['ip'];
+                }
+            }
+            $ip_addresses = array_unique($ip_addresses);
+
+            $ip_addresses = ['166.196.75.52', '111.119.49.122'];
+
+            $ip_location = [];
+
+            // if ($ip_addresses) {
+            //     foreach ($ip_addresses as $ip) {
+            //         $curl = curl_init();
+            //         curl_setopt_array($curl, array(
+            //             CURLOPT_RETURNTRANSFER => 1,
+            //             CURLOPT_URL => "http://ipinfo.io/{$ip}/json"
+            //         ));
+            //         $details = json_decode(curl_exec($curl));
+            //         curl_close($curl);
+
+            //         $ip_location[] = $details->city . ',' . $details->country;
+            //     }
+            // }
+            return new WP_REST_Response($ip_location, 200);
+            // var_dump($ip_addresses);
+        }
+
+        public function wstr_preferences($request)
+        {
+            $user_id = $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('missing_user_id', 'Missing user id.');
+            }
+
+            $message = '';
+            $preferences = '';
+            $body_params = $request->get_json_params();
+
+            //=============== notification setting starts
+            $domain_enquery_meta = '';
+            $payment_update_meta = '';
+            if (array_key_exists('domain_enquery', $body_params)) {
+                $domain_enquery = isset($body_params['domain_enquery']) ? $body_params['domain_enquery'] : '';
+                $domain_enquery_meta = update_user_meta($user_id, '_domain_enquery_offers', $domain_enquery);
+                $message = 'Domain inquires/offers updated successfully';
+                $preferences = 'domain_enquery';
+                // var_dump('domain inside');
+            }
+            if (array_key_exists('payment_update', $body_params)) {
+                $payment_update = isset($body_params['payment_update']) ? $body_params['payment_update'] : '';
+                $payment_update_meta = update_user_meta($user_id, '_payment_update', $payment_update);
+                $message = 'Payment updates updated successfully';
+                $preferences = 'payment_update';
+            }
+
+            //=============== notification setting ends 
+
+            //================ language/region setting starts
+
+
+            $language_meta = '';
+            $currency_meta = '';
+            if (array_key_exists('language', $body_params)) {
+                $language = isset($body_params['language']) ? $body_params['language'] : '';
+                $language_meta = update_user_meta($user_id, '_language', $language);
+                $message = 'Language updated successfully';
+                $preferences = 'language';
+            }
+            if (array_key_exists('currency', $body_params)) {
+                $currency = isset($body_params['currency']) ? $body_params['currency'] : '';
+                $currency_meta = update_user_meta($user_id, '_currency', $currency);
+                $message = 'Currency updated successfully';
+                $preferences = 'currency';
+            }
+            //================ language/region setting ends 
+
+
+            if (
+                $domain_enquery_meta || $payment_update_meta || $language_meta || $currency_meta
+            ) {
+                // Meta update was successful
+                return new WP_REST_Response([
+                    'message' => $message,
+                    'preferences' => $preferences
+
+                ], 200);
+            } else {
+                // Meta update failed
+                return new WP_Error('update_failed', 'Failed to update notification settings.', ['status' => 500]);
+            }
+        }
+
+        public function wstr_currency_api_callback($request)
+        {
+            $user_id = (int) $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('missing_user_id', 'User id is missing');
+            }
+            $get_currencies = get_option('wstr_currency_codes', true);
+            return new WP_REST_Response($get_currencies, 200);
+        }
     }
 }
 new wstr_rest_api();
-
-
-// add_action('wp_footer', 'assign_buyer_and_seller_roles');
-
-function assign_buyer_and_seller_roles($user_id)
-{
-    // $user_id =  15;
-    $user_id =  15;
-    // Fetch the WP_User object of our user.
-    $u = new WP_User(15);
-
-    // Replace the current role with 'editor' role
-    // $u->add_role('seller');
-    $u->add_role('seller');
-    return;
-    // Get the user object
-    // $user = new WP_User($user_id);
-
-    // // Assign "buyer" role if not already assigned
-    // if (!in_array('buyer', $user->rol;es)) {
-    //     $user->add_role('buyer');
-    // }
-
-    // // Assign "seller" role if not already assigned
-    // if (!in_array('seller', $user->roles)) {
-    //     $user->add_role('seller');
-    // }
-
-
-    // return get_current_user_id();
-    $user_details = get_user_by('id', $user_id);
-    $user_image_id = (int) get_user_meta($user_id, 'ws_profile_pic', true);
-    $user_image = '';
-    if ($user_image_id) {
-        $user_image =  wp_get_attachment_url($user_image_id);
-    } else {
-        $user_image = get_avatar_url($user_details->data->ID);
-    }
-    echo '<pre>';
-    var_dump($user_details);
-
-    // $data[] = [
-    //     'id' => $user_details->data->ID ? $user_details->data->ID : '',
-    //     'display_name' => $user_details->data->display_name ? $user_details->data->display_name : '',
-    //     'user_email' => $user_details->data->user_email ? $user_details->data->user_email : '',
-    //     'cap_key' => $user_details->caps ? $user_details->caps : '',
-    //     'roles' => $user_details->roles ? $user_details->roles : '',
-    //     'first_name' => $user_details->first_name ? $user_details->first_name : '',
-    //     'last_name' => $user_details->last_name ? $user_details->last_name : '',
-    //     'user_image' => $user_image,
-    // ];
-}
-
-// Example usage: Replace with the actual user ID
-// $user_id = 123; // Replace with your user's ID
-// assign_buyer_and_seller_roles($user_id);
