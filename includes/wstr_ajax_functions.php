@@ -121,21 +121,31 @@ class Wstr_ajax_functions
 
                                 $regular_price = get_post_meta($domain_post->ID, '_regular_price', true);
                                 $sale_price = get_post_meta($domain_post->ID, '_sale_price', true);
-                                $sale_end_date = get_post_meta($domain_post->ID, '_sale_price_dates_to', true);
-                                $price = '';
-                                $current_date = date('Y-m-d');
+                                // $sale_end_date = get_post_meta($domain_post->ID, '_sale_price_dates_to', true);
 
-                                if ($sale_price) {
-                                    if ($sale_end_date && $sale_end_date >= $current_date) {
-                                        $price = $sale_price;
-                                    } else if ($sale_end_date && $sale_end_date <= $current_date) {
-                                        $price = $regular_price;
-                                    } else {
-                                        $price = $sale_price;
-                                    }
+                                $current_date = date('Y-m-d');
+                                $price = '';
+                                $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
+                                $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
+
+                                if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date) || (!$sale_price_dates_to && !$sale_price_dates_from)) {
+                                    // $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+                                    $price = $sale_price;
                                 } else {
                                     $price = $regular_price;
                                 }
+
+                                // if ($sale_price) {
+                                //     if ($sale_end_date && $sale_end_date >= $current_date) {
+                                //         $price = $sale_price;
+                                //     } else if ($sale_end_date && $sale_end_date <= $current_date) {
+                                //         $price = $regular_price;
+                                //     } else {
+                                //         $price = $sale_price;
+                                //     }
+                                // } else {
+                                //     $price = $regular_price;
+                                // }
                                 $subtotal += (float) $price;
                             }
                         }
@@ -153,20 +163,31 @@ class Wstr_ajax_functions
 
                 $regular_price = get_post_meta($domain_post->ID, '_regular_price', true);
                 $sale_price = get_post_meta($domain_post->ID, '_sale_price', true);
-                $sale_end_date = get_post_meta($domain_post->ID, '_sale_price_dates_to', true);
+                // $sale_end_date = get_post_meta($domain_post->ID, '_sale_price_dates_to', true);
                 $current_date = date('Y-m-d');
                 $price = '';
-                if ($sale_price) {
-                    if ($sale_end_date && $sale_end_date >= $current_date) {
-                        $price = $sale_price;
-                    } else if ($sale_end_date && $sale_end_date <= $current_date) {
-                        $price = $regular_price;
-                    } else {
-                        $price = $sale_price;
-                    }
+                $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
+                $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
+
+                if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date) || (!$sale_price_dates_to && !$sale_price_dates_from)) {
+                    // $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+                    $price = $sale_price;
                 } else {
                     $price = $regular_price;
                 }
+                // $current_date = date('Y-m-d');
+                // $price = '';
+                // if ($sale_price) {
+                //     if ($sale_end_date && $sale_end_date >= $current_date) {
+                //         $price = $sale_price;
+                //     } else if ($sale_end_date && $sale_end_date <= $current_date) {
+                //         $price = $regular_price;
+                //     } else {
+                //         $price = $sale_price;
+                //     }
+                // } else {
+                //     $price = $regular_price;
+                // }
 
                 // Prepare the response data
                 $response = array(

@@ -112,9 +112,11 @@ jQuery(document).ready(function ($) {
   });
 
   $(
-    "#industry, #style, #sort-by, #domain-type, #price-range-min, #price-range-max, #length-slider"
+    "#industry, #style, #sort-by, #domain-type, #price-range-min, #price-range-max, #length-slider, #sort-by-price, #sort-by-list"
   ).on("change", function () {
-    loadDomains(1); // Load the first page initially
+    // console.log("changed", $(this).attr("id"));
+    const targetedId = $(this).attr("id");
+    loadDomains(1, targetedId); // Load the first page initially
   });
 
   function getQueryParam(param) {}
@@ -138,7 +140,7 @@ jQuery(document).ready(function ($) {
     loadDomains(pageNumber);
   });
 
-  function loadDomains(paged) {
+  function loadDomains(paged, targetedId) {
     const industry = $("#industry").val();
     const style = $("#style").val();
     const domainType = $("#domain-type").val();
@@ -146,6 +148,8 @@ jQuery(document).ready(function ($) {
     const sortBy = $("#sort-by").val();
     const minPrice = $("#price-range-min").val();
     const maxPrice = $("#price-range-max").val();
+    const sortByPrice = $("#sort-by-price").val();
+    const sortByList = $("#sort-by-list").val();
 
     $.ajax({
       method: "POST",
@@ -159,6 +163,9 @@ jQuery(document).ready(function ($) {
         sortBy: sortBy,
         min_price: minPrice,
         max_price: maxPrice,
+        sort_by_price: sortByPrice,
+        sort_by_list: sortByList,
+        targeted_id: targetedId,
         paged: paged, // Send the current page
       },
       beforeSend: function () {
@@ -166,7 +173,11 @@ jQuery(document).ready(function ($) {
       },
       success: function (response) {
         if (response.success) {
-          $("#buy-domain-main").html(response.data); // Update the domain list
+          if (response.data) {
+            $("#buy-domain-main").html(response.data); // Update the domain list
+          } else {
+            $("#buy-domain-main").html("<p>No domains found.</p>");
+          }
         } else {
           $("#buy-domain-main").html("<p>No domains found.</p>");
         }

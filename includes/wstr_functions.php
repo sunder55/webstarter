@@ -18,16 +18,24 @@ function get_wstr_price($domain_id)
     $currency = $_SESSION['currency'] ?? '';
     $currency_rates = get_option('wstr_currency_rates', []);
     $currency_rate = $currency_rates[$currency] ?? 1;
-    $regular_price = (float) get_post_meta($domain_id, '_regular_price', true);
-    $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+
+
+    $sale_price = 0;
+    $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
+    $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
+    $current_date = current_time('Y-m-d'); // Get the current date in 'YYYY-MM-DD' format
+
+    if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date) || (!$sale_price_dates_to && !$sale_price_dates_from)) {
+        $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+    }
 
     if ($currency && $currency != 'USD') {
         $currency_rate = wstr_truncate_number((float) $currency_rate);
         //  $currency_rate;
-        $price = $sale_price > 0 ? $sale_price * $currency_rate : $regular_price * $currency_rate;
+        // $price = $sale_price > 0 ? $sale_price * $currency_rate : $regular_price * $currency_rate;
     } else {
         $currency = 'USD';
-        $price = $sale_price > 0 ? $sale_price : $regular_price;
+        // $price = $sale_price > 0 ? $sale_price : $regular_price;
     }
     // $price_html = '<div class="wstr-price_html">
     // <span class="wstr-currency">' . get_wstr_currency_symbol($currency) . '</span>
@@ -55,8 +63,15 @@ function get_wstr_price_value($domain_id)
     $currency_rates = get_option('wstr_currency_rates', []);
     $currency_rate = $currency_rates[$currency] ?? 1;
     $regular_price = (float) get_post_meta($domain_id, '_regular_price', true);
-    $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+    // $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+    $sale_price = 0;
+    $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
+    $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
+    $current_date = current_time('Y-m-d'); // Get the current date in 'YYYY-MM-DD' format
 
+    if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date)  || (!$sale_price_dates_to && !$sale_price_dates_from)) {
+        $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+    }
     if ($currency && $currency != 'USD') {
         $currency_rate = wstr_truncate_number((float) $currency_rate);
         //  $currency_rate;
@@ -99,8 +114,30 @@ function get_wstr_regular_price($domain_id)
 function get_wstr_sale_price($domain_id)
 {
     $currency = $_SESSION['currency'] ?? '';
-    $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+
     $currency_rates = get_option('wstr_currency_rates', []);
+    $sale_price = 0;
+    // _sale_price_dates_to
+    // _sale_price_dates_from
+    $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
+    $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
+    $current_date = current_time('Y-m-d'); // Get the current date in 'YYYY-MM-DD' format
+
+    if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date) || (!$sale_price_dates_to && !$sale_price_dates_from)) {
+        $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+    }
+
+
+    // if ($sale_end_date && $sale_end_date >= $current_date) {
+    //     $price = $sale_price;
+    // } else if ($sale_end_date && $sale_end_date <= $current_date) {
+    //     $price = $regular_price;
+    // } else {
+    //     $price = $sale_price;
+    // }
+
+
+
     $currency_rate = $currency_rates[$currency] ?? 1;
     if ($currency && $currency != 'USD') {
         $currency_rate = wstr_truncate_number((float) $currency_rate);
@@ -110,6 +147,11 @@ function get_wstr_sale_price($domain_id)
     }
     return wstr_truncate_number($sale_price);
 }
+
+add_action('wp_footer', function () {
+    $sale_price =   get_wstr_sale_price(4927);
+    var_dump($sale_price);
+});
 
 /**
  * Function for getting currecy value according to the currency selected
@@ -208,8 +250,15 @@ function wstr_on_sale($domain_id)
 {
     if ($domain_id) {
         $context = false;
-        $sale_price = get_post_meta($domain_id, '_sale_price', true);
-        if ($sale_price) {
+        $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
+        $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
+        $current_date = current_time('Y-m-d'); // Get the current date in 'YYYY-MM-DD' format
+        $sale_price = 0;
+        if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date) || (!$sale_price_dates_to && !$sale_price_dates_from)) {
+            $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+        }
+
+        if ($sale_price > 0) {
             $context = true;
         }
     }
@@ -224,7 +273,7 @@ function wstr_on_sale($domain_id)
  * and will handle both positive and negative numbers.
  *
  * @param float|int $number The number to be truncated.
- * @param int $precision The number of decimal places to keep. Default is 3.
+ * @param int $precision The number of decimal places to keep. Default is 2.
  * @return float|int The truncated number.
  */
 function wstr_truncate_number($number, $precision = 2)

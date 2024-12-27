@@ -1107,3 +1107,51 @@ function wstr_get_seller_products_by_order_and_seller_id()
     }
     var_dump($product_id);
 }
+
+
+// add_action('wp_footer', function () {
+//     $apiKey = "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";
+
+//     // API endpoint
+//     $url = "https://api.openai.com/v1/chat/completions";
+
+//     // Prepare the request data
+//     $data = [
+//         "model" => "gpt-3.5-turbo", // Replace with the model you want to use
+//         "prompt" => "Write a PHP script to fetch data from an API.",
+//         // "max_tokens" => 100, // Adjust based on your needs
+//         // "temperature" => 0.7
+//     ];
+
+//     // Convert the data to JSON
+//     $jsonData = json_encode($data);
+
+//     // Initialize cURL
+//     $ch = curl_init($url);
+
+//     // Set cURL options
+//     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//     curl_setopt($ch, CURLOPT_POST, true);
+//     curl_setopt($ch, CURLOPT_HTTPHEADER, [
+//         "Content-Type: application/json",
+//         "Authorization: Bearer $apiKey"
+//     ]);
+//     curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+
+//     // Execute the request
+//     $response = curl_exec($ch);
+
+//     // Check for errors
+//     if (curl_errno($ch)) {
+//         echo "cURL error: " . curl_error($ch);
+//     } else {
+//         // Decode and handle the response
+//         $responseData = json_decode($response, true);
+//         echo "<pre>";
+//         print_r($responseData);
+//         echo "</pre>";
+//     }
+
+//     // Close cURL
+//     curl_close($ch);
+// });

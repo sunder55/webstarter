@@ -683,8 +683,6 @@ if (!class_exists('wstr_rest_api')) {
                 $uniqueArray = [];
                 $seenIds = [];
                 if ($product_datas) {
-
-
                     foreach ($product_datas as $item) {
                         if (!in_array($item['id'], $seenIds)) {
                             $uniqueArray[] = $item;
