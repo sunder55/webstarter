@@ -1368,7 +1368,7 @@ function contact_form()
 
 
 // add_action('wp_footer', function () {
-//     $apiKey = "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";
+//     $apiKey = "";
 
 //     // API endpoint
 //     $url = "https://api.openai.com/v1/chat/completions";
