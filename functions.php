@@ -150,6 +150,8 @@ function enqueue_webstarter_mega_menu_assets()
 add_action('enqueue_block_assets', 'enqueue_webstarter_mega_menu_assets');
 
 
+
+
 /**
  * 
  * Ceating an custom table for order notes
@@ -178,6 +180,39 @@ function create_order_notes_table_on_theme_activation()
     }
 }
 add_action('after_setup_theme', 'create_order_notes_table_on_theme_activation');
+
+
+/**
+ * 
+ * Ceating an custom table for contact us
+ * @return void
+ */
+
+add_action('after_setup_theme', 'wstr_create_contact_us_table');
+function wstr_create_contact_us_table()
+{
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'contact_us';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id int NOT NULL AUTO_INCREMENT,
+        name tinytext NOT NULL,
+        email varchar(55) DEFAULT '' NOT NULL,
+        phone varchar(20) NOT NULL,
+        type text NOT NULL,
+        message text NOT NULL,
+        time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta($sql);
+}
+
+
 
 
 // add_action('wp_footer', function () {
@@ -386,197 +421,7 @@ function wstr_register()
 }
 
 
-
-// buy page shortcode
-function domain_filter_shortcode()
-{
-    ob_start();
-?>
-    <div class="domain-filters-container">
-        <!-- Category Section -->
-        <section class="category-section">
-            <ul class="categories-list">
-                <li>Trending</li>
-                <li>4 Letters</li>
-                <li>Retail</li>
-                <li>Short Names</li>
-                <li>Short Names</li>
-                <li>Short Names</li>
-                <li>Short Names</li>
-                <li>Short Names</li>
-            </ul>
-        </section>
-
-        <!-- Filters Section -->
-        <section class="filters-section">
-            <div class="filter-item">
-                <label for="sort-by">Sort By:</label>
-                <div class="filter-item-aligned filter_item_name">
-                    <select id="sort-by" name="sort-by">
-                        <option value="a-z">A-Z</option>
-                        <option value="z-a">Z-A</option>
-                    </select>
-                    <select id="domain-type" name="domain-type">
-                        <option value=".com">.com</option>
-                        <option value=".org">.org</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="filter-item">
-                <label for="industry">By Industry:</label>
-                <select id="industry" name="industry">
-                    <option value="any">Any</option>
-                    <option value="agriculture">Agriculture and Farming</option>
-                    <option value="cosmetics">Cosmetics</option>
-                    <option value="art-design">Art & Design</option>
-                    <option value="fashion">Fashion & Beauty</option>
-                </select>
-            </div>
-
-            <div class="filter-item">
-                <label for="style">By Style:</label>
-                <select id="style" name="style">
-                    <option value="any">Any</option>
-                    <option value="trending">Trending & Popular</option>
-                    <option value="premium">Premium Names</option>
-                    <option value="aged">Aged Domains</option>
-                </select>
-            </div>
-
-            <div class="filter-item">
-                <label for="price-range-min">Price Range:</label>
-                <div class="filter-item-aligned">
-                    <input type="number" id="price-range-min" name="price-range-min" placeholder="Min">
-                    <input type="number" id="price-range-max" name="price-range-max" placeholder="Max">
-                </div>
-            </div>
-
-            <div class="filter-item">
-                <label for="length-slider">Length <i class="fa-solid fa-arrow-right"></i><span id="length-output">
-                        3</span>
-                    letters </label>
-                <input type="range" id="length-slider" name="length-slider" min="0" max="50" value="3"
-                    oninput="updateLengthOutput(this.value)">
-
-            </div>
-
-        </section>
-        <div class="reset-filter">
-            <button type="button" id="reset-filters" onclick="resetFilters()"><i
-                    class="fa-solid fa-arrow-rotate-right"></i>Reset Filters</button>
-        </div>
-    </div>
-
-    <style>
-        .domain-filters-container {
-            margin: 20px 0;
-        }
-
-        .domain-filters-container .categories-list li {
-            font-weight: 400;
-            background: #fff;
-            padding: 10px;
-            border-radius: 20px;
-            color: #00d9f5;
-        }
-
-        .category-section {
-            margin-bottom: 2rem;
-        }
-
-        .categories-list {
-            list-style-type: none;
-            padding: 0;
-            text-align: center;
-        }
-
-        .categories-list li {
-            display: inline-block;
-            margin-right: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .filters-section {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .filter-item {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 15px;
-            width: calc(20% - 15px);
-            border-radius: 20px;
-            box-shadow: 0px 30px 101px 0px rgba(0, 69, 162, 0.11);
-            border: 2px solid rgb(237, 240, 247);
-            padding: 20px;
-            gap: 10px;
-        }
-
-        .filter-item label {
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .filter-item select,
-        .filter-item input {
-            padding: 8px;
-            font-size: 14px;
-            border: 2px solid rgb(237, 240, 247);
-            border-radius: 10px;
-        }
-
-        .filter-item select::placeholder,
-        .filter-item input::placeholder {
-            color: #00214c;
-        }
-
-
-
-        .filter-item-aligned {
-            display: flex;
-            gap: 10px;
-        }
-
-        .filter_item_name select:first-child {
-            flex: 2;
-        }
-
-        .filter_item_name select:last-child {
-            flex: 1;
-        }
-
-        .filter-item-aligned input {
-            width: 50%;
-        }
-
-        #reset-filters {
-            border: transparent;
-            background-color: #fff;
-            padding: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-radius: 50px;
-            margin-top: 20px;
-        }
-    </style>
-    <script>
-        function updateLengthOutput(value) {
-            document.getElementById('length-output').textContent = value;
-        }
-    </script>
-<?php
-    return ob_get_clean();
-}
-add_shortcode('domain_filters', 'domain_filter_shortcode');
-
-
 include(get_stylesheet_directory() . '/buy-domains.php');
-
 
 function wstr_buy_domain($attributes)
 {
@@ -1106,6 +951,419 @@ function wstr_get_seller_products_by_order_and_seller_id()
         }
     }
     var_dump($product_id);
+}
+
+
+// contact form shortcode
+add_shortcode('contact_form', 'contact_form');
+function contact_form()
+{
+    $error = '';
+    $success = '';
+    if (isset($_POST['contact_us_submit'])) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'contact_us';
+        $name = sanitize_text_field($_POST['first_name']) . ' ' . sanitize_text_field($_POST['last_name']);
+        $email = sanitize_text_field($_POST['email']);
+        $phone = sanitize_text_field($_POST['phone']);
+        $type = sanitize_text_field($_POST['inquiry_type']);
+        $message = sanitize_text_field($_POST['message']);
+        $time = current_time('mysql');
+        if (strlen($phone) > 15 || strlen($phone) < 7) {
+            $error = "Phone number is not valid.";
+        } else {
+            $data = [
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'type' => $type,
+                'message' => $message,
+                'time' => $time
+            ];
+            $format = ['%s', '%s', '%s', '%s', '%s', '%s'];
+            $insert = $wpdb->insert($table_name, $data, $format);
+            if (!$insert) {
+                $error = "Something went wrong. Please try again later.";
+            } else {
+
+
+                $email_header = get_option('email_header', '');
+                $email_footer = get_option('email_footer', '');
+                $type_msg = '';
+                if ($type == 'domain') {
+                    $type_msg = 'Domain Inquiry';
+                } else if ($type == 'technical') {
+                    $type_msg = 'Technical Support';
+                } else if ($type == 'general') {
+                    $type_msg = 'General Questions';
+                } else if ($type == 'billing') {
+                    $type_msg = 'Billing & Payments';
+                } else {
+                    $type_msg = 'Others';
+                }
+                // $admin_email = get_option('admin_email');
+                $admin_email = 'jekowek850@myweblaw.com';
+
+                $email_body = '
+        <div class="wstr_email_template_main">
+            <div class="wstr_email_template_wrapper" style="font-family: \'Poppins\', serif;">
+                ' . $email_header . '
+                <h3 style="text-align: center; color: #333; margin-top:10px" >New Contact Us Submission</h3>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 16px; color: #555;">
+                    <tr>
+                        <th style="text-align: left; padding: 8px; background: #f4f4f4; border: 1px solid #ddd;">Field</th>
+                        <th style="text-align: left; padding: 8px; background: #f4f4f4; border: 1px solid #ddd;">Details</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Name</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($name) . '</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Email</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($email) . '</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Phone</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($phone) . '</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Type</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($type_msg) . '</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Message</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">' . nl2br(htmlspecialchars($message)) . '</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Time</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($time) . '</td>
+                    </tr>
+                </table>
+                <p style="text-align: center; margin: 20px 0; color: #888;">Thank you for using our service!</p>
+                ' . $email_footer . '
+            </div>
+        </div>';
+                // Construct the email template
+                wp_mail($admin_email, 'New Contact Us Submission', $email_body, ['Content-Type: text/html; charset=UTF-8']);
+
+
+                $success = "Your message has been sent successfully.";
+            }
+        }
+    }
+    ob_start();
+?>
+    <div class="contact-form-wrapper">
+        <h2>Get In Touch</h2>
+        <p class="sub-title">Have any questions? Don't hesitate to contact us!</p>
+        <p class="small-subtitle"><sup>"*" indicates required fields</sup></p>
+        <div class="refunded"><?php echo $error ?: '' ?> </div>
+        <div class="completed"><?php echo $success ?: '' ?> </div>
+        <form action="#" method="POST">
+            <div class="form-group select-group">
+                <input type="radio" id="general" name="inquiry_type" value="general">
+                <label for="general" class="select-option">
+                    <img decoding="async"
+                        src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/general-question-icon.png"
+                        alt="Icon">
+                    <div class="option-title">General Questions</div>
+                </label>
+
+                <input type="radio" id="domain" name="inquiry_type" value="domain">
+                <label for="domain" class="select-option">
+                    <img decoding="async"
+                        src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/domain-inquiry-icon.png"
+                        alt="Icon">
+                    <div class="option-title">Domain Inquiry</div>
+                </label>
+
+                <input type="radio" id="billing" name="inquiry_type" value="billing">
+                <label for="billing" class="select-option">
+                    <img decoding="async"
+                        src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/billing-icon.png" alt="Icon">
+                    <div class="option-title">Billing & Payments</div>
+                </label>
+
+                <input type="radio" id="technical" name="inquiry_type" value="technical">
+                <label for="technical" class="select-option">
+                    <img decoding="async"
+                        src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/technical-support-icon.png"
+                        alt="Icon">
+                    <div class="option-title">Technical Support</div>
+                </label>
+            </div>
+            <div class="form-group">
+                <div>
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" placeholder="Name">
+                </div>
+                <div>
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" placeholder="Last Name">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div>
+                    <label for="phone">Your Phone</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Phone">
+                </div>
+                <div>
+                    <label for="email">Your Email <sup>*</sup></label>
+                    <input type="email" id="email" name="email" placeholder="Email" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div>
+                    <label for="message">Message <sup>*</sup></label>
+                    <textarea id="message" name="message" placeholder="I would like to hear about.."
+                        required></textarea>
+                </div>
+            </div>
+
+            <div class="form-group captcha">
+                <div class="g-recaptcha" data-sitekey="6Lfyr2oqAAAAAO7lb3X_xT5TnNXJAqa3S6-5gQcv"></div>
+            </div>
+
+            <button type="submit" class="hover-white" name="contact_us_submit">Submit</button>
+        </form>
+    </div>
+
+    <style>
+        .contact-form-wrapper {
+            max-width: 900px;
+            margin: 50px auto;
+            background-color: rgb(255, 255, 255);
+            box-shadow: 0.122px 0.993px 31px 0px rgba(0, 34, 79, 0.04);
+            padding: 40px;
+            border-radius: 15px;
+        }
+
+        .contact-form-wrapper h2 {
+            margin-bottom: 10px;
+        }
+
+        .contact-form-wrapper .sub-title,
+        .contact-form-wrapper .small-subtitle {
+            color: #000;
+            margin: 10px 0;
+        }
+
+        .contact-form-wrapper .small-subtitle {
+            color: #f14793;
+        }
+
+        .contact-form-wrapper .form-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        .contact-form-wrapper .form-group div {
+            width: 100%;
+        }
+
+        .contact-form-wrapper .form-group label {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .contact-form-wrapper .form-group input[type="text"],
+        .contact-form-wrapper .form-group input[type="tel"],
+        .contact-form-wrapper .form-group input[type="email"],
+        .contact-form-wrapper .form-group textarea {
+            width: 100%;
+            font-size: 14px;
+            background: #f8f7fc;
+            border-radius: 100px;
+            padding: 15px;
+            border: 1px solid #e1e7ff;
+            margin-top: 15px;
+        }
+
+        .contact-form-wrapper .form-group input[type="text"]:focus,
+        .contact-form-wrapper .form-group input[type="tel"]:focus,
+        .contact-form-wrapper .form-group input[type="email"]:focus,
+        .contact-form-wrapper .form-group textarea:focus {
+            background-color: #fff;
+            border: 2px solid #00d9f5;
+        }
+
+        .contact-form-wrapper .form-group.captcha {
+            justify-content: center;
+        }
+
+        .contact-form-wrapper .form-group textarea {
+            height: 200px;
+            resize: none;
+            width: 98% !important;
+            border-radius: 30px;
+        }
+
+        .contact-form-wrapper .form-group textarea {
+            margin-bottom: 15px;
+        }
+
+        .contact-form-wrapper e.select-group {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .contact-form-wrapper .select-option {
+            width: 48%;
+            border: 1px solid #ccc;
+            padding: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border-radius: 30px;
+        }
+
+        /* Styling the image and text */
+        .contact-form-wrapper .select-option img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+
+        .contact-form-wrapper .option-title {
+            font-size: 16px;
+            color: #00214c;
+            font-weight: 600;
+        }
+
+        /* Hide the radio button */
+        .contact-form-wrapper input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* Target the entire label when the radio button is checked */
+        .contact-form-wrapper input[type="radio"]:checked+label {
+            background-color: #00d9f5;
+            border-color: #00d9f5;
+            color: white;
+        }
+
+        .contact-form-wrapper .select-option {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            justify-content: center;
+            padding: 35px;
+        }
+
+        .contact-form-wrapper .select-group {
+            margin: 40px 0;
+        }
+
+        /* Ensure the select-option label gets the background when checked */
+        .contact-form-wrapper input[type="radio"]:checked+label.select-option,
+        .contact-form-wrapper .select-group label:hover {
+            background-color: #00d9f5;
+            color: white;
+            border-color: #00d9f5;
+        }
+
+        .contact-form-wrapper .select-group label:hover .option-title {
+            color: #fff;
+        }
+
+        .contact-form-wrapper input[type="radio"]:checked+label .option-title {
+            color: #fff;
+        }
+
+        .contact-form-wrapper .form-group.captcha {
+            align-items: center;
+        }
+
+        .contact-form-wrapper .form-group.captcha .g-recaptcha {
+            display: flex;
+            place-content: center;
+        }
+
+        .contact-form-wrapper .captcha label {
+            margin-left: 10px;
+            font-size: 14px;
+        }
+
+        .contact-form-wrapper label sup {
+            color: #f14793;
+        }
+
+        .contact-form-wrapper button[type="submit"] {
+            background-color: #00d9f5;
+            width: fit-content;
+            padding: 20px 60px;
+            display: flex;
+            justify-content: center;
+            color: #fff;
+            border-radius: 50px;
+            align-items: center;
+            border: 2px solid;
+            margin: auto;
+            cursor: pointer;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            font-size: 16px;
+
+        }
+
+        @media screen and (max-width: 767px) {
+
+            .contact_men_image,
+            .contact_women_image {
+                position: static;
+                display: inline-block;
+
+            }
+
+            .contact_men_image {
+                width: 100%;
+                min-height: 250px;
+                display: flex;
+                align-items: center;
+                padding: 20px 0;
+
+            }
+
+            .contact_women_image {
+                position: absolute;
+                top: -35px;
+                right: 0px;
+                width: 60%;
+            }
+
+            .contact-form-wrapper .select-option {
+                padding: 20px;
+            }
+
+
+            .contact-form-wrapper .select-group {
+                flex-wrap: wrap;
+            }
+
+            .contact-form-wrapper .form-group label {
+                width: calc(50% - 10px);
+            }
+
+            .contact-form-wrapper .form-group {
+                flex-wrap: wrap;
+            }
+
+            .contact-form-wrapper {
+                padding: 30px;
+            }
+        }
+    </style>
+
+<?php
+    return ob_get_clean();
 }
 
 

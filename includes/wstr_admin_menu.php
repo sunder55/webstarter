@@ -14,6 +14,7 @@ class Wstr_admin_menu
     function wstr_menu()
     {
         add_menu_page('Webstarter Menu', 'Webstarter Menu', 'manage_options', 'wstr-menu', array($this, 'wstr_menu_options'));
+        add_menu_page('Contact Us', 'Contact Us', 'manage_options', 'contact-us', array($this, 'wstr_contact_us'), 'dashicons-testimonial');
     }
 
     /** Step 3. */
@@ -262,9 +263,118 @@ class Wstr_admin_menu
         </div>
 
 
+    <?php
+
+
+    }
+
+    /**
+     * callback function for contact us
+     */
+
+    function wstr_contact_us()
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have sufficient permissions to access this page.'));
+        }
+
+        global $wpdb;
+
+        // Define the table name
+        $contact_us = $wpdb->prefix . 'contact_us';
+
+        // Set the number of items per page
+        $items_per_page = 10;
+
+        // Get the current page from the URL, default to 1 if not set
+        $current_page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
+
+        // Calculate the offset for the query
+        $offset = ($current_page - 1) * $items_per_page;
+
+        // Get the total number of rows
+        $total_items = $wpdb->get_var("SELECT COUNT(*) FROM $contact_us");
+
+        // Calculate the total number of pages
+        $total_pages = ceil($total_items / $items_per_page);
+
+        // Fetch the data for the current page
+        $result = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM $contact_us ORDER BY ID DESC LIMIT %d OFFSET %d",
+                $items_per_page,
+                $offset
+            )
+        );
+    ?>
+        <div class="main_contact_us">
+            <h3>Contact Us</h3>
+            <table border="1" class="widefat" id="contact-us-form">
+                <thead>
+                    <th>S.N</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Type</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                </thead>
+                <tbody>
+                    <?php
+                    $i = $offset + 1; // Adjust the numbering based on the page
+                    foreach ($result as $contact_details) {
+                        $type = $contact_details->type;
+                    ?>
+                        <tr>
+                            <td><?php echo $i++; ?></td>
+                            <td><?php echo esc_html($contact_details->name); ?></td>
+                            <td><?php echo esc_html($contact_details->email); ?></td>
+                            <td><?php echo esc_html($contact_details->phone); ?></td>
+                            <td>
+                                <?php
+                                switch ($type) {
+                                    case 'domain':
+                                        echo 'Domain Inquiry';
+                                        break;
+                                    case 'technical':
+                                        echo 'Technical Support';
+                                        break;
+                                    case 'general':
+                                        echo 'General Questions';
+                                        break;
+                                    case 'billing':
+                                        echo 'Billing & Payments';
+                                        break;
+                                    default:
+                                        echo 'Others';
+                                        break;
+                                }
+                                ?>
+                            </td>
+                            <td><?php echo esc_html($contact_details->message); ?></td>
+                            <td><?php echo esc_html($contact_details->time); ?></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <?php
+                $base_url = admin_url('admin.php?page=your_page_slug'); // Replace with your actual page slug
+                if ($total_pages > 1) {
+                    for ($page = 1; $page <= $total_pages; $page++) {
+                        if ($page == $current_page) {
+                            echo '<strong>' . $page . '</strong> ';
+                        } else {
+                            echo '<a href="' . esc_url(add_query_arg('paged', $page, $base_url)) . '">' . $page . '</a> ';
+                        }
+                    }
+                }
+                ?>
+            </div>
+        </div>
 <?php
-
-
     }
 }
 
