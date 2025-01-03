@@ -439,6 +439,36 @@ if (!class_exists('wstr_rest_api')) {
             //     ],
             // ]);
 
+            register_rest_route('wstr/v1', '/bank-details/', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_user_bank_details'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+                'permission_callback' => '__return_true'
+            ));
+
+            register_rest_route('wstr/v1', '/paypal-details/', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_user_paypal_details'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+                'permission_callback' => '__return_true'
+            ));
+
+
+            register_rest_route('wstr/v1', '/update-user-bank-details/(?P<user_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_update_user_bank_details'],
+                'permission_callback' => '__return_true'
+            ));
+
+            register_rest_route('wstr/v1', '/update-user-paypal-details/(?P<user_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_update_user_paypal_details'],
+                'permission_callback' => '__return_true'
+            ));
         }
 
         /**
@@ -1335,6 +1365,75 @@ if (!class_exists('wstr_rest_api')) {
             }
             $get_currencies = get_option('wstr_currency_codes', true);
             return new WP_REST_Response($get_currencies, 200);
+        }
+
+        public function wstr_user_bank_details($request)
+        {
+            $data[] = [
+                'bank_name' => get_user_meta($GLOBALS['user_id'], '_bank_name', true) ?: '',
+                'account_number' => get_user_meta($GLOBALS['user_id'], '_bank_account_number', true) ?: '',
+                'account_name' => get_user_meta($GLOBALS['user_id'], '_bank_account_name', true) ?: '',
+            ];
+
+            return new WP_REST_Response($data, 200);
+        }
+
+        public function wstr_user_paypal_details($request)
+        {
+            $data[] = [
+                'paypal_email' => get_user_meta($GLOBALS['user_id'], '_paypal_email', true) ?: '',
+            ];
+
+            return new WP_REST_Response($data, 200);
+        }
+
+        public function wstr_update_user_bank_details($request)
+        {
+            $current_user_id = $GLOBALS['user_id'];
+            $user_id = (int) $request->get_param('user_id');
+            if ($current_user_id !== $user_id) {
+                return new WP_Error('not_allowed', 'You can only update your own profile.', array('status' => 403));
+            }
+
+            $user_data = get_userdata($user_id);
+            if (!$user_data) {
+                return new WP_Error('user_not_found', 'User not found.', array('status' => 404));
+            }
+            $params = $request->get_json_params();
+            // $params = $_POST;
+
+
+            $bank_name = sanitize_text_field($params['bank_name']);
+            $account_number = sanitize_text_field($params['account_number']);
+            $account_name = sanitize_text_field($params['account_name']);
+            if (empty($bank_name) || empty($account_number) || empty($account_name)) {
+                return new WP_Error('empty_fields', 'Please fill in all fields.', array('status' => 400));
+            }
+            update_user_meta($user_id, '_bank_name', $bank_name);
+            update_user_meta($user_id, '_bank_account_number', $account_number);
+            update_user_meta($user_id, '_bank_account_name', $account_name);
+            return new WP_REST_Response(array('message' => 'Bank details updated successfully'), 200);
+        }
+        public function wstr_update_user_paypal_details($request)
+        {
+            $current_user_id = $GLOBALS['user_id'];
+            $user_id = (int) $request->get_param('user_id');
+            if ($current_user_id !== $user_id) {
+                return new WP_Error('not_allowed', 'You can only update your own profile.', array('status' => 403));
+            }
+            $user_data = get_userdata($user_id);
+            if (!$user_data) {
+                return new WP_Error('user_not_found', 'User not found.', array('status' => 404));
+            }
+            // $params = $_POST;
+            $params = $request->get_json_params();
+
+            $paypal_email = sanitize_email($params['paypal_email']);
+            if (empty($paypal_email)) {
+                return new WP_Error('empty_fields', 'Please fill in all fields.', array('status' => 400));
+            }
+            update_user_meta($user_id, '_paypal_email', $paypal_email);
+            return new WP_REST_Response(array('message' => 'User paypal details updated successfully'), 200);
         }
     }
 }

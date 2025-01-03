@@ -36,6 +36,10 @@ Recommended (Our Picks) -->
                             <option value="">Any</option>
                             <option value="z-a">Z-A</option>
                             <option value="a-z">A-Z</option>
+                            <option value="high">Most Viewed</option>
+                            <option value="new">Newest Added</option>
+                            <option value="low-to-high">Price: Low to High</option>
+                            <option value="high-to-low">Price: High to Low</option>
                         </select>
                         <select id="domain-type" name="domain-type">
                             <option value="">Any</option>
@@ -61,15 +65,15 @@ Recommended (Our Picks) -->
                     </div>
                 </div>
                 <!-- Price (Low to High, High to Low) -->
-                <div class="filter-item">
+                <!-- <div class="filter-item">
                     <label for="sort-by">Sort By Price:</label>
                     <select id="sort-by-price" name="sort-by-price">
                         <option value="">Any</option>
                         <option value="low-to-high">Low to High</option>
                         <option value="high-to-low">High to Low</option>
                     </select>
-                </div>
-                <div class="filter-item">
+                </div> -->
+                <!-- <div class="filter-item">
                     <label for="sort-by">Popular</label>
                     <select id="sort-by-list" name="sort-by-list">
                         <option value="">Any</option>
@@ -77,7 +81,7 @@ Recommended (Our Picks) -->
                         <option value="new">Newest Added</option>
                         <option value="recommended">Recommended</option>
                     </select>
-                </div>
+                </div> -->
                 <div class="filter-item">
                     <label for="industry">By Industry:</label>
                     <?php
@@ -131,14 +135,14 @@ Recommended (Our Picks) -->
                             <option value="4000">$4000</option>
                             <option value="5000">$5000</option>
                             <option value="7500">$7500</option>
-                            <option value="10,000">$10,000</option>
-                            <option value="25,000">$25,000</option>
-                            <option value="50,000">$50,000</option>
-                            <option value="100,000">$100,000</option>
-                            <option value="250,000">$250,000</option>
-                            <option value="500,000">$500,000</option>
-                            <option value="750,000">$750,000</option>
-                            <option value="1,000,000">$1,000,000</option>
+                            <option value="10000">$10,000</option>
+                            <option value="25000">$25,000</option>
+                            <option value="50000">$50,000</option>
+                            <option value="100000">$100,000</option>
+                            <option value="250000">$250,000</option>
+                            <option value="500000">$500,000</option>
+                            <option value="750000">$750,000</option>
+                            <option value="1000000">$1,000,000</option>
                         </select>
 
                         <select name="price-range-max" id="price-range-max">
@@ -420,10 +424,9 @@ function wstr_domain_filter()
     $sortBy = !empty($_POST['sortBy']) ? sanitize_text_field($_POST['sortBy']) : '';
     $min_price = !empty($_POST['min_price']) ? sanitize_text_field($_POST['min_price']) : '';
     $max_price = !empty($_POST['max_price']) ? sanitize_text_field($_POST['max_price']) : '';
-    $sort_by_price = !empty($_POST['sort_by_price']) ? sanitize_text_field($_POST['sort_by_price']) : '';
+    // $sort_by_price = !empty($_POST['sort_by_price']) ? sanitize_text_field($_POST['sort_by_price']) : '';
     $sort_by_list = !empty($_POST['sort_by_list']) ? sanitize_text_field($_POST['sort_by_list']) : '';
     $targeted_id = !empty($_POST['targeted_id']) ? sanitize_text_field($_POST['targeted_id']) : '';
-
     // Fetch the current page number from the POST request
     $paged = isset($_POST['paged']) ? absint($_POST['paged']) : 1;
 
@@ -537,115 +540,153 @@ function wstr_domain_filter()
         ];
     };
 
-    if (!empty($min_price)) {
-        $args['meta_query'][] = [
-            'relation' => 'OR',
-            // Check if sale price exists and is greater than or equal to min_price
-            [
-                'key' => '_sale_price',
-                'value' => $min_price,
-                'compare' => '>=',
-                'type' => 'NUMERIC'
-            ],
-            // If sale price doesn't exist, check regular price
-            [
-                'relation' => 'AND',
-                [
-                    'key' => '_sale_price',
-                    'compare' => 'NOT EXISTS'
-                ],
-                [
-                    'key' => '_regular_price',
-                    'value' => $min_price,
-                    'compare' => '>=',
-                    'type' => 'NUMERIC'
-                ]
-            ]
-        ];
-    }
+    // if (!empty($min_price)) {
+    //     $args['meta_query'][] = [
+    //         'relation' => 'OR',
+    //         // Check if sale price exists and is greater than or equal to min_price
+    //         [
+    //             'key' => '_sale_price',
+    //             'value' => $min_price,
+    //             'compare' => '>=',
+    //             'type' => 'NUMERIC'
+    //         ],
+    //         // If sale price doesn't exist, check regular price
+    //         [
+    //             'relation' => 'AND',
+    //             [
+    //                 'key' => '_sale_price',
+    //                 'compare' => 'NOT EXISTS'
+    //             ],
+    //             [
+    //                 'key' => '_regular_price',
+    //                 'value' => $min_price,
+    //                 'compare' => '>=',
+    //                 'type' => 'NUMERIC'
+    //             ]
+    //         ]
+    //     ];
+    // }
 
-    if (!empty($max_price)) {
-        // $current_date = current_time('Y-m-d');
-        $args['meta_query'][] = [
-            'relation' => 'OR',
-            // Check if sale price exists and is less than or equal to max_price
-            [
-                'key' => '_sale_price',
-                'value' => $max_price,
-                'compare' => '<=',
-                'type' => 'NUMERIC'
-            ],
-            // If sale price doesn't exist, check regular price
-            [
-                'relation' => 'AND',
-                [
-                    'key' => '_sale_price',
-                    'compare' => 'NOT EXISTS'
-                ],
-                [
-                    'key' => '_regular_price',
-                    'value' => $max_price,
-                    'compare' => '<=',
-                    'type' => 'NUMERIC'
-                ]
-            ]
-        ];
-    }
-    if (!empty($sort_by_list)) {
+    // if (!empty($max_price)) {
+    //     // $current_date = current_time('Y-m-d');
+    //     $args['meta_query'][] = [
+    //         'relation' => 'OR',
+    //         // Check if sale price exists and is less than or equal to max_price
+    //         [
+    //             'key' => '_sale_price',
+    //             'value' => $max_price,
+    //             'compare' => '<=',
+    //             'type' => 'NUMERIC'
+    //         ],
+    //         // If sale price doesn't exist, check regular price
+    //         [
+    //             'relation' => 'AND',
+    //             [
+    //                 'key' => '_sale_price',
+    //                 'compare' => 'NOT EXISTS'
+    //             ],
+    //             [
+    //                 'key' => '_regular_price',
+    //                 'value' => $max_price,
+    //                 'compare' => '<=',
+    //                 'type' => 'NUMERIC'
+    //             ]
+    //         ]
+    //     ];
+    // }
+    // if (!empty($sort_by_list)) {
 
-        if ($sort_by_list === 'high') {
+
+    //     // else if($sort_by_list == 'recommended'){
+    //     //     $args['orderby'] = 'meta_value_num';
+    //     //     $args['meta_key'] = 'ws_product_view_count';
+    //     //     $args['order'] = 'DESC';
+    //     // }
+    // }
+
+    if (!empty($sortBy)) {
+        if ($sortBy === 'a-z') {
+            $args['orderby'] = 'title';
+            $args['order'] = 'ASC';
+        } else if ($sortBy === 'z-a') {
+            $args['orderby'] = 'title';
+            $args['order'] = 'DESC';
+        } else if ($sortBy === 'high') {
             $args['orderby'] = 'meta_value_num';
             $args['meta_key'] = 'ws_product_view_count';
             $args['order'] = 'DESC';
-        } else if ($sort_by_list === 'new') {
+        } else if ($sortBy === 'new') {
             $args['orderby'] = 'date';
             $args['order'] = 'DESC';
         }
-        // else if($sort_by_list == 'recommended'){
+        // $args['orderby'] = 'title';
+        // $args['order'] = ($sortBy === 'a-z') ? 'ASC' : 'DESC';
+        // if ($sort_by_list === 'high') {
         //     $args['orderby'] = 'meta_value_num';
         //     $args['meta_key'] = 'ws_product_view_count';
+        //     $args['order'] = 'DESC';
+        // } else if ($sort_by_list === 'new') {
+        //     $args['orderby'] = 'date';
         //     $args['order'] = 'DESC';
         // }
     }
 
-    if (!empty($sortBy)) {
-        $args['orderby'] = 'title';
-        $args['order'] = ($sortBy === 'a-z') ? 'ASC' : 'DESC';
-    }
-
     // Query all posts matching the criteria
     $all_query = new WP_Query($args);
-
     $response = '';
 
     if ($all_query->have_posts()) {
         $posts = $all_query->posts;
-        if ($targeted_id != 'sort-by') {
-            // Sort posts by price if necessary
-            if (!empty($_POST['sort_by_price'])) {
-                $sort_by_price = $_POST['sort_by_price'];
-                usort($posts, function ($a, $b) use ($sort_by_price) {
-                    $sale_price_a = (float) get_post_meta($a->ID, '_sale_price', true);
-                    $regular_price_a = (float) get_post_meta($a->ID, '_regular_price', true);
-                    $price_a = $sale_price_a ? $sale_price_a : $regular_price_a;
 
-                    $sale_price_b = (float) get_post_meta($b->ID, '_sale_price', true);
-                    $regular_price_b = (float) get_post_meta($b->ID, '_regular_price', true);
-                    $price_b = $sale_price_b ? $sale_price_b : $regular_price_b;
+        $filtered_posts = [];
 
-                    if ($sort_by_price == 'low-to-high') {
-                        return $price_a - $price_b;
-                    } else {
-                        return $price_b - $price_a;
-                    }
-                });
+        foreach ($posts as $post) {
+            $sale_price = (float) get_post_meta($post->ID, '_sale_price', true);
+            $regular_price = (float) get_post_meta($post->ID, '_regular_price', true);
+            $price = $sale_price ? $sale_price : $regular_price;
+
+            // Apply min price filter
+            if (!empty($min_price) && $price < $min_price) {
+                continue;
             }
+
+            // Apply max price filter
+            if (!empty($max_price) && $price > $max_price) {
+                continue;
+            }
+
+            $filtered_posts[] = $post;
         }
+
+
+        // if ($targeted_id != 'sort-by') {
+        // Sort posts by price if necessary
+        if (!empty($_POST['sortBy']) && ($_POST['sortBy'] === 'low-to-high' || $_POST['sortBy'] === 'high-to-low')) {
+            $sort_by_price = $_POST['sortBy'];
+            usort($filtered_posts, function ($a, $b) use ($sort_by_price) {
+                $sale_price_a = (float) get_post_meta($a->ID, '_sale_price', true);
+                $regular_price_a = (float) get_post_meta($a->ID, '_regular_price', true);
+                $price_a = $sale_price_a ? $sale_price_a : $regular_price_a;
+
+                $sale_price_b = (float) get_post_meta($b->ID, '_sale_price', true);
+                $regular_price_b = (float) get_post_meta($b->ID, '_regular_price', true);
+                $price_b = $sale_price_b ? $sale_price_b : $regular_price_b;
+
+                if ($sort_by_price == 'low-to-high') {
+                    return $price_a - $price_b;
+                } else if ($sort_by_price == 'high-to-low') {
+                    return $price_b - $price_a;
+                }
+            });
+        }
+
+        // var_dump($_POST['paged']);
+        // }
 
         // Apply pagination to the sorted posts
         $posts_per_page = 20;
         $offset = ($paged - 1) * $posts_per_page;
-        $paginated_posts = array_slice($posts, $offset, $posts_per_page);
+        $paginated_posts = array_slice($filtered_posts, $offset, $posts_per_page);
 
         // Generate the response for each paginated post
         foreach ($paginated_posts as $post) {
@@ -679,25 +720,6 @@ function wstr_domain_filter()
 
             $term_exist = wstr_check_existing_term($post->ID, 'domain_cat', 'premium-names');
 
-            // Generate HTML and append it to the response
-            // $response .= '<div class="ws-cards-container swiper-slide">';
-            // $response .= $term_exist ? '<div class="premium_icon"><img decoding="async" src="/wp-content/plugins/card-block/images/diamond.png" alt="Diamond Icon"></div>' : '';
-            // $response .= '<div class="ws_card_hover_charts ws_flex">';
-            // $response .= '<div class="circular-progress page-trust">';
-            // $response .= '<div class="progress-text"><div role="progressbar" aria-valuenow="' . esc_attr($pa) . '" aria-valuemin="0" aria-valuemax="100" style="--value:' . esc_attr($pa) . '"></div></div>';
-            // $response .= '<div class="progress-title"><h6>Page Trust</h6></div></div>';
-            // $response .= '<div class="circular-progress domain-trust"><div class="progress-text"><div role="progressbar" aria-valuenow="' . esc_attr($da) . '" aria-valuemin="0" aria-valuemax="100" style="--value:' . esc_attr($da) . '"></div></div>';
-            // $response .= '<div class="progress-title"><h6>Domain Trust</h6></div></div></div>';
-            // $response .= '<div class="ws-card-img"><img decoding="async" src="' . esc_url($domain_image) . '" alt="' . esc_attr(get_the_title()) . '"></div>';
-            // $response .= '<div class="ws-card-contents ws-flex">';
-            // $response .= get_wstr_price_percentage($post->ID);
-            // $response .= '<img decoding="async" src="' . esc_url($logo_url ?: $domain_image) . '" alt="' . esc_attr(get_the_title()) . '" title="' . esc_attr(get_the_title()) . '" class="card_logo_img">';
-            // $response .= '<span class="ws-card-inner-contents"><h5><a href="' . esc_url(get_permalink($post->ID)) . '"> ' . esc_html(get_the_title()) . '</a></h5>';
-            // $response .= $price ?: '';
-            // $response .= '</span><div class="ws-card-likes"><h6><span>2k</span><i class="fa-solid fa-heart"></i></h6></div></div></div>';
-            // $response .= '</div>';
-
-
             $response .= '<div class="ws-cards-container swiper-slide">';
             $response .= $term_exist ? '<div class="premium_icon"><img decoding="async" src="/wp-content/plugins/card-block/images/diamond.png" alt="Diamond Icon"></div>' : '';
             $response .= '<div class="ws_card_hover_charts ws_flex">';
@@ -719,7 +741,27 @@ function wstr_domain_filter()
         wp_reset_postdata();
 
         // Generate pagination
-        $total_pages = ceil(count($posts) / $posts_per_page);
+        // $total_pages = ceil(count($filtered_posts) / $posts_per_page);
+        // $pagination = paginate_links([
+        //     'base' => '%_%',
+        //     'format' => '?paged=%#%',
+        //     'current' => max(1, $paged),
+        //     'total' => $total_pages,
+        //     'prev_text' => __('<', 'webstarter'),
+        //     'next_text' => __('>', 'webstarter'),
+        //     'type' => 'array',
+        // ]);
+
+        // if ($pagination) {
+        //     $response .= '<div class="pagination">';
+        //     foreach ($pagination as $page_link) {
+        //         $response .= '<span>' . $page_link . '</span>';
+        //     }
+        //     $response .= '</div>';
+        // }
+
+        // Generate pagination
+        $total_pages = ceil(count($filtered_posts) / $posts_per_page);
         $pagination = paginate_links([
             'base' => '%_%',
             'format' => '?paged=%#%',
