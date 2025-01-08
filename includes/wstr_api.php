@@ -469,6 +469,27 @@ if (!class_exists('wstr_rest_api')) {
                 'callback' => [$this, 'wstr_update_user_paypal_details'],
                 'permission_callback' => '__return_true'
             ));
+            register_rest_route('wstr/v1', '/cancel-subscription/', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_cancel_subscription'],
+                'permission_callback' => '__return_true'
+            ));
+
+            register_rest_route('wstr/v1', '/offers/(?P<user_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_offers'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+                // 'permission_callback' => '__return_true'
+            ));
+            register_rest_route('wstr/v1', '/update-counter-offer/(?P<offer_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_update_counter_offer'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+            ));
         }
 
         /**
@@ -1434,6 +1455,107 @@ if (!class_exists('wstr_rest_api')) {
             }
             update_user_meta($user_id, '_paypal_email', $paypal_email);
             return new WP_REST_Response(array('message' => 'User paypal details updated successfully'), 200);
+        }
+
+        /**
+         * Function for order cancellation
+         * @param mixed $request
+         * @return WP_Error|WP_REST_Response
+         */
+        public function wstr_cancel_subscription($request)
+        {
+            // $GLOBALS['user_id']
+            if (! $GLOBALS['user_id']) {
+                return new WP_Error('user_not_found', 'User not found.', array('status' => 404));
+            }
+            $params = $request->get_json_params();
+
+            $subscription_id = sanitize_text_field($params['subscription_id']);
+            update_post_meta(5350, '_order_status', 'cancelled');
+            return new WP_REST_Response('Subscription cancelled successfully', 200);
+        }
+
+        /**
+         * Function for Offer 
+         */
+        public function wstr_offers($request)
+        {
+            $user_id = $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('missing_user_id', 'Missing user id.');
+            }
+            global $wpdb;
+            $offer = $wpdb->prefix . 'offers';
+            $offers_array = [];
+            $offers = $wpdb->get_results("SELECT * FROM $offer WHERE buyer_id = " . $user_id . " ORDER BY offer_id DESC");
+            foreach ($offers as $offer) {
+
+                $domain_id = $offer->domain_id;
+                $domain = get_post($domain_id);
+                $domain_title =  $domain->post_title;
+                $image  = '';
+                $domain_image = get_the_post_thumbnail_url($domain_id, 'medium_large');
+                $logo = get_post_meta($domain_id, '_logo_image', true);
+                $logo_url = wp_get_attachment_url($logo);
+                if ($domain_image) {
+                    $image = $domain_image;
+                } else if (!$domain_image && $logo_url) {
+                    $image = $logo_url;
+                } else if (!$domain_image && !$logo_url) {
+                    $image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
+                }
+                $offers_array[] = [
+                    'buyer_id' => $offer->buyer_id,
+                    'created_at' => $offer->created_at,
+                    'currency' => $offer->currency,
+                    'domain_id' => $offer->domain_id,
+                    'offer_amount' => $offer->offer_amount,
+                    'offer_expiry_date' => $offer->expiry_date,
+                    'offer_id' => $offer->offer_id,
+                    'seller_id' => $offer->seller_id,
+                    'status' => $offer->status,
+                    'domain_image' => $image,
+                    'domain_title' => $domain_title,
+
+                ];
+            }
+            return new WP_REST_Response($offers_array, 200);
+        }
+
+        /**
+         * function for adding counter offer
+         * @param mixed $request
+         * @return void
+         */
+        public function wstr_update_counter_offer($request)
+        {
+            $offer_id = $request->get_param('offer_id');
+            if (!$offer_id) {
+                return new WP_Error('missing_offer_id', 'Missing offer id.');
+            }
+
+            $params = $request->get_json_params();
+            $counter_offer_amount =  $subscription_id = sanitize_text_field($params['counter_offer']);
+            global $wpdb;
+            $offers = $wpdb->table_prefix . 'offers';
+
+            // $result =  $offers = $wpdb->get_results("SELECT * FROM $offer WHERE buyer_id = " . $user_id . " ORDER BY offer_id DESC");
+
+            // $name     = "Kumkum"; //string value use: %s
+            // $email    = "kumkum@gmail.com"; //string value use: %s
+            // $phone    = "3456734567"; //numeric value use: %d
+            // $country  = "India"; //string value use: %s
+            // $course   = "Database"; //string value use: %s
+            // $message  = "hello i want to read db"; //string value use: %s
+            // $now      = new DateTime(); //string value use: %s
+            // $datesent = $now->format('Y-m-d H:i:s'); //string value use: %s
+            $user_by = get_current_user_id();
+
+
+            $sql = $wpdb->prepare("INSERT INTO `$offers` (`name`, `email`, `phone`, `country`, `course`, `message`, `datesent`) values (%s, %s, %d, %s, %s, %s, %s)", $name, $email, $phone, $country, $course, $message, $datesent);
+
+            $wpdb->query($sql);
+            // return $counter_offer_amount;
         }
     }
 }

@@ -17,6 +17,8 @@ class Wstr_ajax_functions
 
         add_action('wp_ajax_wstr_resend_otp', array($this, 'wstr_resend_otp'));
         add_action('wp_ajax_nopriv_wstr_resend_otp', array($this, 'wstr_resend_otp'));
+
+        add_action('wp_ajax_wstr_make_offer', array($this, 'wstr_make_offer'));
     }
 
     /**
@@ -432,6 +434,75 @@ class Wstr_ajax_functions
             wp_send_json_success($response, 200);
             // wp_send_json('Missing user id. Please try login again.', 500);
         }
+    }
+
+
+    public function wstr_make_offer()
+    {
+
+        $domain_id = sanitize_text_field($_POST['domain_id']);
+        $offer_price = sanitize_text_field($_POST['offer_amount']);
+        $buyer_id = get_current_user_id();
+        $author_id = get_post_field('post_author', $domain_id);
+        if (!$buyer_id) {
+            wp_send_json_error('Please login to make an offer');
+        }
+
+        if ($author_id == $buyer_id) {
+            wp_send_json_error('You cannot make an offer on your own domain');
+        }
+
+        $currency =  isset($_SESSION['currency']) ? get_wstr_currency_symbol($_SESSION['currency']) : '$';
+
+        // offer_id
+        // domain_id	
+        // offer_amount
+        // offer_expiry_date	
+        // status	
+        // seller_id	
+        // buyer_id	
+        // created_at
+        // created_at
+
+        $date = new DateTime(); // Y-m-d
+        $date->add(new DateInterval('P30D'));
+        $expiry_date =  $date->format('Y-m-d');
+
+        global $wpdb; //removed $name and $description there is no need to assign them to a global variable
+        $table_name = $wpdb->prefix . "offers"; //try not using Uppercase letters or blank spaces when naming db tables
+
+        $insert_offer = $wpdb->query(
+            $wpdb->prepare(
+                "INSERT INTO `$table_name` (`domain_id`, `offer_amount`, `buyer_id`, `seller_id`, `status`,`offer_expiry_date`,`currency`) 
+                 VALUES (%d, %s, %d, %d, %s, %s, %s)",
+                $domain_id,
+                $offer_price,
+                $buyer_id,
+                $author_id,
+                'pending',
+                $expiry_date,
+                $currency
+
+            )
+        );
+        if ($insert_offer) {
+            wp_send_json_success('Offer sent successfully');
+        } else {
+            wp_send_json_error('Unable to send offer. Please try again later');
+        }
+
+        var_dump($insert_offer);
+        die();
+
+        // $domain_post = get_post($domain_id);
+        // if ($domain_post && $domain_post->post_type === 'domain') {
+        //     $to = get_option('admin_email');
+        //     $subject = "Offer for domain " . $domain_post->post_title;
+        //     $txt = 'User ' . $user->user_login . ' has made an offer of ' . $offer_price . ' for the domain ' . $domain_post->post_title;
+        //     $headers = "From: webstarter.com" . "\r\n" .
+        //         "CC:    
+
+
     }
 }
 

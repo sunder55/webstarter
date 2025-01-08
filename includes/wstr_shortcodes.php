@@ -440,8 +440,64 @@ class wstr_shortcodes
                 $new_post_count = $post_count + 1;
 
                 update_post_meta(get_the_ID(), 'ws_product_view_count', $new_post_count);
+                // $expiry_date = date('Y-m-d', strtotime('+30 days'));
+                // var_dump($expiry_date);
 
             ?>
+
+                <form class="make_offer_form" action="#" method="POST" style="margin-left:300px; ">
+                    <div class="make_offer_error refunded"></div>
+                    <div class="make_offer_success completed"></div>
+                    <input type="number" class="make_offer_amount" min="0" required>
+                    <input type="hidden" class="make_offer_domain_id" value="<?php echo get_the_ID(); ?>" />
+                    <input type="submit" value="Make Offer" />
+                </form>
+
+                <div>
+                    <h1>My Offer Table</h1>
+                    <?php
+                    global $wpdb;
+                    $offer = $wpdb->prefix . 'offers';
+
+                    ?>
+                    <table border="1" cellspacing="0" cellpadding="0">
+                        <thead>
+                            <tr>
+                                <th>Offer Id</th>
+                                <th>Currency</th>
+                                <th>Offer Amount</th>
+                                <th>Offer Status</th>
+                                <th>Offer Buyer</th>
+                                <th>Offer Seller</th>
+                                <th>Offer Date</th>
+                                <th>Expiry Date</th>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $results = $wpdb->get_results("SELECT * FROM $offer WHERE buyer_id = " . get_current_user_id());
+                            foreach ($results as $result) {
+                            ?>
+                                <tr>
+                                    <td><?php echo $result->offer_id; ?></td>
+                                    <td><?php echo $result->currency; ?></td>
+                                    <td><?php echo $result->offer_amount; ?></td>
+                                    <td><?php echo $result->status; ?></td>
+                                    <td><?php echo $result->buyer_id; ?></td>
+                                    <td><?php echo $result->seller_id; ?></td>
+                                    <td><?php echo $result->created_at; ?></td>
+                                    <td><?php echo $result->offer_expiry_date; ?></td>
+                                    <td>Counter offer <textarea class="counter_offer_amount"></textarea> <input type="submit" id=<?php echo $results->offer_id ?> class="counter_offer_submit"></td>
+                                </tr>
+                            <?php
+                                // echo $result->offer_amount;
+                            }
+
+                            // var_dump($results);
+
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
                 <div class="single_domain_details ws_flex fd_mob_col ">
                     <!-- Featured Image -->
                     <div class="featured-image p_relative img_producto_container" data-scale="1.6">
@@ -494,7 +550,6 @@ class wstr_shortcodes
                                         alt="<?php echo $title ?>">
                                 <?php
                                 } else {
-
                                 ?>
                                     <img src="<?php echo $logo ? $logo : $featured_image ?>" alt="<?php echo $title; ?> ">
                                 <?php }

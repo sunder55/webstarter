@@ -620,3 +620,76 @@ function generate_random_number()
     $mail =  mail("someone@example.com", "My subject", $msg);
     var_dump($mail);
 }
+
+// Offers Table Columns:
+
+// 1. offer_id (primary key)
+// 2. Product_id
+// 3. Offer_amount
+// 4. Offer expiry date.
+// 5. Status -> pending, accepted, declined.
+// 6. seller_id.
+// 7. buyer_id.
+// 8. created_at(Timestamp)
+
+// add_action('init', function () {
+
+//     create_offer_table();
+//     create_counter_offer_table();
+// });
+function create_offer_table()
+{
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'offers';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        offer_id INT(11) NOT NULL AUTO_INCREMENT,
+        domain_id INT(11) NOT NULL,
+        currency varchar(10) NOT NULL,
+        offer_amount varchar(100) NOT NULL,
+        status varchar(20) NOT NULL,
+        seller_id INT(11) NOT NULL,
+        buyer_id INT(11) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        offer_expiry_date DATETIME NOT NULL,
+
+        PRIMARY KEY (offer_id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+
+    // Optionally, you can add a message to indicate that the table has been created
+    // echo "Table '$table_name' created successfully.";
+}
+
+// Counter Offers Table
+// 1. counter_offer_id(pk)
+// 2. offer_id
+// 3. counter_price
+// 4. by_user_id
+// 5. created_at(Timestamp)
+function create_counter_offer_table()
+{
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'counter_offers';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        counter_offer_id INT(11) NOT NULL AUTO_INCREMENT,
+        offer_id INT(11) NOT NULL,
+        counter_price FLOAT NOT NULL,
+        by_user_id INT(11) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (counter_offer_id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+
+    // Optionally, you can add a message to indicate that the table has been created
+    // echo "Table '$table_name' created successfully.";
+}

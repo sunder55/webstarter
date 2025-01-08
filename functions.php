@@ -1415,25 +1415,25 @@ function contact_form()
 // });
 
 // add_action('wp_footer', 'remove_price');
-// function remove_price()
-// {
-//     $args = array(
-//         'post_type' => 'domain',
-//         'posts_per_page' => -1,
-//     );
-//     $query = new WP_Query($args);
-//     if ($query->have_posts()) {
-//         $i = 1;
-//         while ($query->have_posts()) {
-//             $query->the_post();
-//             $post_id = get_the_ID();
-//             $regular_price =  get_post_meta($post_id, '_regular_price', true);
-//             $sale_price = get_post_meta($post_id, '_sale_price', true);
+function remove_price()
+{
+    $args = array(
+        'post_type' => 'domain',
+        'posts_per_page' => -1,
+    );
+    $query = new WP_Query($args);
+    if ($query->have_posts()) {
+        $i = 1;
+        while ($query->have_posts()) {
+            $query->the_post();
+            $post_id = get_the_ID();
+            $regular_price =  get_post_meta($post_id, '_regular_price', true);
+            $sale_price = get_post_meta($post_id, '_sale_price', true);
 
-//             if ($sale_price == $regular_price) {
-//                 update_post_meta($post_id, '_sale_price', '');
-//             }
-//             echo $i++ . '-' . $post_id . ' - ' . $regular_price . ' - ' . $sale_price . '<br>';
-//         }
-//     }
-// }
+            if ($sale_price == $regular_price) {
+                update_post_meta($post_id, '_sale_price', '');
+            }
+            echo $i++ . '-' . $post_id . ' - ' . $regular_price . ' - ' . $sale_price . '<br>';
+        }
+    }
+}

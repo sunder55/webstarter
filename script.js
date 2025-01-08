@@ -301,4 +301,30 @@ jQuery(document).ready(function ($) {
   // } else {
   //   console.error("Elements with ids 'style' and/or 'industry' not found");
   // }
+
+  $(".make_offer_form").submit(function (e) {
+    e.preventDefault();
+    var offerAmount = $(".make_offer_amount").val();
+    var domainId = $(".make_offer_domain_id").val();
+    $.ajax({
+      type: "POST",
+      url: cpmAjax.ajax_url,
+      data: {
+        action: "wstr_make_offer",
+        offer_amount: offerAmount,
+        domain_id: domainId,
+      },
+      success: function (response) {
+        if (response.success == false) {
+          $(".make_offer_error").html(response.data);
+        }
+        if (response.success == true) {
+          $(".make_offer_success").html(response.data);
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.error("Make Offer AJAX Error: ", textStatus, errorThrown);
+      },
+    });
+  });
 });
