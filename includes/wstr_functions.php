@@ -681,8 +681,9 @@ function create_counter_offer_table()
     $sql = "CREATE TABLE $table_name (
         counter_offer_id INT(11) NOT NULL AUTO_INCREMENT,
         offer_id INT(11) NOT NULL,
-        counter_price FLOAT NOT NULL,
+        counter_price varchar (100),
         by_user_id INT(11) NOT NULL,
+        currency varchar(20),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (counter_offer_id)
     ) $charset_collate;";

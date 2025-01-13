@@ -490,6 +490,22 @@ if (!class_exists('wstr_rest_api')) {
                     return is_user_logged_in();
                 },
             ));
+            register_rest_route('wstr/v1', '/manage-offers/(?P<user_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_manage_offers'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+                // 'permission_callback' => '__return_true'
+            ));
+
+            register_rest_route('wstr/v1', 'accept-delete-offers/(?P<offer_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_accept_delete_offers'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+            ));
         }
 
         /**
@@ -1489,10 +1505,13 @@ if (!class_exists('wstr_rest_api')) {
             $offers_array = [];
             $offers = $wpdb->get_results("SELECT * FROM $offer WHERE buyer_id = " . $user_id . " ORDER BY offer_id DESC");
             foreach ($offers as $offer) {
+                $counter_offer = $wpdb->prefix . 'counter_offers';
+                $counter_offers = $wpdb->get_results("SELECT * FROM $counter_offer WHERE offer_id = " . $offer->offer_id . " ORDER BY counter_offer_id DESC");
 
                 $domain_id = $offer->domain_id;
                 $domain = get_post($domain_id);
                 $domain_title =  $domain->post_title;
+                $domain_link = get_permalink($domain_id);
                 $image  = '';
                 $domain_image = get_the_post_thumbnail_url($domain_id, 'medium_large');
                 $logo = get_post_meta($domain_id, '_logo_image', true);
@@ -1510,12 +1529,14 @@ if (!class_exists('wstr_rest_api')) {
                     'currency' => $offer->currency,
                     'domain_id' => $offer->domain_id,
                     'offer_amount' => $offer->offer_amount,
-                    'offer_expiry_date' => $offer->expiry_date,
+                    'offer_expiry_date' => $offer->offer_expiry_date,
                     'offer_id' => $offer->offer_id,
                     'seller_id' => $offer->seller_id,
                     'status' => $offer->status,
                     'domain_image' => $image,
                     'domain_title' => $domain_title,
+                    'counter_offers' => $counter_offers,
+                    'permalink' => $domain_link
 
                 ];
             }
@@ -1535,27 +1556,127 @@ if (!class_exists('wstr_rest_api')) {
             }
 
             $params = $request->get_json_params();
-            $counter_offer_amount =  $subscription_id = sanitize_text_field($params['counter_offer']);
+
             global $wpdb;
-            $offers = $wpdb->table_prefix . 'offers';
+            $offers = $wpdb->prefix . 'counter_offers';
 
-            // $result =  $offers = $wpdb->get_results("SELECT * FROM $offer WHERE buyer_id = " . $user_id . " ORDER BY offer_id DESC");
-
-            // $name     = "Kumkum"; //string value use: %s
-            // $email    = "kumkum@gmail.com"; //string value use: %s
-            // $phone    = "3456734567"; //numeric value use: %d
-            // $country  = "India"; //string value use: %s
-            // $course   = "Database"; //string value use: %s
-            // $message  = "hello i want to read db"; //string value use: %s
-            // $now      = new DateTime(); //string value use: %s
-            // $datesent = $now->format('Y-m-d H:i:s'); //string value use: %s
             $user_by = get_current_user_id();
+            $counter_offer_amount = sanitize_text_field($params['counter_offer']);
+            $currency = isset($_SESSION['currency']) ? get_wstr_currency_symbol($_SESSION['currency']) : '$';
 
 
-            $sql = $wpdb->prepare("INSERT INTO `$offers` (`name`, `email`, `phone`, `country`, `course`, `message`, `datesent`) values (%s, %s, %d, %s, %s, %s, %s)", $name, $email, $phone, $country, $course, $message, $datesent);
+            $sql = $wpdb->prepare("INSERT INTO `$offers` (`offer_id`, `counter_price`, `by_user_id`,`currency`) values (%d, %s, %d, %s)", $offer_id, $counter_offer_amount, $user_by, $currency);
 
-            $wpdb->query($sql);
+            $results = $wpdb->query($sql);
+
+            if ($results) {
+                return new WP_REST_Response('Offer Sent Successfully.', 200);
+            } else {
+                // return new WP_Error('error_on_updating', 'Something went wrong. Please try again laters.->' . $wpdb->last_error);
+                return new WP_Error('error_on_updating', 'Something went wrong. Please try again later.');
+            }
             // return $counter_offer_amount;
+        }
+
+        /**
+         * Function for Manage Offers 
+         */
+        public function wstr_manage_offers($request)
+        {
+            $user_id = $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('missing_user_id', 'Missing user id.');
+            }
+            global $wpdb;
+            $offer = $wpdb->prefix . 'offers';
+            $offers_array = [];
+            $offers = $wpdb->get_results("SELECT * FROM $offer WHERE seller_id = " . $user_id . " ORDER BY offer_id DESC");
+            foreach ($offers as $offer) {
+                $counter_offer = $wpdb->prefix . 'counter_offers';
+                $counter_offers = $wpdb->get_results("SELECT * FROM $counter_offer WHERE offer_id = " . $offer->offer_id . " ORDER BY counter_offer_id DESC");
+
+                $domain_id = $offer->domain_id;
+                $domain = get_post($domain_id);
+                $domain_title =  $domain->post_title;
+                $domain_link = get_permalink($domain_id);
+                $image  = '';
+                $domain_image = get_the_post_thumbnail_url($domain_id, 'medium_large');
+                $logo = get_post_meta($domain_id, '_logo_image', true);
+                $logo_url = wp_get_attachment_url($logo);
+                if ($domain_image) {
+                    $image = $domain_image;
+                } else if (!$domain_image && $logo_url) {
+                    $image = $logo_url;
+                } else if (!$domain_image && !$logo_url) {
+                    $image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
+                }
+
+                $buyer_details = get_user_by('id', $offer->buyer_id);
+                $buyer_name = $buyer_details->data->display_name;
+                $offers_array[] = [
+                    'buyer_id' => $offer->buyer_id,
+                    'buyer_name' => $buyer_name,
+                    'created_at' => $offer->created_at,
+                    'currency' => $offer->currency,
+                    'domain_id' => $offer->domain_id,
+                    'offer_amount' => $offer->offer_amount,
+                    'offer_expiry_date' => $offer->offer_expiry_date,
+                    'offer_id' => $offer->offer_id,
+                    'seller_id' => $offer->seller_id,
+                    'status' => $offer->status,
+                    'domain_image' => $image,
+                    'domain_title' => $domain_title,
+                    'counter_offers' => $counter_offers,
+                    'permalink' => $domain_link
+
+
+                ];
+            }
+            return new WP_REST_Response($offers_array, 200);
+        }
+
+        /**
+         * Function for managing offers
+         */
+
+        public function wstr_accept_delete_offers($request)
+        {
+            global $wpdb;
+            $offer_id = $request->get_param('offer_id');
+            if (!$offer_id) {
+                return new WP_Error('missing_offer_id', 'Missing offer id.');
+            }
+
+            $params = $request->get_json_params();
+            $type = sanitize_text_field($params['type']);
+            if ($type == 'accept') {
+                $wpdb->update(
+                    $wpdb->prefix . 'offers',
+                    array('status' => 'accepted'),
+                    array('offer_id' => $offer_id),
+                    array('%s'),
+                    array('%d')
+                );
+                return new WP_REST_Response('Offer accepted successfully.', 200);
+            }
+            if ($type == 'decline') {
+                $wpdb->update(
+                    $wpdb->prefix . 'offers',
+                    array('status' => 'declined'),
+                    array('offer_id' => $offer_id),
+                    array('%s'),
+                    array('%d')
+                );
+                return new WP_REST_Response('Offer Declined successfully.', 200);
+            }
+            if ($type == 'delete') {
+                $wpdb->delete(
+                    $wpdb->prefix . 'offers',
+                    array('offer_id' => $offer_id),
+                    array('%d')
+                );
+                return new WP_REST_Response('Offer deleted successfully.', 200);
+            }
         }
     }
 }
