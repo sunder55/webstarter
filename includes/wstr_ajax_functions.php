@@ -452,17 +452,13 @@ class Wstr_ajax_functions
             wp_send_json_error('You cannot make an offer on your own domain');
         }
 
+        $domain_status = sanitize_text_field($_POST['stock_status']);
+        if (!$domain_status) {
+            wp_send_json_error('Sorry, domain is already taken.');
+        }
+
         $currency =  isset($_SESSION['currency']) ? get_wstr_currency_symbol($_SESSION['currency']) : '$';
 
-        // offer_id
-        // domain_id	
-        // offer_amount
-        // offer_expiry_date	
-        // status	
-        // seller_id	
-        // buyer_id	
-        // created_at
-        // created_at
 
         $date = new DateTime(); // Y-m-d
         $date->add(new DateInterval('P30D'));

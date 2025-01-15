@@ -374,8 +374,112 @@ class Wstr_admin_menu
                 ?>
             </div>
         </div>
-<?php
+    <?php
     }
 }
 
 new Wstr_admin_menu();
+
+
+/**
+ * Class for getting user bank details to the user Edit page
+ */
+class Wstr_get_user_detials
+{
+    function __construct()
+    {
+        // add_action('admin_menu', array($this, 'extra_user_profile_fields'));
+        if (is_admin()) {
+            add_action('show_user_profile', array($this, 'get_user_wallet_banking'));
+            add_action('edit_user_profile', array($this, 'get_user_wallet_banking'));
+        }
+    }
+
+
+
+    public function get_user_wallet_banking($user)
+    { ?>
+
+        <?php
+        $bank_name =  get_user_meta($user->ID, '_bank_name', true);
+        $account_number =  get_user_meta($user->ID, '_bank_account_number', true);
+        $account_name =  get_user_meta($user->ID, '_bank_account_name', true);
+        $bank_state =  get_user_meta($user->ID, '_bank_state', true);
+        $bank_city =  get_user_meta($user->ID, '_bank_city', true);
+        $bank_swift_code =  get_user_meta($user->ID, '_bank_swift_code', true);
+        ?>
+        <h3><?php _e("Bank Information", "blank"); ?></h3>
+        <table class="form-table">
+            <tr>
+                <th><label for="address"><?php _e("Bank Name"); ?></label></th>
+                <td>
+                    <input type="text" value="<?php echo $bank_name ?: ''; ?>" class="regular-text" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th><label for="city"><?php _e("Account Number"); ?></label></th>
+                <td>
+                    <input type="text" value="<?php echo $account_number ?: ''; ?>" class="regular-text" readonly="readonly" />
+                    <!-- <br /> -->
+                    <!-- <span class="description"><?php //_e("Please enter your city."); 
+                                                    ?></span> -->
+                </td>
+            </tr>
+            <tr>
+                <th><label for="accountname"><?php _e("Account Name"); ?></label></th>
+                <td>
+                    <input type="text" value="<?php echo $account_name ?: ''; ?>" class="regular-text" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th><label for="bankstate"><?php _e("Bank State"); ?></label></th>
+
+                <td>
+                    <input type="text" value="<?php echo $bank_state ?: ''; ?>" class="regular-text" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th><label for="bankcity"><?php _e("Bank City"); ?></label></th>
+
+                <td>
+                    <input type="text" value="<?php echo $bank_city ?: ''; ?>" class="regular-text" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th><label for="swiftcode"><?php _e("Bank Swift Code"); ?></label></th>
+                <td>
+                    <input type="text" value="<?php echo $bank_swift_code ?: ''; ?>" class="regular-text" readonly="readonly" />
+                </td>
+            </tr>
+        </table>
+
+        <?php
+        $paypal_email = get_user_meta($user->ID, '_paypal_email', true);
+        ?>
+        <h3><?php _e("Paypal Information", "blank"); ?></h3>
+        <table class="form-table">
+            <tr>
+                <th><label for="paypalemail"><?php _e("Paypal Email"); ?></label></th>
+                <td>
+                    <input type="text" value="<?php echo $paypal_email ?: ''; ?>" class="regular-text" readonly="readonly" />
+                </td>
+            </tr>
+        </table>
+
+        <?php
+        $crypto_wallet_id = get_user_meta($user->ID, '_crypto_wallet_id', true);
+        ?>
+        <h3><?php _e("Crypto Information", "blank"); ?></h3>
+        <table class="form-table">
+            <tr>
+                <th><label for="walletid"><?php _e("Wallet ID"); ?></label></th>
+                <td>
+                    <input type="text" value="<?php echo $crypto_wallet_id ?: ''; ?>" class="regular-text" readonly="readonly" />
+                </td>
+            </tr>
+        </table>
+<?php }
+}
+
+
+new Wstr_get_user_detials();

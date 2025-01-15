@@ -454,7 +454,6 @@ if (!class_exists('wstr_rest_api')) {
                 'permission_callback' => function () {
                     return is_user_logged_in();
                 },
-                'permission_callback' => '__return_true'
             ));
 
 
@@ -505,6 +504,29 @@ if (!class_exists('wstr_rest_api')) {
                 'permission_callback' => function () {
                     return is_user_logged_in();
                 },
+            ));
+
+            register_rest_route('wstr/v1', 'offers-cart/(?P<user_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_add_offers_to_the_card'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+            ));
+
+            register_rest_route('wstr/v1', '/crypto-details/', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_crypto_details'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+
+            ));
+
+            register_rest_route('wstr/v1', '/update-crypto-details/(?P<user_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_update_crypto_details'],
+                'permission_callback' => '__return_true'
             ));
         }
 
@@ -1410,6 +1432,9 @@ if (!class_exists('wstr_rest_api')) {
                 'bank_name' => get_user_meta($GLOBALS['user_id'], '_bank_name', true) ?: '',
                 'account_number' => get_user_meta($GLOBALS['user_id'], '_bank_account_number', true) ?: '',
                 'account_name' => get_user_meta($GLOBALS['user_id'], '_bank_account_name', true) ?: '',
+                'bank_state' => get_user_meta($GLOBALS['user_id'], '_bank_state', true) ?: '',
+                'bank_city' => get_user_meta($GLOBALS['user_id'], '_bank_city', true) ?: '',
+                'bank_swift_code' => get_user_meta($GLOBALS['user_id'], '_bank_swift_code', true) ?: '',
             ];
 
             return new WP_REST_Response($data, 200);
@@ -1437,18 +1462,24 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('user_not_found', 'User not found.', array('status' => 404));
             }
             $params = $request->get_json_params();
-            // $params = $_POST;
-
 
             $bank_name = sanitize_text_field($params['bank_name']);
             $account_number = sanitize_text_field($params['account_number']);
             $account_name = sanitize_text_field($params['account_name']);
-            if (empty($bank_name) || empty($account_number) || empty($account_name)) {
+            $bank_state = sanitize_text_field($params['bank_state']);
+            $bank_city = sanitize_text_field($params['bank_city']);
+            $bank_swift_code = sanitize_text_field($params['bank_swift_code']);
+
+
+            if (empty($bank_name) || empty($account_number) || empty($account_name) || empty($bank_state) || empty($bank_city)  || empty($bank_swift_code)) {
                 return new WP_Error('empty_fields', 'Please fill in all fields.', array('status' => 400));
             }
             update_user_meta($user_id, '_bank_name', $bank_name);
             update_user_meta($user_id, '_bank_account_number', $account_number);
             update_user_meta($user_id, '_bank_account_name', $account_name);
+            update_user_meta($user_id, '_bank_state', $bank_state);
+            update_user_meta($user_id, '_bank_city', $bank_city);
+            update_user_meta($user_id, '_bank_swift_code', $bank_swift_code);
             return new WP_REST_Response(array('message' => 'Bank details updated successfully'), 200);
         }
         public function wstr_update_user_paypal_details($request)
@@ -1470,7 +1501,7 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('empty_fields', 'Please fill in all fields.', array('status' => 400));
             }
             update_user_meta($user_id, '_paypal_email', $paypal_email);
-            return new WP_REST_Response(array('message' => 'User paypal details updated successfully'), 200);
+            return new WP_REST_Response(array('message' => 'Paypal details updated successfully'), 200);
         }
 
         /**
@@ -1649,6 +1680,8 @@ if (!class_exists('wstr_rest_api')) {
 
             $params = $request->get_json_params();
             $type = sanitize_text_field($params['type']);
+            $counter_offer_id = sanitize_text_field($params['counter_offer_id']);
+
             if ($type == 'accept') {
                 $wpdb->update(
                     $wpdb->prefix . 'offers',
@@ -1657,6 +1690,15 @@ if (!class_exists('wstr_rest_api')) {
                     array('%s'),
                     array('%d')
                 );
+                if ($counter_offer_id) {
+                    $wpdb->update(
+                        $wpdb->prefix . 'counter_offers',
+                        array('status' => 'accepted'),
+                        array('counter_offer_id' => $counter_offer_id),
+                        array('%s'),
+                        array('%d')
+                    );
+                }
                 return new WP_REST_Response('Offer accepted successfully.', 200);
             }
             if ($type == 'decline') {
@@ -1667,16 +1709,87 @@ if (!class_exists('wstr_rest_api')) {
                     array('%s'),
                     array('%d')
                 );
+                if ($counter_offer_id) {
+                    $wpdb->update(
+                        $wpdb->prefix . 'counter_offers',
+                        array('status' => 'declined'),
+                        array('counter_offer_id' => $counter_offer_id),
+                        array('%s'),
+                        array('%d')
+                    );
+                }
                 return new WP_REST_Response('Offer Declined successfully.', 200);
             }
-            if ($type == 'delete') {
-                $wpdb->delete(
-                    $wpdb->prefix . 'offers',
-                    array('offer_id' => $offer_id),
-                    array('%d')
-                );
-                return new WP_REST_Response('Offer deleted successfully.', 200);
+            // if ($type == 'delete') {
+            //     $wpdb->delete(
+            //         $wpdb->prefix . 'counter_offers',
+            //         array('counter_offer_id' => $counter_offer_id),
+            //         array('%d')
+            //     );
+            //     return new WP_REST_Response('Offer deleted successfully.', 200);
+            // }
+        }
+
+        /**
+         * Function for adding offers to the cart
+         */
+        public function wstr_add_offers_to_the_card($request)
+        {
+            global $wpdb;
+            $user_id = $request->get_param('user_id');
+            if (!$user_id) {
+                return new WP_Error('missing_user_id', 'Missing user id.');
             }
+
+            $params = $request->get_json_params();
+            $offer_id = sanitize_text_field($params['offer_id']);
+            $domain_id = sanitize_text_field($params['domain_id']);
+            $amount = sanitize_text_field($params['amount']);
+            $type = sanitize_text_field($params['type']);
+            // $offer_amount = sanitize_text_field($params['offer_amount']);
+
+            $domain_status = get_post_meta($domain_id, '_stock_status', true);
+            // $domain_status = 'outofstock';
+
+            if ($domain_status != 'instock') {
+                return new WP_Error('out_of_stock', 'Sorry, the domain is already sold.');
+            }
+
+
+            return $domain_status . '' . $user_id . '' . $offer_id . '' . $amount . '' . $type;
+        }
+
+        public function wstr_crypto_details($request)
+        {
+            $data[] = [
+                'crypto_wallet_id' => get_user_meta($GLOBALS['user_id'], '_crypto_wallet_id', true) ?: '',
+            ];
+
+            return new WP_REST_Response($data, 200);
+        }
+
+        public function wstr_update_crypto_details($request)
+        {
+            $current_user_id = $GLOBALS['user_id'];
+            $user_id = (int) $request->get_param('user_id');
+            if ($current_user_id !== $user_id) {
+                return new WP_Error('not_allowed', 'You can only update your own profile.', array('status' => 403));
+            }
+
+            $user_data = get_userdata($user_id);
+            if (!$user_data) {
+                return new WP_Error('user_not_found', 'User not found.', array('status' => 404));
+            }
+            $params = $request->get_json_params();
+
+            $crypto_wallet_id = sanitize_text_field($params['crypto_wallet_id']);
+
+            if (empty($crypto_wallet_id)) {
+                return new WP_Error('empty_fields', 'Please fill in all fields.', array('status' => 400));
+            }
+            update_user_meta($user_id, '_crypto_wallet_id', $crypto_wallet_id);
+
+            return new WP_REST_Response(array('message' => 'Crypto details updated successfully'), 200);
         }
     }
 }

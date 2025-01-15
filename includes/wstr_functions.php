@@ -634,7 +634,7 @@ function generate_random_number()
 
 // add_action('init', function () {
 
-//     create_offer_table();
+//     // create_offer_table();
 //     create_counter_offer_table();
 // });
 function create_offer_table()
@@ -683,6 +683,7 @@ function create_counter_offer_table()
         offer_id INT(11) NOT NULL,
         counter_price varchar (100),
         by_user_id INT(11) NOT NULL,
+        status varchar(30)
         currency varchar(20),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (counter_offer_id)
