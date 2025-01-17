@@ -1044,7 +1044,7 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_REST_Response($order_ids, 200);
             } else {
                 //    return esc_html_e('Sorry, No orders found');
-                return new WP_Error('order_not_found', 'Sorry, No orders found', array('status' => 404));
+                return new WP_Error('order_not_found', 'No orders yet!', array('status' => 404));
             }
             // Re
         }
@@ -1554,6 +1554,7 @@ if (!class_exists('wstr_rest_api')) {
                 } else if (!$domain_image && !$logo_url) {
                     $image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
                 }
+
                 $offers_array[] = [
                     'buyer_id' => $offer->buyer_id,
                     'created_at' => $offer->created_at,
@@ -1642,11 +1643,20 @@ if (!class_exists('wstr_rest_api')) {
                     $image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
                 }
 
+                $buyer_image_id = (int) get_user_meta($offer->buyer_id, 'ws_profile_pic', true);
+                $buyer_image = '';
+                if ($buyer_image_id) {
+                    $buyer_image =  wp_get_attachment_url($buyer_image_id);
+                } else {
+                    $buyer_image = get_avatar_url($offer->buyer_id);
+                }
+
                 $buyer_details = get_user_by('id', $offer->buyer_id);
                 $buyer_name = $buyer_details->data->display_name;
                 $offers_array[] = [
                     'buyer_id' => $offer->buyer_id,
                     'buyer_name' => $buyer_name,
+                    'buyer_image' => $buyer_image,
                     'created_at' => $offer->created_at,
                     'currency' => $offer->currency,
                     'domain_id' => $offer->domain_id,

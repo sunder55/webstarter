@@ -977,7 +977,7 @@ class wstr_shortcodes
                             <input type="text" id="full-name" name="full_name" placeholder="Enter first and last name" required>
 
                             <label for="email">Email Address*</label>
-                            <input type="email" id="email" name="email" placeholder="@Email address " required>
+                            <input type="email" id="email" name="email" class="register-email" placeholder="@Email address " required>
                             <p id="error-msg"></p>
                             <label for="password">Password*</label>
                             <input type="password" id="password" name="password" placeholder="Password" required>

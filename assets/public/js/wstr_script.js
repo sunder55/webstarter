@@ -354,7 +354,16 @@ jQuery(document).ready(function ($) {
   $("#wstr_signup").on("submit", function (e) {
     var password = $("#password").val();
     var confirmPassword = $("#confirm-password").val();
+    // var rememberme = $("#rememberme").val();
+    var rememberme = $("#rememberme").is(":checked");
+
+    var email = $(".register-email").val();
     var errorMessage = "";
+    // Email validation
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      errorMessage = "Please enter a valid email address.";
+    }
 
     // Password validation
     if (password.length < 8) {
@@ -365,13 +374,21 @@ jQuery(document).ready(function ($) {
       errorMessage = "Passwords do not match.";
     }
 
+    if (rememberme == false) {
+      errorMessage = "You must accept the terms and conditions.";
+    }
+
     if (errorMessage !== "") {
       $("#error-msg").text(errorMessage);
+      // Scroll to the error message
+      document.getElementById("error-msg").scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
       e.preventDefault();
     } else {
       $("#error-msg").text("");
       // Submit the form if validation passes
-      // this.submit();
     }
   });
 });

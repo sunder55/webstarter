@@ -439,11 +439,11 @@ class Wstr_ajax_functions
 
     public function wstr_make_offer()
     {
-
         $domain_id = sanitize_text_field($_POST['domain_id']);
         $offer_price = sanitize_text_field($_POST['offer_amount']);
         $buyer_id = get_current_user_id();
         $author_id = get_post_field('post_author', $domain_id);
+
         if (!$buyer_id) {
             wp_send_json_error('Please login to make an offer');
         }
@@ -452,8 +452,8 @@ class Wstr_ajax_functions
             wp_send_json_error('You cannot make an offer on your own domain');
         }
 
-        $domain_status = sanitize_text_field($_POST['stock_status']);
-        if (!$domain_status) {
+        $domain_status = get_post_meta($domain_id, '_stock_status', true);
+        if ($domain_status == 'outofstock') {
             wp_send_json_error('Sorry, domain is already taken.');
         }
 
@@ -486,19 +486,7 @@ class Wstr_ajax_functions
         } else {
             wp_send_json_error('Unable to send offer. Please try again later');
         }
-
-        var_dump($insert_offer);
         die();
-
-        // $domain_post = get_post($domain_id);
-        // if ($domain_post && $domain_post->post_type === 'domain') {
-        //     $to = get_option('admin_email');
-        //     $subject = "Offer for domain " . $domain_post->post_title;
-        //     $txt = 'User ' . $user->user_login . ' has made an offer of ' . $offer_price . ' for the domain ' . $domain_post->post_title;
-        //     $headers = "From: webstarter.com" . "\r\n" .
-        //         "CC:    
-
-
     }
 }
 
