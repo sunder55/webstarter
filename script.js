@@ -327,4 +327,120 @@ jQuery(document).ready(function ($) {
       },
     });
   });
+
+  // notifications starts
+  $(".decline-notification").on("click", function (e) {
+    const notificationId = $(this).attr("id");
+
+    $.ajax({
+      type: "post",
+      dataType: "json",
+      url: cpmAjax.ajax_url,
+      data: {
+        action: "wstr_decline_notifications",
+        notification_id: notificationId,
+      },
+      success: function (response) {
+        if (response.success == true) {
+          console.log("success", response.data);
+        }
+        if (response.success == false) {
+          console.log("Error:", response.data);
+        }
+      },
+      error: function (response) {
+        console.log("Error:", response);
+      },
+    });
+  });
+
+  // $(".wstr-notifications").on("click", function (e) {
+  function fetchNotifications() {
+    $.ajax({
+      type: "post",
+      dataType: "json",
+      url: cpmAjax.ajax_url,
+      data: {
+        action: "wstr_get_notifications_using_ajax",
+      },
+      success: function (response) {
+        if (response.success == true) {
+          console.log("success", response.data);
+          let notifications = response.data;
+          $("#notifcations-popup-container").empty(); // Clear previous notifications
+          if (notifications.length > 0) {
+            notifications.forEach((data) => {
+              const notificationHtml = `
+                  <div>
+                    <a href="${data.notification_url || ""}">
+                      <img src="${data.sender_image || ""}" />
+                      <h5>${data.sender_name || ""}</h5>
+                      <p>${data.message || ""}</p>
+                      <small>${data.elapsed || ""}</small>
+                    </a>
+                    ${
+                      !data.notification_seen
+                        ? `<div class="decline-notification" id="${data.id}">X</div>`
+                        : ""
+                    }
+                    <input type="hidden" class="notification-id" value="${
+                      data.id
+                    }" />
+                  </div>
+                  <hr>
+                `;
+              // Append the notificationHtml to the desired container
+              $("#notifcations-popup-container").append(notificationHtml);
+            });
+          } else {
+            const notificationHtml = `
+              <div>No Notifications! </div>
+              `;
+            $("#notifcations-popup-container").append(notificationHtml);
+          }
+        }
+        if (response.success == false) {
+          console.log("Error:", response.data);
+        }
+      },
+      error: function (response) {
+        console.log("Error:", response);
+      },
+    });
+  }
+
+  // Fetch notifications on page load
+  fetchNotifications();
+
+  // Fetch notifications every 30 seconds
+  setInterval(fetchNotifications, 30000);
+
+  $("#clear-notifications").on("click", function (e) {
+    e.preventDefault();
+    $.ajax({
+      type: "post",
+      dataType: "json",
+      url: cpmAjax.ajax_url,
+      data: {
+        action: "wstr_clear_notifications",
+      },
+      success: function (response) {
+        if (response.success == true) {
+          console.log("success", response.data);
+          $("#notifcations-popup-container").empty();
+          const notificationHtml = `
+            <div>No Notifications! </div>
+            `;
+          $("#notifcations-popup-container").append(notificationHtml);
+        }
+        if (response.success == false) {
+          console.log("Error:", response.data);
+        }
+      },
+      error: function (response) {
+        console.log("Error:", response);
+      },
+    });
+  });
+  // notifications ends==============================
 });

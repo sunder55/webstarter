@@ -112,6 +112,7 @@ include(get_stylesheet_directory() . '/includes/wstr_shortcodes.php');
 include(get_stylesheet_directory() . '/includes/wstr_filters_hooks.php');
 include(get_stylesheet_directory() . '/includes/wstr_functions.php');
 include(get_stylesheet_directory() . '/includes/wstr_admin_menu.php');
+include(get_stylesheet_directory() . '/includes/wstr_notifications.php');
 
 
 // font awesome
@@ -1368,7 +1369,7 @@ function contact_form()
 
 
 // add_action('wp_footer', function () {
-//     $apiKey = "";
+//     $apiKey = "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";
 
 //     // API endpoint
 //     $url = "https://api.openai.com/v1/chat/completions";
@@ -1413,27 +1414,3 @@ function contact_form()
 //     // Close cURL
 //     curl_close($ch);
 // });
-
-// add_action('wp_footer', 'remove_price');
-function remove_price()
-{
-    $args = array(
-        'post_type' => 'domain',
-        'posts_per_page' => -1,
-    );
-    $query = new WP_Query($args);
-    if ($query->have_posts()) {
-        $i = 1;
-        while ($query->have_posts()) {
-            $query->the_post();
-            $post_id = get_the_ID();
-            $regular_price =  get_post_meta($post_id, '_regular_price', true);
-            $sale_price = get_post_meta($post_id, '_sale_price', true);
-
-            if ($sale_price == $regular_price) {
-                update_post_meta($post_id, '_sale_price', '');
-            }
-            echo $i++ . '-' . $post_id . ' - ' . $regular_price . ' - ' . $sale_price . '<br>';
-        }
-    }
-}

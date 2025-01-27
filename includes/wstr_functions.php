@@ -632,11 +632,12 @@ function generate_random_number()
 // 7. buyer_id.
 // 8. created_at(Timestamp)
 
-// add_action('init', function () {
+add_action('init', function () {
 
-//     // create_offer_table();
-//     create_counter_offer_table();
-// });
+    // create_offer_table();
+    // create_counter_offer_table();
+});
+
 function create_offer_table()
 {
 
@@ -671,6 +672,7 @@ function create_offer_table()
 // 3. counter_price
 // 4. by_user_id
 // 5. created_at(Timestamp)
+
 function create_counter_offer_table()
 {
 

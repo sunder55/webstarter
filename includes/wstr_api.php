@@ -1435,6 +1435,7 @@ if (!class_exists('wstr_rest_api')) {
                 'bank_state' => get_user_meta($GLOBALS['user_id'], '_bank_state', true) ?: '',
                 'bank_city' => get_user_meta($GLOBALS['user_id'], '_bank_city', true) ?: '',
                 'bank_swift_code' => get_user_meta($GLOBALS['user_id'], '_bank_swift_code', true) ?: '',
+                'bank_country' => get_user_meta($GLOBALS['user_id'], '_bank_country', true) ?: '',
             ];
 
             return new WP_REST_Response($data, 200);
@@ -1469,9 +1470,10 @@ if (!class_exists('wstr_rest_api')) {
             $bank_state = sanitize_text_field($params['bank_state']);
             $bank_city = sanitize_text_field($params['bank_city']);
             $bank_swift_code = sanitize_text_field($params['bank_swift_code']);
+            $bank_country = sanitize_text_field($params['bank_country']);
 
 
-            if (empty($bank_name) || empty($account_number) || empty($account_name) || empty($bank_state) || empty($bank_city)  || empty($bank_swift_code)) {
+            if (empty($bank_name) || empty($account_number) || empty($account_name) || empty($bank_state) || empty($bank_city)  || empty($bank_swift_code) || empty($bank_country)) {
                 return new WP_Error('empty_fields', 'Please fill in all fields.', array('status' => 400));
             }
             update_user_meta($user_id, '_bank_name', $bank_name);
@@ -1480,6 +1482,7 @@ if (!class_exists('wstr_rest_api')) {
             update_user_meta($user_id, '_bank_state', $bank_state);
             update_user_meta($user_id, '_bank_city', $bank_city);
             update_user_meta($user_id, '_bank_swift_code', $bank_swift_code);
+            update_user_meta($user_id, '_bank_country', $bank_country);
             return new WP_REST_Response(array('message' => 'Bank details updated successfully'), 200);
         }
         public function wstr_update_user_paypal_details($request)
@@ -1587,6 +1590,8 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('missing_offer_id', 'Missing offer id.');
             }
 
+
+
             $params = $request->get_json_params();
 
             global $wpdb;
@@ -1596,12 +1601,45 @@ if (!class_exists('wstr_rest_api')) {
             $counter_offer_amount = sanitize_text_field($params['counter_offer']);
             $currency = isset($_SESSION['currency']) ? get_wstr_currency_symbol($_SESSION['currency']) : '$';
 
+            // for notifications starts =========================
+
+
+            $tableName = $wpdb->prefix . 'offers';
+
+            // SQL query to retrieve rows
+            $query = $wpdb->prepare(
+                "SELECT * FROM $tableName WHERE offer_id = %d",
+                $offer_id
+            );
+
+            // Execute the query
+            $rows = $wpdb->get_results($query);
+
+            $domain_id = count($rows) > 0 ? $rows[0]->domain_id : "";
+            $seller_id = count($rows) > 0 ? $rows[0]->seller_id : "";
+            $buyer_id = count($rows) > 0 ? $rows[0]->buyer_id : "";
+
+            // $author_id = get_post_field('post_author', $domain_id);
+            $receiver_id = '';
+            $notifications_type = "";
+            if ($seller_id != $user_by) {
+                $receiver_id = $seller_id;
+                $notifications_type = 'offer';
+            } else if ($seller_id == $user_by) {
+                $receiver_id = $buyer_id;
+                $notifications_type = 'my-offer';
+            }
+
+
+            // for notifications ends ===============================
 
             $sql = $wpdb->prepare("INSERT INTO `$offers` (`offer_id`, `counter_price`, `by_user_id`,`currency`) values (%d, %s, %d, %s)", $offer_id, $counter_offer_amount, $user_by, $currency);
 
             $results = $wpdb->query($sql);
 
             if ($results) {
+                global $notifcations;
+                $notifcations->wstr_notification_handler($user_by, $receiver_id, $notifications_type, $offer_id);
                 return new WP_REST_Response('Offer Sent Successfully.', 200);
             } else {
                 // return new WP_Error('error_on_updating', 'Something went wrong. Please try again laters.->' . $wpdb->last_error);

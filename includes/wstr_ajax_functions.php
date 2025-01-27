@@ -481,7 +481,11 @@ class Wstr_ajax_functions
 
             )
         );
+
         if ($insert_offer) {
+            $offer_id = $wpdb->insert_id; // Get the ID of the last inserted row
+            global $notifcations;
+            $notifcations->wstr_notification_handler($buyer_id, $author_id, 'offer', $offer_id);
             wp_send_json_success('Offer sent successfully');
         } else {
             wp_send_json_error('Unable to send offer. Please try again later');

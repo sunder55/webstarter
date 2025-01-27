@@ -981,3 +981,10 @@ form#mc4wp-form-1 {
 .register-page-wrapper .login-form-details {
   flex: 1;
 }
+
+
+.notification-highlight {
+  border: 2px solid #00d9f5; /* Highlight border */
+  border-radius: 5px; /* Optional: Add rounded corners */
+  transition: border 0.5s ease; /* Smooth fade-out for the border */
+}
