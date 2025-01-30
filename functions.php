@@ -1370,7 +1370,7 @@ function contact_form()
 
 
 // add_action('wp_footer', function () {
-//     $apiKey = "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";
+//     
 
 //     // API endpoint
 //     $url = "https://api.openai.com/v1/chat/completions";
@@ -1423,7 +1423,7 @@ function add_openai_script_to_footer()
 ?>
     <script>
         async function fetchOpenAIResponse() {
-            const apiKey = "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"; // Replace with your OpenAI API key
+
             const endpoint = "https://api.openai.com/v1/completions";
 
             const data = {
