@@ -776,6 +776,8 @@ class wstr_domain_order_meta_boxes
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return $post_id;
         }
+
+
         // Check user's permissions.
         if (!current_user_can('edit_post', $post_id)) {
             return $post_id;
@@ -904,6 +906,15 @@ class wstr_domain_order_meta_boxes
 
         $get_domain_ids = get_post_meta($post_id, '_domain_ids', true);
 
+        //payouts starts=======================
+        if (isset($_POST['order_status']) && $_POST['order_status'] == 'completed') {
+            global $wpdb;
+            $table = $wpdb->prefix . 'wstr_payouts';
+            $payouts = $wpdb->query($wpdb->prepare("DELETE FROM $table WHERE order_id = %d", $post_id));
+        }
+        // payouts ends =======================
+
+
         // handelling seller starts 
         $seller_id = [];
         $ordered_products = []; // Initialize array for ordered products
@@ -919,45 +930,51 @@ class wstr_domain_order_meta_boxes
                 'product_id' => $get_domain_id,
                 'seller_id'  => $author_id,
             ];
-
             // handeling products price
             $regular_price = get_post_meta($get_domain_id, '_regular_price', true);
             $sale_price = get_post_meta($get_domain_id, '_sale_price', true);
             $sale_end_date = get_post_meta($get_domain_id, '_sale_price_dates_to', true);
-
-            $current_date = date('Y-m-d');
             $price = '';
-            $sale_price_dates_to = get_post_meta($get_domain_id, '_sale_price_dates_to', true);
-            $sale_price_dates_from = get_post_meta($get_domain_id, '_sale_price_dates_from', true);
+            $current_date = date('Y-m-d');
 
-            if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date)  || (!$sale_price_dates_to && !$sale_price_dates_from)) {
-                // $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
-                $price = $sale_price;
+            if ($sale_price) {
+                if ($sale_end_date && $sale_end_date >= $current_date) {
+                    $price = $sale_price;
+                } else if ($sale_end_date && $sale_end_date <= $current_date) {
+                    $price = $regular_price;
+                } else {
+                    $price = $sale_price;
+                }
             } else {
                 $price = $regular_price;
             }
-            // $price = '';
-            // $current_date = date('Y-m-d');
-
-            // if ($sale_price) {
-            //     if ($sale_end_date && $sale_end_date >= $current_date) {
-            //         $price = $sale_price;
-            //     } else if ($sale_end_date && $sale_end_date <= $current_date) {
-            //         $price = $regular_price;
-            //     } else {
-            //         $price = $sale_price;
-            //     }
-            // } else {
-            //     $price = $regular_price;
-            // }
-
 
             // saving ordered product price to the order meta 
             $products_price[] = [
                 'product_id' => $get_domain_id,
                 'price'  => $price,
             ];
+
+            // notifcations starts======================= 
+            // Deduct discount if availabe for each domain.
+            // $order_total = get_post_meta($post_id, '_order_total', true);
+            if (isset($_POST['order_status']) && $_POST['order_status'] == 'completed') {
+
+                global $wstr_payouts;
+                $wstr_payouts->wstr_payouts(
+                    $post_id,
+                    $author_id,
+                    $price,
+                    $currency,
+                    $get_domain_id,
+                    'commission',
+                    'pending'
+                );
+            }
+            // notifcations ends ========================
+
         }
+
 
         // Save the consolidated ordered products under a single meta key
         update_post_meta($post_id, '_ordered_products', $ordered_products);
@@ -979,7 +996,7 @@ class wstr_domain_order_meta_boxes
                 // Update the stock status to 'instock'
                 update_post_meta($domain_id, '_stock_status', 'outofstock');
             }
-        } else if ($get_order_status == 'refunded' || $get_order_status == 'cancelled') {
+        } else if ($get_order_status == 'refunded' || $get_order_status == 'cancelled' || $get_order_status == 'pending') {
             // Loop through each domain ID
             foreach ($get_domain_ids as $domain_id) {
                 // Update the stock status to 'outofstock'

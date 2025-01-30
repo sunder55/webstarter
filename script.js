@@ -376,7 +376,7 @@ jQuery(document).ready(function ($) {
                       <img src="${data.sender_image || ""}" />
                       <h5>${data.sender_name || ""}</h5>
                       <p>${data.message || ""}</p>
-                      <small>${data.elapsed || ""}</small>
+                      <small>${data.elapsed_time || ""}</small>
                     </a>
                     ${
                       !data.notification_seen

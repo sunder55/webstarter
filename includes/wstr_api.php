@@ -1022,6 +1022,10 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('user_not_found', 'Sorry, user not found', array('status' => 404));
             }
+            $current_user = get_current_user_id();
+            if ($current_user !== $user_id) {
+                return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
+            }
 
             $args = [
                 'post_type' => 'domain_order',
@@ -1181,6 +1185,10 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'User id is missing');
             }
+            $current_user = get_current_user_id();
+            if ($current_user !== $user_id) {
+                return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
+            }
 
             $user_details = get_user_by('id', $user_id);
 
@@ -1250,6 +1258,11 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
+            $current_user = get_current_user_id();
+            if ($current_user !== $user_id) {
+                return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
+            }
+
 
             $body_params = $request->get_json_params();
 
@@ -1320,6 +1333,7 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'User id is missing');
             }
+
             $get_login_details = get_user_meta($user_id, 'session_tokens', true);
 
             $ip_addresses = [];
@@ -1357,6 +1371,12 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
+
+            $current_user = get_current_user_id();
+            if ($current_user !== $user_id) {
+                return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
+            }
+
 
             $message = '';
             $preferences = '';
@@ -1534,6 +1554,11 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
+            $current_user = get_current_user_id();
+            if ($current_user !== $user_id) {
+                return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
+            }
+
             global $wpdb;
             $offer = $wpdb->prefix . 'offers';
             $offers_array = [];
@@ -1657,6 +1682,8 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
+
+
             global $wpdb;
             $offer = $wpdb->prefix . 'offers';
             $offers_array = [];
@@ -1730,6 +1757,37 @@ if (!class_exists('wstr_rest_api')) {
             $type = sanitize_text_field($params['type']);
             $counter_offer_id = sanitize_text_field($params['counter_offer_id']);
 
+            // for notifications starts =========================
+            $tableName = $wpdb->prefix . 'offers';
+
+            // SQL query to retrieve rows
+            $query = $wpdb->prepare(
+                "SELECT * FROM $tableName WHERE offer_id = %d",
+                $offer_id
+            );
+
+            // Execute the query
+            $rows = $wpdb->get_results($query);
+
+            $domain_id = count($rows) > 0 ? $rows[0]->domain_id : "";
+            $seller_id = count($rows) > 0 ? $rows[0]->seller_id : "";
+            $buyer_id = count($rows) > 0 ? $rows[0]->buyer_id : "";
+
+            // $author_id = get_post_field('post_author', $domain_id);
+            $user_by = get_current_user_id();
+            $receiver_id = '';
+            $notifications_type = "";
+            if ($seller_id != $user_by) {
+                $receiver_id = $seller_id;
+                $notifications_type = 'offer-' . $type;
+            } else if ($seller_id == $user_by) {
+                $receiver_id = $buyer_id;
+                $notifications_type = 'my-offer-' . $type;;
+            }
+
+
+            // for notifications ends ===============================
+
             if ($type == 'accept') {
                 $wpdb->update(
                     $wpdb->prefix . 'offers',
@@ -1747,6 +1805,9 @@ if (!class_exists('wstr_rest_api')) {
                         array('%d')
                     );
                 }
+                global $notifcations;
+                $notifcations->wstr_notification_handler($user_by, $receiver_id, $notifications_type, $offer_id);
+
                 return new WP_REST_Response('Offer accepted successfully.', 200);
             }
             if ($type == 'decline') {
@@ -1766,6 +1827,8 @@ if (!class_exists('wstr_rest_api')) {
                         array('%d')
                     );
                 }
+                global $notifcations;
+                $notifcations->wstr_notification_handler($user_by, $receiver_id, $notifications_type, $offer_id);
                 return new WP_REST_Response('Offer Declined successfully.', 200);
             }
             // if ($type == 'delete') {

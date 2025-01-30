@@ -206,63 +206,31 @@ class Wstr_notifications
                         $message = "Sent an offer.";
                         // $notification_url = home_url('/chat/');
                         $notification_url = home_url('/my-account/?tab=my-offers') . ($target_id ? '#offer-' . $target_id : '');
-
                         break;
 
-                        // case "new-message":
-                        //     $message = "Sent a message";
-                        //     // $notification_url = home_url('/chat/');
-                        //     $notification_url = add_query_arg('uid', $sender, home_url('/chat/'));
-                        //     break;
+                    case "my-offer-accept":
+                        $message = "Accepted an offer.";
+                        // $notification_url = home_url('/chat/');
+                        $notification_url = home_url('/my-account/?tab=my-offers') . ($target_id ? '#offer-' . $target_id : '');
+                        break;
 
+                    case "my-offer-decline":
+                        $message = "Declined an offer.";
+                        // $notification_url = home_url('/chat/');
+                        $notification_url = home_url('/my-account/?tab=my-offers') . ($target_id ? '#offer-' . $target_id : '');
+                        break;
 
+                    case "offer-decline":
+                        $message = "Declined an offer.";
+                        // $notification_url = home_url('/chat/');
+                        $notification_url = home_url('/my-account/?tab=sellers-central') . ($target_id ? '#offer-' . $target_id : '');
+                        break;
 
-                        // case "profile-view":
-                        //     $message = "Viewed your profile";
-                        //     // $notification_url = home_url($sender_username);
-                        //     break;
-
-                        // case "like":
-                        //     $message = "Liked your post";
-                        //     $notification_url = get_permalink((int) $target_id);
-                        //     break;
-
-                        // case "comment-post":
-                        //     $message = "Commented on your post";
-                        //     $notification_url = get_permalink((int) $target_id);
-                        //     break;
-
-                        // case "msg-request":
-                        //     $message = "Requested to chat";
-                        //     $notification_url = add_query_arg('request', $sender, home_url('/chat/'));
-                        //     break;
-
-                        // case "order-shipped":
-                        //     $message = "Your order has been shipped, Tracking Id: " . $target_id;
-                        //     $notification_url = home_url('/orders/');
-                        //     break;
-
-                        // case "seller-review":
-                        //     // $message = $sender_username . " left a review";
-                        //     $notification_url = get_author_posts_url(get_current_user_id()) . '?view=review';
-                        //     break;
 
                     default:
                         $error = 1;
                 }
 
-                // if ($error === 0) {
-                //     // Populate the array with notification data
-                //     $notifications_array[] = array(
-                //         'id' => $notification_id,
-                //         // 'sender_display_name' => $sender_display_name,
-                //         // 'sender_profile_img_url' => $sender_profile_img_url,
-                //         'elapsed_time' => $elapsed,
-                //         'notification_url' => $notification_url,
-                //         'message' => $message,
-                //         'is_seen' => $notification_seen
-                //     );
-                // }
                 $seen_class = '';
                 $seen_class = $seen == 0 ? 'unseen' : 'seen';
 
@@ -366,15 +334,15 @@ class Wstr_notifications
 
                 //Add values to elapsed accordinlg to the time difference
                 if ($time_difference->y > 0) {
-                    $elapsed = $time_difference->y . " years ago";
+                    $elapsed = $time_difference->y . " y";
                 } elseif ($time_difference->m > 0) {
-                    $elapsed = $time_difference->m . " months ago";
+                    $elapsed = $time_difference->m . " mo";
                 } elseif ($time_difference->d > 0) {
-                    $elapsed = $time_difference->d . " days ago";
+                    $elapsed = $time_difference->d . " d";
                 } elseif ($time_difference->h > 0) {
-                    $elapsed = $time_difference->h . " hours ago";
+                    $elapsed = $time_difference->h . " hr ";
                 } elseif ($time_difference->i > 0) {
-                    $elapsed = $time_difference->i . " mins ago";
+                    $elapsed = $time_difference->i . " min";
                 } else {
                     $elapsed = "just now";
                 }
@@ -398,6 +366,23 @@ class Wstr_notifications
                         $notification_url = home_url('/my-account/?tab=my-offers') . ($target_id ? '#offer-' . $target_id : '');
                         break;
 
+                    case "my-offer-accept":
+                        $message = "Accepted an offer.";
+                        // $notification_url = home_url('/chat/');
+                        $notification_url = home_url('/my-account/?tab=my-offers') . ($target_id ? '#offer-' . $target_id : '');
+                        break;
+
+                    case "my-offer-decline":
+                        $message = "Declined an offer.";
+                        // $notification_url = home_url('/chat/');
+                        $notification_url = home_url('/my-account/?tab=my-offers') . ($target_id ? '#offer-' . $target_id : '');
+                        break;
+
+                    case "offer-decline":
+                        $message = "Declined an offer.";
+                        // $notification_url = home_url('/chat/');
+                        $notification_url = home_url('/my-account/?tab=sellers-central') . ($target_id ? '#offer-' . $target_id : '');
+                        break;
 
                     default:
                         $error = 1;

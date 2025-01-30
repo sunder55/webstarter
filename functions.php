@@ -113,6 +113,7 @@ include(get_stylesheet_directory() . '/includes/wstr_filters_hooks.php');
 include(get_stylesheet_directory() . '/includes/wstr_functions.php');
 include(get_stylesheet_directory() . '/includes/wstr_admin_menu.php');
 include(get_stylesheet_directory() . '/includes/wstr_notifications.php');
+include(get_stylesheet_directory() . '/includes/wstr_payouts.php');
 
 
 // font awesome
@@ -1369,14 +1370,14 @@ function contact_form()
 
 
 // add_action('wp_footer', function () {
-//     $apiKey = "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";
+//     $apiKey = "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";
 
 //     // API endpoint
 //     $url = "https://api.openai.com/v1/chat/completions";
 
 //     // Prepare the request data
 //     $data = [
-//         "model" => "gpt-3.5-turbo", // Replace with the model you want to use
+//         "model" => "o1", // Replace with the model you want to use
 //         "prompt" => "Write a PHP script to fetch data from an API.",
 //         // "max_tokens" => 100, // Adjust based on your needs
 //         // "temperature" => 0.7
@@ -1414,3 +1415,46 @@ function contact_form()
 //     // Close cURL
 //     curl_close($ch);
 // });
+
+
+
+function add_openai_script_to_footer()
+{
+?>
+    <script>
+        async function fetchOpenAIResponse() {
+            const apiKey = "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"; // Replace with your OpenAI API key
+            const endpoint = "https://api.openai.com/v1/completions";
+
+            const data = {
+                model: "o1-mini",
+                prompt: "Write a short motivational quote.",
+                max_tokens: 50
+            };
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${apiKey}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                console.log(result.choices[0].text); // Log the response to the console
+                document.getElementById('openai-response').innerText = result.choices[0].text;
+            } catch (error) {
+                console.error("Error fetching OpenAI response:", error);
+            }
+        }
+
+        // Trigger the function on page load
+        document.addEventListener("DOMContentLoaded", fetchOpenAIResponse);
+    </script>
+
+    <div id="openai-response" style="margin-top: 20px; font-weight: bold; font-size: 1.2em;"></div>
+<?php
+}
+// add_action('wp_footer', 'add_openai_script_to_footer');
