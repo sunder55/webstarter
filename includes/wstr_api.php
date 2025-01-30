@@ -528,6 +528,14 @@ if (!class_exists('wstr_rest_api')) {
                 'callback' => [$this, 'wstr_update_crypto_details'],
                 'permission_callback' => '__return_true'
             ));
+
+            register_rest_route('wstr/v1', '/save-preferred-payment-method/(?P<user_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_save_preferred_payment_method'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+            ));
         }
 
         /**
@@ -915,6 +923,7 @@ if (!class_exists('wstr_rest_api')) {
             $payment_update = get_user_meta($GLOBALS['user_id'], '_payment_update', true);
             $language = get_user_meta($GLOBALS['user_id'], '_language', true);
             $currency = get_user_meta($GLOBALS['user_id'], '_currency', true);
+            $preferred_payment_method = get_user_meta($GLOBALS['user_id'], '_preferred_payment_method', true);
 
 
             $data[] = [
@@ -930,7 +939,8 @@ if (!class_exists('wstr_rest_api')) {
                 'domain_enquery_offers' => $domain_enquery_offers,
                 'payment_update' => $payment_update,
                 'language' => $language,
-                'currency' => $currency
+                'currency' => $currency,
+                'preferred_payment_method' => $preferred_payment_method
 
             ];
 
@@ -1901,6 +1911,27 @@ if (!class_exists('wstr_rest_api')) {
             update_user_meta($user_id, '_crypto_wallet_id', $crypto_wallet_id);
 
             return new WP_REST_Response(array('message' => 'Crypto details updated successfully'), 200);
+        }
+
+        public function wstr_save_preferred_payment_method($request)
+        {
+            $current_user_id = $GLOBALS['user_id'];
+            $user_id = (int) $request->get_param('user_id');
+            if ($current_user_id !== $user_id) {
+                return new WP_Error('not_allowed', 'Not allowed.', array('status' => 403));
+            }
+
+            $user_data = get_userdata($user_id);
+            if (!$user_data) {
+                return new WP_Error('user_not_found', 'User not found.', array('status' => 404));
+            }
+            $params = $request->get_json_params();
+
+            $payment_method = sanitize_text_field($params['payment_method']);
+
+            update_user_meta($user_id, '_preferred_payment_method', $payment_method);
+
+            return new WP_REST_Response(array('message' => 'Payment method saved successfully.'), 200);
         }
     }
 }

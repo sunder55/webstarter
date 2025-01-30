@@ -226,8 +226,7 @@ class Wstr_payouts
         }
 
         $currency_value =  get_option('wstr_currency_rates', []);
-        var_dump($currency_value);
-        // return;
+
         global $wpdb;
         $table_name = $wpdb->prefix . 'wstr_payouts';
         $results = $wpdb->get_results("SELECT amount, currency FROM $table_name WHERE seller_id = $user_id and type='commission' GROUP BY currency");
@@ -235,14 +234,11 @@ class Wstr_payouts
         if ($results) {
             foreach ($results as $result) {
                 $amount = floatval($result->amount);
-                $currency = strtolower($result->currency);
-
-
+                $currency = $result->currency;
                 // Convert to USD if not already in USD
                 if ($currency !== 'USD' && isset($currency_value[$currency])) {
 
                     $conversion_rate = floatval($currency_value[$currency]);
-                    var_dump($conversion_rate);
                     $amount_in_usd = $amount / $conversion_rate; // Convert to USD
                 } else {
                     $amount_in_usd = $amount;
@@ -251,7 +247,7 @@ class Wstr_payouts
                 $total_in_usd += $amount_in_usd;
             }
 
-            return new WP_REST_Response(['total_commission_usd' => $total_in_usd], 200);
+            return new WP_REST_Response(['total_commission' => round($total_in_usd)], 200);
         } else {
             return new WP_Error('query_failed', 'Query failed', array('status' => 500));
         }
