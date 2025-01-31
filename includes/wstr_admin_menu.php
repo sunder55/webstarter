@@ -359,9 +359,9 @@ class Wstr_admin_menu
             </table>
 
             <!-- Pagination -->
-            <div class="pagination">
+            <div class="pagination-contact-us">
                 <?php
-                $base_url = admin_url('admin.php?page=your_page_slug'); // Replace with your actual page slug
+                $base_url = admin_url('admin.php?page=contact-us'); // Replace with your actual page slug
                 if ($total_pages > 1) {
                     for ($page = 1; $page <= $total_pages; $page++) {
                         if ($page == $current_page) {

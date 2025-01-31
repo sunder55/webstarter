@@ -1370,7 +1370,7 @@ function contact_form()
 
 
 // add_action('wp_footer', function () {
-//     
+//     $apiKey = "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";
 
 //     // API endpoint
 //     $url = "https://api.openai.com/v1/chat/completions";
@@ -1421,9 +1421,9 @@ function contact_form()
 function add_openai_script_to_footer()
 {
 ?>
-    <script>
+    <!-- <script>
         async function fetchOpenAIResponse() {
-
+            const apiKey = "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"; // Replace with your OpenAI API key
             const endpoint = "https://api.openai.com/v1/completions";
 
             const data = {
@@ -1452,7 +1452,7 @@ function add_openai_script_to_footer()
 
         // Trigger the function on page load
         document.addEventListener("DOMContentLoaded", fetchOpenAIResponse);
-    </script>
+    </script> -->
 
     <div id="openai-response" style="margin-top: 20px; font-weight: bold; font-size: 1.2em;"></div>
 <?php

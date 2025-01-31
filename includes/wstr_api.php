@@ -904,7 +904,7 @@ if (!class_exists('wstr_rest_api')) {
 
 
             // Return the data in JSON formatzz
-            return new WP_REST_Response($data, 200);
+            return new WP_REST_Response($data, status: 200);
         }
 
         public function wstr_logged_in_user_callback($request)

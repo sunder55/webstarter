@@ -59,9 +59,9 @@ class Wstr_payouts
         );
 
         if ($result) {
-            echo 'Data inserted successfully';
+            return true;
         } else {
-            echo 'Error';
+            return false;
         }
     }
     public function wstr_payouts_rest_api_endpoint()
@@ -87,8 +87,16 @@ class Wstr_payouts
                 return get_current_user_id();
             }
         ));
+        register_rest_route('wstr/v1', '/request-payout/', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'wstr_request_payout'),
+            'permission_callback' => function () {
+                return get_current_user_id();
+            }
+        ));
     }
 
+    //for getting payouts
     public function wstr_get_payouts($request)
     {
 
@@ -149,6 +157,8 @@ class Wstr_payouts
             return new WP_Error('query_failed', 'Query failed', array('status' => 500));
         }
     }
+
+    // for getting list of the commissions
     public function wstr_get_commissions($request)
     {
         $user_id = (int) $request->get_param('user_id');
@@ -212,6 +222,7 @@ class Wstr_payouts
         }
     }
 
+    // for getting total amount of commissions
     public function wstr_get_total_commissions($request)
     {
         $user_id = (int) $request->get_param('user_id');
@@ -230,7 +241,24 @@ class Wstr_payouts
         global $wpdb;
         $table_name = $wpdb->prefix . 'wstr_payouts';
         $results = $wpdb->get_results("SELECT amount, currency FROM $table_name WHERE seller_id = $user_id and type='commission' GROUP BY currency");
+        $payout_completeds = $wpdb->get_results("SELECT amount FROM $table_name WHERE seller_id = $user_id and type='payout' and status='paid'");
+        $payout_pendings = $wpdb->get_results("SELECT amount FROM $table_name WHERE seller_id = $user_id and type='payout' and status='pending' OR status='in-progress'");
         $total_in_usd = 0;
+        // for dispalying total commission
+        $completed_amount = 0;
+        if ($payout_completeds) {
+            foreach ($payout_completeds as $completed) {
+                $completed_amount += floatval($completed->amount);
+            }
+        }
+
+        $pending_amount = 0;
+        if ($payout_pendings) {
+            foreach ($payout_pendings as $pending) {
+                $pending_amount += floatval($pending->amount);
+            }
+        }
+
         if ($results) {
             foreach ($results as $result) {
                 $amount = floatval($result->amount);
@@ -246,13 +274,191 @@ class Wstr_payouts
 
                 $total_in_usd += $amount_in_usd;
             }
+            $total_commission  = $total_in_usd - $completed_amount;
+            $withdrawable_amount = $total_commission - $pending_amount;
 
-            return new WP_REST_Response(['total_commission' => round($total_in_usd)], 200);
+            $data = [
+                'total_commission' => round($total_commission),
+                'withdrawable_amount' => round($withdrawable_amount)
+            ];
+            return new WP_REST_Response($data, 200);
         } else {
             return new WP_Error('query_failed', 'Query failed', array('status' => 500));
+        }
+    }
+
+    //for requesting payout
+    public function wstr_request_payout($request)
+    {
+        $params = $request->get_json_params();
+        $user_id = sanitize_text_field($params['user_id']);
+
+        $current_user = get_current_user_id();
+        if ($current_user != $user_id) {
+            return new WP_Error('unauthorized', 'User Unauthorized', array('status' => 401));
+        }
+
+        if (!$user_id) {
+            return new WP_Error('user_not_found', 'Sorry, user not found', array('status' => 404));
+        }
+
+        $amount = sanitize_text_field($params['amount']);
+
+        if ($amount) {
+            $result = $this->wstr_payouts(0, $user_id, $amount, 'USD', 0, 'payout', 'pending');
+
+            if ($result) {
+                return new WP_REST_Response(['message' => 'Payout request submitted successfully'], 200);
+            } else {
+                return new WP_Error('query_failed', 'Query failed', array('status' => 500));
+            }
+        } else {
+            return new WP_Error('amount_required', 'Amount is required', array('status' => 400));
         }
     }
 }
 
 global $wstr_payouts;
 $wstr_payouts = new Wstr_payouts();
+
+
+class Wstr_payouts_dashboard
+{
+    function __construct()
+    {
+
+        add_action('admin_menu', array($this, 'payout_menu'));
+    }
+    public function payout_menu()
+    {
+        add_menu_page('Payouts', 'Payouts', 'manage_options', 'wstr-payouts', array($this, 'payouts_dashboard'), 'dashicons-pinterest');
+    }
+
+    public function payouts_dashboard()
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have sufficient permissions to access this page.'));
+        }
+
+        global $wpdb;
+
+        // Define the table name
+        $table_name = $wpdb->prefix . 'wstr_payouts';
+
+        // Set the number of items per page
+        $items_per_page = 5;
+
+        // Get the current page from the URL, default to 1 if not set
+        $current_page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
+
+        // Calculate the offset for the query
+        $offset = ($current_page - 1) * $items_per_page;
+
+        // Get the total number of rows
+        $total_items = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+
+        // Calculate the total number of pages
+        $total_pages = ceil($total_items / $items_per_page);
+
+        // Fetch the data for the current page
+        $result = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM $table_name ORDER BY ID DESC LIMIT %d OFFSET %d",
+                $items_per_page,
+                $offset
+            )
+        );
+?>
+        <div class="main_payouts">
+            <h3>Payouts</h3>
+            <table border="1" class="widefat" id="contact-main_payouts">
+                <thead>
+                    <th>S.N</th>
+                    <th>Seller</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+
+                </thead>
+                <tbody>
+                    <?php
+                    $i = $offset + 1; // Adjust the numbering based on the page
+                    foreach ($result as $payout) {
+                        $status = $payout->status;
+                        $seller_id = $payout->seller_id;
+                        $user_details = get_user_by('id', $seller_id);
+
+                        $user_image_id = (int) get_user_meta($seller_id, 'ws_profile_pic', true);
+                        $user_image = '';
+                        if ($user_image_id) {
+                            $user_image =  wp_get_attachment_url($user_image_id);
+                        } else {
+                            $user_image = get_avatar_url($seller_id);
+                        }
+                        // var_dump($user_details);
+                        $full_name = $user_details->first_name . '' . $user_details->last_name;
+
+                        $date = $payout->created_at ?: '0000/00/00';
+                        $formattedDate = date("d M, Y", strtotime($date));
+
+                        // switch ($status) {
+                        //     case 'pending':
+                        //         echo 'Pending';
+                        //         break;
+                        //     case 'paid':
+                        //         echo 'Paid';
+                        //         break;
+                        //     case 'in-progress':
+                        //         echo 'In Progress';
+                        //         break;
+                        //     case 'cancelled':
+                        //         echo 'Cancelled';
+                        //         break;
+                        //     default:
+                        //         echo '';
+                        //         break;
+                        // }
+
+                    ?>
+                        <tr>
+                            <td><?php echo $i++; ?></td>
+                            <td><img style="width: 30px;" src=<?php echo $user_image; ?>>
+                                <h4><?php echo esc_html($full_name); ?></h4>
+                            </td>
+                            <td><?php echo '$' . esc_html($payout->amount); ?></td>
+
+                            <td>
+                                <select <?php echo $status == 'paid' ? 'disabled' : '' ?>>
+                                    <option value='pending' <?php echo $status == 'pending' ? "selected" : "" ?>>Pending</option>
+                                    <option value='paid' <?php echo $status == 'paid' ? "selected" : "" ?>>Paid</option>
+                                    <option value='in-progress' <?php echo $status == 'in-progress' ? "selected" : "" ?>>In Progress</option>
+                                    <option value='cancelled' <?php echo $status == 'cancelled' ? "selected" : "" ?>>Cancelled</option>
+                                </select>
+                            </td>
+                            <td><?php echo esc_html($formattedDate); ?></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination-payouts-us">
+                <?php
+                $base_url = admin_url('admin.php?page=wstr-payouts'); // Replace with your actual page slug
+                if ($total_pages > 1) {
+                    for ($page = 1; $page <= $total_pages; $page++) {
+                        if ($page == $current_page) {
+                            echo '<strong>' . $page . '</strong> ';
+                        } else {
+                            echo '<a href="' . esc_url(add_query_arg('paged', $page, $base_url)) . '">' . $page . '</a> ';
+                        }
+                    }
+                }
+                ?>
+            </div>
+        </div>
+<?php
+
+    }
+}
+new Wstr_payouts_dashboard();
