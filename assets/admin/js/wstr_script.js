@@ -397,6 +397,76 @@ jQuery(document).ready(function ($) {
     placeholder: "Select currencies",
     allowClear: true,
   });
+
+  // Payouts section starts ===========================.
+
+  $(document).on("change", ".payouts-status", function () {
+    let payoutId = $(this).attr("id");
+    let status = $(this).find(":selected").val();
+
+    $.ajax({
+      url: cpmAjax.ajax_url,
+      method: "POST",
+      data: {
+        action: "wstr_update_payout_status",
+        status: status,
+        payout_id: payoutId,
+      },
+      before: function (res) {
+        $(`.success-${payoutId}`).html("");
+        $(`.error-${payoutId}`).html("");
+        $(`.loading-${payoutId}`).html("Loading...");
+      },
+      success: function (res) {
+        if (res.success) {
+          let status = res.data.payout_status;
+          // Update the .payout-status-main class with new HTML
+          $(`.payout-status-main-${payoutId}`).html(`
+              <div class="success-${payoutId}" id='success-message'>Status Updated</div>
+              <select class="payouts-status" id="${payoutId}" 
+                  ${
+                    status == "paid" || status == "cancelled" ? "disabled" : ""
+                  }>
+                  <option value="pending" ${
+                    status === "pending" ? "selected" : ""
+                  }>Pending</option>
+                  <option value="paid" ${
+                    status === "paid" ? "selected" : ""
+                  }>Paid</option>
+                  <option value="in-progress" ${
+                    status === "in-progress" ? "selected" : ""
+                  }>In Progress</option>
+                  <option value="cancelled" ${
+                    status === "cancelled" ? "selected" : ""
+                  }>Cancelled</option>
+              </select>
+          `);
+        } else {
+          $(`.error-${payoutId}`).html("Update failed.");
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        $(`.loading-${payoutId}`).html("");
+        console.error("AJAX request failed: ", textStatus, errorThrown);
+      },
+    });
+  });
+
+  $("#user_filter, #status_filter").change(function (e) {
+    e.preventDefault();
+    let user_filter = $("#user_filter").val();
+    let status_filter = $("#status_filter").val();
+    // Create a new URL object with the current URL
+    let url = new URL(window.location.href);
+
+    // Update the query parameters
+    url.searchParams.set("user", user_filter);
+    url.searchParams.set("status", status_filter);
+
+    // Navigate to the new URL, causing the page to reload
+    window.location.href = url.toString();
+  });
+  // Payouts section ends ===========================.
 });
 
 function openCity(cityName) {

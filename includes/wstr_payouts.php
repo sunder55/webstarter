@@ -328,6 +328,7 @@ class Wstr_payouts_dashboard
     {
 
         add_action('admin_menu', array($this, 'payout_menu'));
+        add_action('wp_ajax_wstr_update_payout_status', array($this, 'wstr_update_payout_status'));
     }
     public function payout_menu()
     {
@@ -355,37 +356,76 @@ class Wstr_payouts_dashboard
         $offset = ($current_page - 1) * $items_per_page;
 
         // Get the total number of rows
-        $total_items = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+        $total_items = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE type='status'");
 
         // Calculate the total number of pages
         $total_pages = ceil($total_items / $items_per_page);
 
+        $selected_status = $_GET['status'] ?? '';
+        $user = (int) ($_GET['user'] ?? 0);
+
+        // Build the query with filters
+        $query = "SELECT * FROM $table_name WHERE type='payout'";
+        $query_params = [];
+
+        if ($selected_status) {
+            $query .= " AND status = %s";
+            $query_params[] = $selected_status;
+        }
+
+        if ($user) {
+            $query .= " AND seller_id = %d";
+            $query_params[] = $user;
+        }
+
+        $query .= " ORDER BY ID DESC LIMIT %d OFFSET %d";
+        $query_params[] = $items_per_page;
+        $query_params[] = $offset;
+
         // Fetch the data for the current page
-        $result = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM $table_name ORDER BY ID DESC LIMIT %d OFFSET %d",
-                $items_per_page,
-                $offset
-            )
-        );
+        $results = $wpdb->get_results($wpdb->prepare($query, ...$query_params));
+
 ?>
         <div class="main_payouts">
             <h3>Payouts</h3>
+            <!-- // filter sections starts  -->
+
+            <div class="payout_filter">
+                <form class="payout_filter_form">
+                    <div>
+                        <?php wp_dropdown_users(array('name' => 'user_filter', 'option_none_value' => '', 'show_option_none' => 'select user', 'selected' => $user ?: 0)); ?>
+                    </div>
+                    <div>
+                        <select id="status_filter">
+                            <option value="">select status</option>
+                            <option value='pending' <?php echo $selected_status == 'pending' ? "selected" : "" ?>>Pending</option>
+                            <option value='paid' <?php echo $selected_status == 'paid' ? "selected" : "" ?>>Paid</option>
+                            <option value='in-progress' <?php echo $selected_status == 'in-progress' ? "selected" : "" ?>>In Progress</option>
+                            <option value='cancelled' <?php echo $selected_status == 'cancelled' ? "selected" : "" ?>>Cancelled</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <!-- // filter sections ends  -->
+
             <table border="1" class="widefat" id="contact-main_payouts">
                 <thead>
                     <th>S.N</th>
                     <th>Seller</th>
                     <th>Amount</th>
                     <th>Status</th>
+                    <th>Payment Method</th>
                     <th>Date</th>
 
                 </thead>
                 <tbody>
                     <?php
                     $i = $offset + 1; // Adjust the numbering based on the page
-                    foreach ($result as $payout) {
+                    foreach ($results as $payout) {
                         $status = $payout->status;
                         $seller_id = $payout->seller_id;
+                        $payment_method = get_user_meta($seller_id, '_preferred_payment_method', true);
+
                         $user_details = get_user_by('id', $seller_id);
 
                         $user_image_id = (int) get_user_meta($seller_id, 'ws_profile_pic', true);
@@ -396,45 +436,47 @@ class Wstr_payouts_dashboard
                             $user_image = get_avatar_url($seller_id);
                         }
                         // var_dump($user_details);
-                        $full_name = $user_details->first_name . '' . $user_details->last_name;
+                        $full_name = $user_details->first_name . ' ' . $user_details->last_name;
 
                         $date = $payout->created_at ?: '0000/00/00';
                         $formattedDate = date("d M, Y", strtotime($date));
-
-                        // switch ($status) {
-                        //     case 'pending':
-                        //         echo 'Pending';
-                        //         break;
-                        //     case 'paid':
-                        //         echo 'Paid';
-                        //         break;
-                        //     case 'in-progress':
-                        //         echo 'In Progress';
-                        //         break;
-                        //     case 'cancelled':
-                        //         echo 'Cancelled';
-                        //         break;
-                        //     default:
-                        //         echo '';
-                        //         break;
-                        // }
-
                     ?>
                         <tr>
                             <td><?php echo $i++; ?></td>
                             <td><img style="width: 30px;" src=<?php echo $user_image; ?>>
-                                <h4><?php echo esc_html($full_name); ?></h4>
+                                <h4><?php echo esc_html($full_name); ?><span>(<?php echo $seller_id; ?>)</span></h4>
                             </td>
                             <td><?php echo '$' . esc_html($payout->amount); ?></td>
 
-                            <td>
-                                <select <?php echo $status == 'paid' ? 'disabled' : '' ?>>
+                            <td class="payout-status-main-<?php echo $payout->id ?>">
+                                <!-- <div class="success-<?php //echo $payout->id 
+                                                            ?>"></div> -->
+                                <div class="error-<?php echo $payout->id ?>"></div>
+                                <div class="loading-<?php echo $payout->id ?>"></div>
+                                <select <?php echo $status == 'paid' || $status == 'cancelled' ? 'disabled' : '' ?> class="payouts-status" id=<?php echo $payout->id; ?>>
                                     <option value='pending' <?php echo $status == 'pending' ? "selected" : "" ?>>Pending</option>
                                     <option value='paid' <?php echo $status == 'paid' ? "selected" : "" ?>>Paid</option>
                                     <option value='in-progress' <?php echo $status == 'in-progress' ? "selected" : "" ?>>In Progress</option>
                                     <option value='cancelled' <?php echo $status == 'cancelled' ? "selected" : "" ?>>Cancelled</option>
                                 </select>
                             </td>
+                            <td><?php
+                                switch ($payment_method) {
+                                    case 'paypal':
+                                        echo 'Paypal';
+                                        break;
+                                    case 'crypto':
+                                        echo 'Crypto Wallet';
+                                        break;
+                                    case 'bank':
+                                        echo 'Bank Transfer';
+                                        break;
+                                    default:
+                                        echo 'Paypal';
+                                        break;
+                                }
+
+                                ?></td>
                             <td><?php echo esc_html($formattedDate); ?></td>
                         </tr>
                     <?php } ?>
@@ -456,9 +498,41 @@ class Wstr_payouts_dashboard
                 }
                 ?>
             </div>
+
+            <?php if (!$results) {
+                echo '<div>No payouts yet!</div>';
+            }
+            ?>
         </div>
 <?php
 
+    }
+
+    public function wstr_update_payout_status()
+    {
+        $status = sanitize_text_field($_POST['status']);
+        $payout_id = (int) sanitize_text_field($_POST['payout_id']);
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'wstr_payouts';
+        $result = $wpdb->query(
+            $wpdb->prepare(
+                "UPDATE $table_name SET status = %s WHERE type = %s AND id = %d",
+                $status,
+                "payout",
+                $payout_id
+            )
+        );
+
+        if ($result) {
+            $data = [
+                'message' => 'Status updated.',
+                'payout_status' => $status
+            ];
+            wp_send_json_success($data);
+        } else {
+            wp_send_json_error('Update failed.');
+        }
+        wp_die();
     }
 }
 new Wstr_payouts_dashboard();
