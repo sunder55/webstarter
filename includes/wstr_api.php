@@ -1033,9 +1033,9 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('user_not_found', 'Sorry, user not found', array('status' => 404));
             }
             $current_user = get_current_user_id();
-            if ($current_user !== $user_id) {
-                return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
-            }
+            // if ($current_user !== $user_id) {
+            //     return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
+            // }
 
             $args = [
                 'post_type' => 'domain_order',
@@ -1196,9 +1196,9 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('missing_user_id', 'User id is missing');
             }
             $current_user = get_current_user_id();
-            if ($current_user !== $user_id) {
-                return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
-            }
+            // if ($current_user !== $user_id) {
+            //     return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
+            // }
 
             $user_details = get_user_by('id', $user_id);
 
@@ -1269,9 +1269,9 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
             $current_user = get_current_user_id();
-            if ($current_user !== $user_id) {
-                return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
-            }
+            // if ($current_user !== $user_id) {
+            //     return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
+            // }
 
 
             $body_params = $request->get_json_params();
@@ -1383,9 +1383,9 @@ if (!class_exists('wstr_rest_api')) {
             }
 
             $current_user = get_current_user_id();
-            if ($current_user !== $user_id) {
-                return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
-            }
+            // if ($current_user !== $user_id) {
+            //     return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
+            // }
 
 
             $message = '';
@@ -1564,10 +1564,10 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
-            $current_user = get_current_user_id();
-            if ($current_user !== $user_id) {
-                return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
-            }
+            // $current_user = get_current_user_id();
+            // if ($current_user !== $user_id) {
+            //     return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
+            // }
 
             global $wpdb;
             $offer = $wpdb->prefix . 'offers';
