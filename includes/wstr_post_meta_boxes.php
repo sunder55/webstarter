@@ -980,7 +980,7 @@ class wstr_domain_order_meta_boxes
         update_post_meta($post_id, '_ordered_products', $ordered_products);
 
         // saving products price to the order meta
-        update_post_meta($post_id, '_products_price', $products_price);
+        update_post_meta($post_id, '_usd_products_price', $products_price);
 
         // saving unique seller IDs 
         $unique_seller_id = array_unique($seller_id);

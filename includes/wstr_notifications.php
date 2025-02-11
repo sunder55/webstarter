@@ -220,6 +220,12 @@ class Wstr_notifications
                         $notification_url = home_url('/my-account/?tab=my-offers') . ($target_id ? '#offer-' . $target_id : '');
                         break;
 
+                    case "offer-accept":
+                        $message = "Accepted an offer.";
+                        // $notification_url = home_url('/chat/');
+                        $notification_url = home_url('/my-account/?tab=sellers-central') . ($target_id ? '#offer-' . $target_id : '');
+                        break;
+
                     case "offer-decline":
                         $message = "Declined an offer.";
                         // $notification_url = home_url('/chat/');
@@ -378,6 +384,11 @@ class Wstr_notifications
                         $notification_url = home_url('/my-account/?tab=my-offers') . ($target_id ? '#offer-' . $target_id : '');
                         break;
 
+                    case "offer-accept":
+                        $message = "Accepted an offer.";
+                        // $notification_url = home_url('/chat/');
+                        $notification_url = home_url('/my-account/?tab=sellers-central') . ($target_id ? '#offer-' . $target_id : '');
+                        break;
                     case "offer-decline":
                         $message = "Declined an offer.";
                         // $notification_url = home_url('/chat/');

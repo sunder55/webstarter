@@ -1,8 +1,8 @@
 <?php
- require_once('/www/wwwroot/new-webstarter.codepixelz.tech/wp-load.php');
+require_once('/www/wwwroot/new-webstarter.codepixelz.tech/wp-load.php');
 
- function get_curreny_rates()
- {
+function get_curreny_rates()
+{
     global $wpdb;
     $access_key = 'cur_live_RFDFd4STzeV5MnBBE3MFokvZmnaKEWpfAB1wT1iP';
 
@@ -32,7 +32,7 @@
                         $currency_rates[$currency] = $data['data'][$currency]['value'];
                     }
                 }
-           
+
                 // Save the updated rates to the options table
                 update_option('wstr_currency_rates', $currency_rates);
 
@@ -44,15 +44,16 @@
             }
         }
     }
- }
+}
 
- get_curreny_rates();
+get_curreny_rates();
 
 
- /**
+/**
  * Function to send currency rates via email.
  */
-function send_currency_rates_email($currency_rates) {
+function send_currency_rates_email($currency_rates)
+{
     // Set the email subject
     $subject = 'Updated Currency Rates';
 
@@ -71,5 +72,3 @@ function send_currency_rates_email($currency_rates) {
     // Send the email
     wp_mail($to, $subject, $message, $headers);
 }
-
- 

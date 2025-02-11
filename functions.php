@@ -1460,83 +1460,25 @@ function add_openai_script_to_footer()
 // add_action('wp_footer', 'add_openai_script_to_footer');
 
 
-add_action('wp_footer', 'wstr_seller_order_details');
-function wstr_seller_order_details()
+// add_action('wp_footer', 'wstr_seller_order_details');
+
+
+add_action('wp_footer', 'wstr_pricing_cron');
+function wstr_pricing_cron()
 {
-    $seller_id = get_current_user_id();
-    echo '<br>';
-    $args = [
-        'post_type'      => 'domain_order',
-        'posts_per_page' => -1,
-        'order' => 'DESC',
-        'orderby' => 'ID',
-    ];
+    $domain_id = 5403;
+    // $args=[
 
-    if ($seller_id) {
-        $args['meta_query'] = [
-            [
-                'key'     => '_seller',
-                'value' => serialize(strval($seller_id)),
-                'compare' => 'LIKE',
-            ],
-        ];
+    // ]
+
+
+    $sale_end_date = get_post_meta($domain_id, '_sale_price_dates_to', true);
+
+    $current_date = date('Y-m-d');
+
+    if ($sale_end_date && $current_date < $sale_end_date) {
+        delete_post_meta($domain_id, '_sale_price');
+        delete_post_meta($domain_id, '_sale_price_dates_from');
+        delete_post_meta($domain_id, '_sale_price_dates_to');
     }
-
-    $query = new WP_Query($args);
-
-    $total_order_amount = 0;
-    $total_sales = 0; // Total sales for completed orders
-
-    if ($query->have_posts()) {
-
-        while ($query->have_posts()) {
-            $query->the_post(); // Set up global post data
-            $order_id = get_the_ID();
-            $order_products = get_post_meta($order_id, '_ordered_products', true);
-            $status = get_post_meta(get_the_ID(), '_order_status', true); // Order status
-
-            $seller_products = [];
-            if ($order_products) {
-                foreach ($order_products as $order_product) {
-                    if ($order_product['seller_id'] == $seller_id) {
-                        $seller_products[] = $order_product['product_id'];
-                    }
-                }
-            }
-
-            $products_price = get_post_meta($order_id, '_products_price', true);
-            $seller_products_prices = [];
-            if ($products_price) {
-                foreach ($products_price as $product_price) {
-                    if (in_array($product_price['product_id'], $seller_products)) {
-                        $seller_products_prices[] = $product_price['price'];
-                    }
-                }
-            }
-
-
-            $currency_rates = get_option('wstr_currency_rates', []);
-            $currency = get_post_meta($order_id, '_currency', true);
-
-            foreach ($seller_products_prices as $price) {
-                // Convert only if the currency is not USD
-                if ($currency !== 'USD' && isset($currency_rates[$currency]) && $currency_rates[$currency] > 0) {
-                    $conversion_rate = $currency_rates[$currency];
-                    $price = $price / $conversion_rate; // Convert to USD
-                }
-
-                $total_order_amount += $price; // Total order amount
-
-                // Add to total sales only if the status is completed
-                if ($status == 'completed') {
-                    $total_sales += $price;
-                }
-            }
-        }
-        // wp_reset_postdata(); // Reset global post data
-    }
-
-    // Output results
-    echo "Total Order Amount: $" . round($total_order_amount) . "<br>";
-    echo "Total Sales (Completed Orders): $" . round($total_sales);
 }

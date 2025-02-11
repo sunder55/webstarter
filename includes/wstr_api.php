@@ -536,6 +536,14 @@ if (!class_exists('wstr_rest_api')) {
                     return is_user_logged_in();
                 },
             ));
+
+            register_rest_route('wstr/v1', '/seller_order_details/(?P<user_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_seller_order_details'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+            ));
         }
 
         /**
@@ -1932,6 +1940,140 @@ if (!class_exists('wstr_rest_api')) {
             update_user_meta($user_id, '_preferred_payment_method', $payment_method);
 
             return new WP_REST_Response(array('message' => 'Payment method saved successfully.'), 200);
+        }
+
+        public function wstr_seller_order_details($request)
+        {
+
+            $current_user_id = $GLOBALS['user_id'];
+            $seller_id = (int) $request->get_param('user_id');
+            if ($current_user_id !== $seller_id) {
+                return new WP_Error('not_allowed', 'Not allowed', array('status' => 403));
+            }
+
+            $last_12_month = '';
+            for ($i = 1; $i <= 12; $i++) {
+                $last_12_month = date("Y-m", strtotime(date('Y-m-01') . " -$i months"));
+            }
+
+            $args = [
+                'post_type'      => 'domain_order',
+                'posts_per_page' => -1,
+                'order' => 'DESC',
+                'orderby' => 'ID',
+            ];
+
+            if ($seller_id) {
+                $args['meta_query'] = [
+                    [
+                        'key'     => '_seller',
+                        'value' => serialize(strval($seller_id)),
+                        'compare' => 'LIKE',
+                    ],
+                ];
+            }
+
+            $query = new WP_Query($args);
+
+            $total_order_amount = 0;
+            $total_sales = 0; // Total sales for completed orders
+            $last_12_month_sales = 0;
+            $current_year_sales = 0;
+
+            $domain_solds = 0;
+            if ($query->have_posts()) {
+
+                while ($query->have_posts()) {
+                    $query->the_post(); // Set up global post data
+                    $order_id = get_the_ID();
+                    $order_products = get_post_meta($order_id, '_ordered_products', true);
+                    $status = get_post_meta(get_the_ID(), '_order_status', true); // Order status
+
+                    $seller_products = [];
+                    if ($order_products) {
+                        foreach ($order_products as $order_product) {
+                            if ($order_product['seller_id'] == $seller_id) {
+                                $seller_products[] = $order_product['product_id'];
+                            }
+                        }
+                    }
+
+                    // $products_price = get_post_meta($order_id, '_products_price', true);
+                    $products_price = get_post_meta($order_id, '_usd_products_price', true);
+                    $seller_products_prices = [];
+                    if ($products_price) {
+                        foreach ($products_price as $product_price) {
+                            if (in_array($product_price['product_id'], $seller_products)) {
+                                $seller_products_prices[] = $product_price['price'];
+                            }
+                        }
+                    }
+
+
+                    $currency_rates = get_option('wstr_currency_rates', []);
+                    $currency = get_post_meta($order_id, '_currency', true);
+                    $created_date = get_post_meta($order_id, '_date_created', true);
+
+                    foreach ($seller_products_prices as $price) {
+                        // Convert only if the currency is not USD
+                        if ($currency !== 'USD' && isset($currency_rates[$currency]) && $currency_rates[$currency] > 0) {
+                            $conversion_rate = $currency_rates[$currency];
+                            $price = $price / $conversion_rate; // Convert to USD
+                        }
+
+
+                        $total_order_amount += $price; // Total order amount
+
+                        // Add to total sales only if the status is completed
+                        if ($status == 'completed') {
+                            $total_sales += $price;
+                            $domain_solds++;
+                        }
+
+                        $current_date =  date("Y");
+
+                        if ($created_date >= $current_date) {
+                            $current_year_sales += $price;
+                        }
+                        // last 12 months sales 
+
+                        if ($last_12_month < $created_date) {
+                            $last_12_month_sales += $price;
+                        }
+                    }
+                }
+                // wp_reset_postdata(); // Reset global post data
+            }
+            /**
+             * domain count
+             */
+            $domain_args = array(
+                'post_type' => 'domain',
+                'post_status' => 'publish',
+                'author'        =>  $seller_id,
+                'posts_per_page' => -1
+            );
+
+            $domain_count = count(get_posts($domain_args));
+
+
+            $data = [
+                'total_order_amount' => round($total_order_amount),
+                'total_sales' =>  round($total_sales),
+                'average_monthly_sales' => $last_12_month_sales ? round($last_12_month_sales / 12) : 0,
+                'total_domains_sold' => $domain_solds,
+                'current_year_sales' => $current_year_sales,
+                'domain_for_sale' => $domain_count
+            ];
+
+            return new WP_REST_Response($data, 200);
+            // Output results
+            echo "Total Order Amount: $" . round($total_order_amount) . "<br>";
+            echo "Total Sales (Completed Orders): $" . round($total_sales);
+            echo "last 12months Sales : $" . round($last_12_month_sales / 12);
+            echo 'Total domains sold:: ' . $domain_solds;
+            echo 'Current year sales:: ' . $current_year_sales;
+            echo 'Domain for sale: ' . $domain_count;
         }
     }
 }

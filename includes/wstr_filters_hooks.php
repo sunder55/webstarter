@@ -317,3 +317,58 @@ function allow_seller_draft_domains($args, $request)
 
     return $args;
 }
+
+function redirect_non_admin_users()
+{
+    if (is_admin() && !defined('DOING_AJAX')) {
+        $user_id = get_current_user_id();
+        $user_meta = get_userdata($user_id);
+        $user_roles = $user_meta ? $user_meta->roles : [];
+
+        if (!in_array('administrator', $user_roles)) {
+            wp_redirect(site_url('/my-account/'));
+            exit;
+        }
+    }
+}
+add_action('init', 'redirect_non_admin_users');
+
+function hide_admin_bar_for_non_admins()
+{
+    if (!current_user_can('administrator') && !is_admin()) {
+        show_admin_bar(false);
+    }
+}
+add_action('init', 'hide_admin_bar_for_non_admins');
+
+// Adds the new domains column to the users dashboard.
+function add_discord_column_to_users_dashboard($columns)
+{
+    // Unset columns you don't want
+    unset($columns['posts']); // Removes the "Posts" column
+
+    // Add the custom "Domains" column
+    $columns['domains'] = esc_html__('Domains', 'text_domain');
+
+    return $columns;
+}
+add_filter('manage_users_columns', 'add_discord_column_to_users_dashboard');
+
+// Populate domains on users dashboard column.
+function populate_users_dashboard_discord_column($output, $column_name, $user_id)
+{
+    if ('domains' === $column_name) {
+        // Get the total number of domains (custom post type) assigned to the user.
+        $domain_count = new WP_Query([
+            'post_type'      => 'domain',
+            'author'         => $user_id,
+            'posts_per_page' => -1, // Get all posts
+            'fields'         => 'ids', // Fetch only IDs for efficiency
+        ]);
+
+        $output = $domain_count->post_count; // Get the count of posts
+    }
+
+    return $output;
+}
+add_filter('manage_users_custom_column',  'populate_users_dashboard_discord_column', 10, 3);

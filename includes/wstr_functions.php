@@ -148,10 +148,6 @@ function get_wstr_sale_price($domain_id)
     return wstr_truncate_number($sale_price);
 }
 
-add_action('wp_footer', function () {
-    $sale_price =   get_wstr_sale_price(4927);
-    var_dump($sale_price);
-});
 
 /**
  * Function for getting currecy value according to the currency selected
@@ -590,36 +586,6 @@ function wstr_handle_otp_verification()
 add_action('init', 'wstr_handle_otp_verification');
 
 
-add_action('wp_footer', 'generate_random_number');
-function generate_random_number()
-{
-
-
-    var_dump('starts');
-?>
-    <script>
-        console.log('footersss');
-    </script>
-<?php
-    var_dump('ends');
-    return;
-
-    // $to = 'sendto@example.com';
-    // $subject = 'The subject';
-    // $body = 'The email body content';
-    // $headers = array('Content-Type: text/html; charset=UTF-8');
-
-    // $mail =  mail($to, $subject, $body, $headers);
-    // var_dump($mail);
-    $msg = "First line of text\nSecond line of text";
-
-    // use wordwrap() if lines are longer than 70 characters
-    $msg = wordwrap($msg, 70);
-
-    // send email
-    $mail =  mail("someone@example.com", "My subject", $msg);
-    var_dump($mail);
-}
 
 // Offers Table Columns:
 
