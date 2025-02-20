@@ -1463,22 +1463,74 @@ function add_openai_script_to_footer()
 // add_action('wp_footer', 'wstr_seller_order_details');
 
 
-add_action('wp_footer', 'wstr_pricing_cron');
+/**
+ * CRON FUNCTIONS STARTS============================================
+ */
+
+// add_action('wp_footer', 'wstr_pricing_cron');
 function wstr_pricing_cron()
 {
-    $domain_id = 5403;
-    // $args=[
 
-    // ]
+    $args = [
+        'post_type' => 'domain',
+        'fields' => 'ids',
+        'meta_query' => [
+            [
+                'key' => '_sale_price_dates_to',
+                'compare' => 'EXISTS',
+            ],
+            [
+                'key' => '_sale_price_dates_to',
+                'value' => '',
+                'compare' => '!=',
+            ],
+            [
+                'key' => '_stock_status',
+                'value' => 'outofstock',
+                'compare' => '!=',
+            ],
+        ],
+    ];
+    $query = new WP_Query($args);
 
+    if ($query->have_posts()) {
+        foreach ($query->posts as $domain_id) {
 
-    $sale_end_date = get_post_meta($domain_id, '_sale_price_dates_to', true);
+            $sale_end_date = get_post_meta($domain_id, '_sale_price_dates_to', true);
+            $current_date = date('Y-m-d');
 
-    $current_date = date('Y-m-d');
-
-    if ($sale_end_date && $current_date < $sale_end_date) {
-        delete_post_meta($domain_id, '_sale_price');
-        delete_post_meta($domain_id, '_sale_price_dates_from');
-        delete_post_meta($domain_id, '_sale_price_dates_to');
+            if ($sale_end_date && $current_date > $sale_end_date) {
+                delete_post_meta($domain_id, '_sale_price');
+                delete_post_meta($domain_id, '_sale_price_dates_from');
+                delete_post_meta($domain_id, '_sale_price_dates_to');
+            }
+        }
     }
 }
+
+// add_action('wp_footer', 'wstr_declined_offer_expired');
+function wstr_declined_offer_expired()
+{
+    global $wpdb;
+
+    $current_date = date('Y-m-d');
+    var_dump($current_date);
+
+    $results = $wpdb->get_results(
+        $wpdb->prepare("SELECT offer_id FROM {$wpdb->prefix}offers WHERE offer_expiry_date < %s AND status != %s", $current_date, 'declined')
+    );
+    if ($results) {
+        foreach ($results as $offers) {
+            $offer_id = $offers->offer_id;
+            $data = ['status' => 'declined'];
+            $format = ['%s'];
+            $where = ['offer_id' => (int) $offer_id];
+            $where_format = ['%d'];
+            $wpdb->update("{$wpdb->prefix}offers", $data, $where, $format, $where_format);
+        }
+    }
+}
+
+/**
+ * CRON FUNCTIONS ENDS============================================
+ */

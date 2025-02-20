@@ -123,37 +123,38 @@ if (!class_exists('wstr_rest_api')) {
 
             $curl = curl_init();
 
-            curl_setopt_array($curl, [
-                CURLOPT_URL => 'https://domain-da-pa-check.p.rapidapi.com/?target=' . $domain_name,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "GET",
-                CURLOPT_HTTPHEADER => [
-                    "x-rapidapi-host: domain-da-pa-check.p.rapidapi.com",
-                    "x-rapidapi-key: 4134775c01msh171bb4aa3bebbb2p167713jsna04a97133aff"
-                ],
-            ]);
+            // curl_setopt_array($curl, [
+            //     CURLOPT_URL => 'https://domain-da-pa-check.p.rapidapi.com/?target=' . $domain_name,
+            //     CURLOPT_RETURNTRANSFER => true,
+            //     CURLOPT_ENCODING => "",
+            //     CURLOPT_MAXREDIRS => 10,
+            //     CURLOPT_TIMEOUT => 30,
+            //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            //     CURLOPT_CUSTOMREQUEST => "GET",
+            //     CURLOPT_HTTPHEADER => [
+            //         "x-rapidapi-host: domain-da-pa-check.p.rapidapi.com",
+            //         "x-rapidapi-key: 4134775c01msh171bb4aa3bebbb2p167713jsna04a97133aff"
+            //     ],
+            // ]);
 
-            $response = curl_exec($curl);
-            $err = curl_error($curl);
+            // $response = curl_exec($curl);
+            // $err = curl_error($curl);
 
-            curl_close($curl);
+            // curl_close($curl);
 
-            if ($err) {
-                echo "cURL Error #:" . $err;
-            } else {
-                $json_response = json_decode($response);
-                if ($json_response->result == 'success') {
-                    $data = $json_response->body;
+            // if ($err) {
+            //     echo "cURL Error #:" . $err;
+            // } else {
+            //     $json_response = json_decode($response);
+            //     if ($json_response->result == 'success') {
+            //         $data = $json_response->body;
 
-                    $domainAuthority = $data->da_score;
-                    $pageAuthority = $data->pa_score;
-                    return $domainAuthority . '/' . $pageAuthority;
-                }
-            }
+            //         $domainAuthority = $data->da_score;
+            //         $pageAuthority = $data->pa_score;
+            //         return $domainAuthority . '/' . $pageAuthority;
+            //     }
+            // }
+            return '10/10';
         }
         /**
          * generating  domain description from gemini ai
@@ -540,6 +541,14 @@ if (!class_exists('wstr_rest_api')) {
             register_rest_route('wstr/v1', '/seller_order_details/(?P<user_id>\d+)', array(
                 'methods' => 'GET',
                 'callback' => [$this, 'wstr_seller_order_details'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+            ));
+
+            register_rest_route('wstr/v1', '/community/(?P<user_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_from_community'],
                 'permission_callback' => function () {
                     return is_user_logged_in();
                 },
@@ -1942,6 +1951,84 @@ if (!class_exists('wstr_rest_api')) {
             return new WP_REST_Response(array('message' => 'Payment method saved successfully.'), 200);
         }
 
+        public function wstr_from_community($request)
+        {
+
+            $current_user_id = $GLOBALS['user_id'];
+            $user_id = (int) $request->get_param('user_id');
+            if ($current_user_id !== $user_id) {
+                return new WP_Error('not_allowed', 'Not allowed.', array('status' => 403));
+            }
+            global $wpdb;
+            // offers section starts ===========================
+            $offer_table = $wpdb->prefix . 'offers';
+
+            // $user_id = 3;
+            $offers = $wpdb->get_results($wpdb->prepare("SELECT * FROM $offer_table WHERE seller_id = %d", $user_id));
+            $buyers = [];
+            $user_image = [];
+            if ($offers) {
+
+                foreach ($offers as $offer) {
+                    if (!in_array($offer->buyer_id, $buyers)) {
+                        $buyers[] = $offer->buyer_id;
+                    }
+                }
+            } else {
+                echo '<p>No offers found for the current user.</p>';
+            }
+
+            if ($buyers) {
+                foreach ($buyers as $buyer) {
+                    $user_image_id = (int) get_user_meta($buyer, 'ws_profile_pic', true);
+
+                    if ($user_image_id) {
+                        $user_image[] =  wp_get_attachment_url($user_image_id);
+                    } else {
+                        $user_image[] = get_avatar_url($buyer);
+                    }
+                }
+            }
+            $buyer_count = count($buyers);
+            // offers section endss ===========================
+
+
+            // View domain section starts =============
+
+
+            $args = array(
+                'author'        =>  $user_id,
+                'orderby'       =>  'post_date',
+                'order'         =>  'ASC',
+                'posts_per_page' => -1, // no limit
+                'post_status' => 'publish',
+                'post_type' => 'domain',
+                'fields' => 'ids'
+            );
+
+
+            $total_views = 0;
+            $current_user_posts = get_posts($args);
+            foreach ($current_user_posts as $current_user_post) {
+                $views = (int)get_post_meta($current_user_post, 'ws_product_view_count', true);
+                if ($views) {
+                    $total_views += $views;
+                }
+            }
+            // Format total views
+            if ($total_views >= 1000) {
+                $total_views = floor($total_views / 100) / 10 . 'k';
+            }
+
+            $data = [
+                'offered_images' => $user_image ?: '',
+                'buyer_count' => $buyer_count ?: '',
+                'total_view' => $total_views
+
+            ];
+            return new WP_REST_Response($data, 200);
+        }
+
         public function wstr_seller_order_details($request)
         {
 
@@ -2068,13 +2155,85 @@ if (!class_exists('wstr_rest_api')) {
 
             return new WP_REST_Response($data, 200);
             // Output results
-            echo "Total Order Amount: $" . round($total_order_amount) . "<br>";
-            echo "Total Sales (Completed Orders): $" . round($total_sales);
-            echo "last 12months Sales : $" . round($last_12_month_sales / 12);
-            echo 'Total domains sold:: ' . $domain_solds;
-            echo 'Current year sales:: ' . $current_year_sales;
-            echo 'Domain for sale: ' . $domain_count;
+            // echo "Total Order Amount: $" . round($total_order_amount) . "<br>";
+            // echo "Total Sales (Completed Orders): $" . round($total_sales);
+            // echo "last 12months Sales : $" . round($last_12_month_sales / 12);
+            // echo 'Total domains sold:: ' . $domain_solds;
+            // echo 'Current year sales:: ' . $current_year_sales;
+            // echo 'Domain for sale: ' . $domain_count;
         }
     }
 }
 new wstr_rest_api();
+
+// add_action('wp_footer', 'wstr_from_community');
+function wstr_from_community()
+{
+    global $wpdb;
+    // offers section starts ===========================
+    $offer_table = $wpdb->prefix . 'offers';
+    $user_id = get_current_user_id();
+    // $user_id = 3;
+    $offers = $wpdb->get_results($wpdb->prepare("SELECT * FROM $offer_table WHERE seller_id = %d", $user_id));
+    $buyers = [];
+    $user_image = [];
+    if ($offers) {
+
+        foreach ($offers as $offer) {
+            if (!in_array($offer->buyer_id, $buyers)) {
+                $buyers[] = $offer->buyer_id;
+            }
+        }
+    } else {
+        echo '<p>No offers found for the current user.</p>';
+    }
+
+    if ($buyers) {
+        foreach ($buyers as $buyer) {
+            $user_image_id = (int) get_user_meta($buyer, 'ws_profile_pic', true);
+
+            if ($user_image_id) {
+                $user_image[] =  wp_get_attachment_url($user_image_id);
+            } else {
+                $user_image[] = get_avatar_url($buyer);
+            }
+        }
+    }
+    $buyer_count = count($buyers);
+    // offers section endss ===========================
+
+
+    // View domain section starts =============
+
+
+    $args = array(
+        'author'        =>  $user_id,
+        'orderby'       =>  'post_date',
+        'order'         =>  'ASC',
+        'posts_per_page' => -1, // no limit
+        'post_status' => 'publish',
+        'post_type' => 'domain',
+        'fields' => 'ids'
+    );
+
+
+    $total_views = 0;
+    $current_user_posts = get_posts($args);
+    foreach ($current_user_posts as $current_user_post) {
+        $views = (int)get_post_meta($current_user_post, 'ws_product_view_count', true);
+        if ($views) {
+            $total_views += $views;
+        }
+    }
+    // Format total views
+    if ($total_views >= 1000) {
+        $total_views = floor($total_views / 100) / 10 . 'k';
+    }
+
+    $data = [
+        'offered_images' => $user_image ?: '',
+        'buyer_count' => $buyer_count ?: '',
+        'total_view' => $total_views
+
+    ];
+}
