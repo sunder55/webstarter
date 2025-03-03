@@ -18,24 +18,16 @@ function get_wstr_price($domain_id)
     $currency = $_SESSION['currency'] ?? '';
     $currency_rates = get_option('wstr_currency_rates', []);
     $currency_rate = $currency_rates[$currency] ?? 1;
-
-
-    $sale_price = 0;
-    $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
-    $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
-    $current_date = current_time('Y-m-d'); // Get the current date in 'YYYY-MM-DD' format
-
-    if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date) || (!$sale_price_dates_to && !$sale_price_dates_from)) {
-        $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
-    }
+    $regular_price = (float) get_post_meta($domain_id, '_regular_price', true);
+    $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
 
     if ($currency && $currency != 'USD') {
         $currency_rate = wstr_truncate_number((float) $currency_rate);
         //  $currency_rate;
-        // $price = $sale_price > 0 ? $sale_price * $currency_rate : $regular_price * $currency_rate;
+        $price = $sale_price > 0 ? $sale_price * $currency_rate : $regular_price * $currency_rate;
     } else {
         $currency = 'USD';
-        // $price = $sale_price > 0 ? $sale_price : $regular_price;
+        $price = $sale_price > 0 ? $sale_price : $regular_price;
     }
     // $price_html = '<div class="wstr-price_html">
     // <span class="wstr-currency">' . get_wstr_currency_symbol($currency) . '</span>
@@ -49,7 +41,38 @@ function get_wstr_price($domain_id)
     return $price_html;
 }
 
-function get_wstr_price_value($domain_id)
+// function get_wstr_price_value($domain_id, $type = 'regular')
+// {
+//     if (!$domain_id) {
+//         return 0;
+//     }
+
+//     if (session_status() == PHP_SESSION_NONE) {
+//         session_start();
+//     }
+
+//     $currency = $_SESSION['currency'] ?? '';
+//     $currency_rates = get_option('wstr_currency_rates', []);
+//     $currency_rate = $currency_rates[$currency] ?? 1;
+//     $regular_price = (float) get_post_meta($domain_id, '_regular_price', true);
+//     $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+
+//     if ($currency && $currency != 'USD') {
+//         $currency_rate = wstr_truncate_number((float) $currency_rate);
+//         //  $currency_rate;
+//         $price = (float) $sale_price > 0 ? $sale_price * $currency_rate : $regular_price * $currency_rate;
+//     } else {
+//         $currency = 'USD';
+//         $price = (float) $sale_price > 0 ? $sale_price : $regular_price;
+//     }
+//     // $price_html = '<div class="wstr-price_html">
+//     // <span class="wstr-currency">' . get_wstr_currency_symbol($currency) . '</span>
+//     // <span class="wstr-price">' . wstr_truncate_number($price) . '<span> </div>';
+//     return round($price);
+// }
+
+
+function get_wstr_price_value($domain_id, $type = 'regular')
 {
     if (!$domain_id) {
         return 0;
@@ -59,31 +82,65 @@ function get_wstr_price_value($domain_id)
         session_start();
     }
 
+    $base_price = 0;
+    $is_offer_price = false;
+    $offer_currency = '';
+
+    // Only check for offers if type is 'offer'
+    if ($type === 'offer') {
+        $current_user_id = get_current_user_id();
+        $offers = get_post_meta($domain_id, 'offers', true) ?: [];
+        // return $current_user_id;
+
+        if (!empty($offers) && is_array($offers) && isset($offers[$current_user_id])) {
+            $base_price = (float) $offers[$current_user_id]['amount'];
+            $offer_currency = $offers[$current_user_id]['currency'];
+            $is_offer_price = true;
+        }
+    }
+
+    // return $base_price;
+
+    // If no offer price or type is not 'offer', use regular/sale price
+    if ($base_price === 0) {
+        $regular_price = (float) get_post_meta($domain_id, '_regular_price', true);
+        $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+        $base_price = (float) $sale_price > 0 ? $sale_price : $regular_price;
+    }
+
     $currency = $_SESSION['currency'] ?? '';
     $currency_rates = get_option('wstr_currency_rates', []);
     $currency_rate = $currency_rates[$currency] ?? 1;
-    $regular_price = (float) get_post_meta($domain_id, '_regular_price', true);
-    // $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
-    $sale_price = 0;
-    $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
-    $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
-    $current_date = current_time('Y-m-d'); // Get the current date in 'YYYY-MM-DD' format
 
-    if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date)  || (!$sale_price_dates_to && !$sale_price_dates_from)) {
-        $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
+    // For offer prices, only convert if requested currency is different from offer currency
+    if ($is_offer_price) {
+        if ($offer_currency === '€' && $currency === 'EUR') {
+            return round($base_price);
+        }
+        if ($offer_currency === '$' && $currency === 'USD') {
+            return round($base_price);
+        }
+        if ($offer_currency === 'CA$' && $currency === 'CAD') {
+            return round($base_price);
+        }
+        if ($offer_currency === '£' && $currency === 'GBP') {
+            return round($base_price);
+        }
+        if ($offer_currency === '¥' && $currency === 'JPY') {
+            return round($base_price);
+        }
     }
+
+    // Apply currency conversion for all other cases
     if ($currency && $currency != 'USD') {
         $currency_rate = wstr_truncate_number((float) $currency_rate);
-        //  $currency_rate;
-        $price = $sale_price > 0 ? $sale_price * $currency_rate : $regular_price * $currency_rate;
+        $price = $base_price * $currency_rate;
     } else {
         $currency = 'USD';
-        $price = $sale_price > 0 ? $sale_price : $regular_price;
+        $price = $base_price;
     }
-    // $price_html = '<div class="wstr-price_html">
-    // <span class="wstr-currency">' . get_wstr_currency_symbol($currency) . '</span>
-    // <span class="wstr-price">' . wstr_truncate_number($price) . '<span> </div>';
-    return $price;
+
+    return round($price);
 }
 
 /**
@@ -101,9 +158,9 @@ function get_wstr_regular_price($domain_id)
         $currency_rate = wstr_truncate_number((float) $currency_rate);
 
         // Calculate the prices in the specified currency
-        $regular_price = $regular_price > 0 ? $regular_price * $currency_rate : 0;
+        $regular_price = (float) $regular_price > 0 ? $regular_price * $currency_rate : 0;
     }
-    return wstr_truncate_number($regular_price);
+    return round($regular_price);
 }
 
 /**
@@ -114,40 +171,17 @@ function get_wstr_regular_price($domain_id)
 function get_wstr_sale_price($domain_id)
 {
     $currency = $_SESSION['currency'] ?? '';
-
+    $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
     $currency_rates = get_option('wstr_currency_rates', []);
-    $sale_price = 0;
-    // _sale_price_dates_to
-    // _sale_price_dates_from
-    $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
-    $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
-    $current_date = current_time('Y-m-d'); // Get the current date in 'YYYY-MM-DD' format
-
-    if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date) || (!$sale_price_dates_to && !$sale_price_dates_from)) {
-        $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
-    }
-
-
-    // if ($sale_end_date && $sale_end_date >= $current_date) {
-    //     $price = $sale_price;
-    // } else if ($sale_end_date && $sale_end_date <= $current_date) {
-    //     $price = $regular_price;
-    // } else {
-    //     $price = $sale_price;
-    // }
-
-
-
     $currency_rate = $currency_rates[$currency] ?? 1;
     if ($currency && $currency != 'USD') {
         $currency_rate = wstr_truncate_number((float) $currency_rate);
 
         // Calculate the prices in the specified currency
-        $sale_price = $sale_price > 0 ? $sale_price * $currency_rate : 0;
+        $sale_price = (float) $sale_price > 0 ? $sale_price * $currency_rate : 0;
     }
-    return wstr_truncate_number($sale_price);
+    return round($sale_price);
 }
-
 
 /**
  * Function for getting currecy value according to the currency selected
@@ -203,7 +237,7 @@ function get_wstr_currency()
         session_start();
     }
 
-    $currency = $_SESSION['currency'] ? $_SESSION['currency'] : 'USD';
+    $currency = isset($_SESSION['currency']) && !empty($_SESSION['currency']) ? $_SESSION['currency'] : 'USD';
     return get_wstr_currency_symbol($currency);
 }
 
@@ -238,7 +272,7 @@ function get_wstr_currency_symbol($string, $for_api = false)
 }
 
 /**
- * Fuction for checking if product is on sale
+ * Fuction for check if product is on sale
  * @param mixed $domain_id 
  * @return bool
  */
@@ -246,15 +280,8 @@ function wstr_on_sale($domain_id)
 {
     if ($domain_id) {
         $context = false;
-        $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
-        $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
-        $current_date = current_time('Y-m-d'); // Get the current date in 'YYYY-MM-DD' format
-        $sale_price = 0;
-        if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date) || (!$sale_price_dates_to && !$sale_price_dates_from)) {
-            $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
-        }
-
-        if ($sale_price > 0) {
+        $sale_price = get_post_meta($domain_id, '_sale_price', true);
+        if ($sale_price) {
             $context = true;
         }
     }
@@ -269,7 +296,7 @@ function wstr_on_sale($domain_id)
  * and will handle both positive and negative numbers.
  *
  * @param float|int $number The number to be truncated.
- * @param int $precision The number of decimal places to keep. Default is 2.
+ * @param int $precision The number of decimal places to keep. Default is 3.
  * @return float|int The truncated number.
  */
 function wstr_truncate_number($number, $precision = 2)
@@ -346,7 +373,7 @@ function wstr_get_favourite_count($domain_id)
         $favourite_count = round($favourite_count / 1000, 1) . 'K';
     }
 
-    return $favourite_count;
+    return $favourite_count ?: 0;
 }
 
 /**
@@ -434,31 +461,18 @@ function wstr_get_order_details($order_id)
     return $data;
 }
 
-/**
- * Function for getting currency rates
- */
 
-// function wstr_get_currency_rates($currency)
-// {
-//     $access_key = 'cur_live_RFDFd4STzeV5MnBBE3MFokvZmnaKEWpfAB1wT1iP';
-//     $response = wp_remote_get('https://api.currencyapi.com/v3/latest?apikey=' . $access_key . '&currencies=' . $currency);
 
-//     if (is_wp_error($response)) {
-//         // Handle the error
-//         $error_message = $response->get_error_message();
-//         echo "Something went wrong: $error_message";
-//     } else {
-//         $body = wp_remote_retrieve_body($response);
-//         $data = json_decode($body, true);
+// redirect search
+add_action('template_redirect', 'redirect_search_to_buy_page');
 
-//         if (isset($data['data'])) {
-//             var_dump($data['data'][$currency]['value']);
-//         } else {
-//             error_log('Failed to update currency rate .');
-//         }
-//     }
-// }
-
+function redirect_search_to_buy_page()
+{
+    if (is_search() && !is_admin()) {
+        wp_redirect(home_url('/buy'));
+        exit;
+    }
+}
 
 
 /**
@@ -495,13 +509,28 @@ function wstr_handle_login_and_otp()
 
             set_transient('custom_otp_' . $user->ID, $otp, 600); // Store OTP for 5 minutes
 
-            $to = $user->user_email;
-            $subject = "Otp Code";
-            $txt = 'Your opt code is ' . $otp;
-            $headers = "From: webstarter.com" . "\r\n" .
-                "CC: somebodyelse@example.com";
+            // $to = $user->user_email;
+            // $subject = "Otp Code";
+            // $txt = 'Your opt code is ' . $otp;
+            // $headers = "From: webstarter.com";
 
-            mail($to, $subject, $txt, $headers);
+
+            // wp_mail($to, $subject, $txt, $headers);
+            $to = $user->user_email;
+            $subject = "Your OTP Code for Verification";
+            $otpFormatted = '<div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px;">
+                    <h2 style="color: #4CAF50; margin-bottom: 20px;">Your OTP Code</h2>
+                    <p style="font-size: 18px; margin: 10px 0; color: #333;">Please use the following OTP to complete your verification:</p>
+                    <p style="font-size: 28px; font-weight: bold; color: #333; margin: 20px 0;">' . $otp . '</p>
+                    <p style="font-size: 14px; color: #777;">If you did not request this, please ignore this email.</p>
+                </div>';
+
+            $headers = array(
+                'Content-Type: text/html; charset=UTF-8',
+                'From: webstarter.com <contact@webstarter.com>',
+            );
+
+            wp_mail($to, $subject, $otpFormatted, $headers);
 
             // Optionally, send OTP via email (or SMS)
 
@@ -584,82 +613,3 @@ function wstr_handle_otp_verification()
     }
 }
 add_action('init', 'wstr_handle_otp_verification');
-
-
-
-// Offers Table Columns:
-
-// 1. offer_id (primary key)
-// 2. Product_id
-// 3. Offer_amount
-// 4. Offer expiry date.
-// 5. Status -> pending, accepted, declined.
-// 6. seller_id.
-// 7. buyer_id.
-// 8. created_at(Timestamp)
-
-add_action('init', function () {
-
-    // create_offer_table();
-    // create_counter_offer_table();
-});
-
-function create_offer_table()
-{
-
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'offers';
-    $charset_collate = $wpdb->get_charset_collate();
-
-    $sql = "CREATE TABLE $table_name (
-        offer_id INT(11) NOT NULL AUTO_INCREMENT,
-        domain_id INT(11) NOT NULL,
-        currency varchar(10) NOT NULL,
-        offer_amount varchar(100) NOT NULL,
-        status varchar(20) NOT NULL,
-        seller_id INT(11) NOT NULL,
-        buyer_id INT(11) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        offer_expiry_date DATETIME NOT NULL,
-
-        PRIMARY KEY (offer_id)
-    ) $charset_collate;";
-
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
-
-    // Optionally, you can add a message to indicate that the table has been created
-    // echo "Table '$table_name' created successfully.";
-}
-
-// Counter Offers Table
-// 1. counter_offer_id(pk)
-// 2. offer_id
-// 3. counter_price
-// 4. by_user_id
-// 5. created_at(Timestamp)
-
-function create_counter_offer_table()
-{
-
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'counter_offers';
-    $charset_collate = $wpdb->get_charset_collate();
-
-    $sql = "CREATE TABLE $table_name (
-        counter_offer_id INT(11) NOT NULL AUTO_INCREMENT,
-        offer_id INT(11) NOT NULL,
-        counter_price varchar (100),
-        by_user_id INT(11) NOT NULL,
-        status varchar(30)
-        currency varchar(20),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (counter_offer_id)
-    ) $charset_collate;";
-
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
-
-    // Optionally, you can add a message to indicate that the table has been created
-    // echo "Table '$table_name' created successfully.";
-}

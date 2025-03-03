@@ -1,6 +1,7 @@
 <?php
-require_once('/www/wwwroot/new-webstarter.codepixelz.tech/wp-load.php');
-
+// require_once('/www/wwwroot/webstarter.com/wp-load.php');
+require_once '/var/www/html/wp-load.php';
+// require_once(/www/wwwroot/new-webstarter.codepixelz.tech/wp-load.php): 
 function get_curreny_rates()
 {
     global $wpdb;

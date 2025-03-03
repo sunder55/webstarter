@@ -5,9 +5,7 @@ class Wstr_payouts
     function __construct()
     {
 
-        add_action('init', [$this, 'wstr_payouts_table']);
-
-        // add_action('init', array($this, 'wstr_payouts'));
+        add_action('after_setup_theme', [$this, 'wstr_payouts_table']);
         add_action('rest_api_init', array($this, 'wstr_payouts_rest_api_endpoint'));
     }
 
@@ -240,7 +238,7 @@ class Wstr_payouts
 
         global $wpdb;
         $table_name = $wpdb->prefix . 'wstr_payouts';
-        $results = $wpdb->get_results("SELECT amount, currency FROM $table_name WHERE seller_id = $user_id and type='commission' GROUP BY currency");
+        $results = $wpdb->get_results("SELECT amount, currency FROM $table_name WHERE seller_id = $user_id and type='commission'");
         $payout_completeds = $wpdb->get_results("SELECT amount FROM $table_name WHERE seller_id = $user_id and type='payout' and status='paid'");
         $payout_pendings = $wpdb->get_results("SELECT amount FROM $table_name WHERE seller_id = $user_id and type='payout' and status='pending' OR status='in-progress'");
         $total_in_usd = 0;

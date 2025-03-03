@@ -163,14 +163,14 @@ class wstr_domain_meta_boxes
         $sale_price = get_post_meta($post->ID, '_sale_price', true);
         $stock_status = get_post_meta($post->ID, '_stock_status', true);
         $enable_offers = get_post_meta($post->ID, '_enable_offers', true);
-
+        $lease = get_post_meta($post->ID, '_lease_to_own', true);
     ?>
         <div class="domainDataFields">
             <div class="domainPrice">
                 <div class="domainRegularPrice">
                     <div class="wstr-error-msg"></div>
                     <label><?php _e('Regular price ($)', 'webstarter'); ?></label>
-                    <input type="text" name="regular_price" class="widefat" value="<?php echo esc_attr($regular_price); ?>">
+                    <input type="text" name="regular_price" class="widefat" value="<?php echo esc_attr($regular_price); ?>" required>
                 </div>
                 <div class="domainSalePrice">
                     <label><?php _e('Sale price ($)', 'webstarter'); ?></label>
@@ -188,6 +188,11 @@ class wstr_domain_meta_boxes
                 <label><?php _e('Enable Offers', 'webstarter'); ?></label>
                 <input type="checkbox" name="enable_offers" class="widefat" <?php checked($enable_offers, 'yes'); ?>>
                 <span class="wstr-help-tip" tabindex="0" aria-label="Enable this option to enable the 'Make Offer' buttons and form display in the shop."></span>
+            </div>
+            <div class="domainLeaseToOwn">
+                <label><?php _e('Lease-To-Own', 'webstarter'); ?></label>
+                <input type="checkbox" name="lease_to_own" class="widefat" <?php checked($lease, '1'); ?>>
+                <span class="wstr-help-tip" tabindex="0" aria-label="Enable this option to enable the 'Lease To Own' button on single domain page."></span>
             </div>
         </div>
     <?php
@@ -244,16 +249,15 @@ class wstr_domain_meta_boxes
             'regular_price',
             // 'sale_price',
             'stock_status',
-            'enable_offers',
+            // 'enable_offers',
+            // 'lease_to_own',
             'tld' // Added TLD field
         ];
 
         foreach ($fields as $field) {
             if (isset($_POST[$field])) {
                 // Handle sanitization based on field type
-                if ($field === 'enable_offers') {
-                    $value = isset($_POST[$field]) ? 'yes' : 'no';
-                } elseif ($field === 'logo_image') {
+                if ($field === 'logo_image') {
                     $value = intval($_POST[$field]);
                 } else {
                     $value = sanitize_text_field($_POST[$field]);
@@ -262,6 +266,9 @@ class wstr_domain_meta_boxes
             }
         }
         update_post_meta($post_id, '_sale_price', $sale_price);
+
+        update_post_meta($post_id, '_lease_to_own', sanitize_text_field($_POST['lease_to_own'] ? true : false));
+        update_post_meta($post_id, '_enable_offers', sanitize_text_field($_POST['enable_offers'] ? 'yes' : 'no'));
     }
 }
 
@@ -569,7 +576,6 @@ class wstr_domain_order_meta_boxes
         $payment_method = get_post_meta($post->ID, '_payment_method', true);
         $transaction_id = get_post_meta($post->ID, '_transaction_id', true);
         $customer_note = get_post_meta($post->ID, '_customer_note', true);
-        $order_type =  get_post_meta($post->ID, '_order_type', true);
 
     ?>
         <div class="orderPaymentInfo">
@@ -586,11 +592,6 @@ class wstr_domain_order_meta_boxes
                 <label for="customer_note"><?php _e('Customer Note', 'webstarter'); ?></label>
                 <textarea id="customer_note" name="customer_note" class="widefat"><?php echo esc_textarea($customer_note); ?></textarea>
             </p>
-            <select class="widefat" name="order_type">
-                <option value="one_time" <?php echo $order_type == 'one_time' ? 'selected' : "" ?>>One Time</option>
-                <option value="lease_to_own" <?php echo $order_type == 'lease_to_own' ? 'selected' : "" ?>>Lease to own</option>
-                <option value="offer" <?php echo $order_type == 'offer' ? 'selected' : "" ?>>offer</option>
-            </select>
         </div>
         <?php
     }
@@ -643,29 +644,20 @@ class wstr_domain_order_meta_boxes
                         <?php if ($domain_post):
                             $regular_price = get_post_meta($domain_post->ID, '_regular_price', true);
                             $sale_price = get_post_meta($domain_post->ID, '_sale_price', true);
+                            $sale_end_date = get_post_meta($domain_post->ID, '_sale_price_dates_to', true);
                             $current_date = date('Y-m-d');
                             $price = '';
-                            $sale_price_dates_to = get_post_meta($domain_id, '_sale_price_dates_to', true);
-                            $sale_price_dates_from = get_post_meta($domain_id, '_sale_price_dates_from', true);
-
-                            if (($current_date >= $sale_price_dates_from && $current_date <= $sale_price_dates_to) || ($sale_price_dates_from && !$sale_price_dates_to &&  $sale_price_dates_from <= $current_date) || ($sale_price_dates_to && !$sale_price_dates_from && $sale_price_dates_to >= $current_date)  || (!$sale_price_dates_to && !$sale_price_dates_from)) {
-                                // $sale_price = (float) get_post_meta($domain_id, '_sale_price', true);
-                                $price = $sale_price;
+                            if ($sale_price) {
+                                if ($sale_end_date && $sale_end_date >= $current_date) {
+                                    $price = $sale_price;
+                                } else if ($sale_end_date && $sale_end_date <= $current_date) {
+                                    $price = $regular_price;
+                                } else {
+                                    $price = $sale_price;
+                                }
                             } else {
                                 $price = $regular_price;
                             }
-
-                            // if ($sale_price) {
-                            //     if ($sale_end_date && $sale_end_date >= $current_date) {
-                            //         $price = $sale_price;
-                            //     } else if ($sale_end_date && $sale_end_date <= $current_date) {
-                            //         $price = $regular_price;
-                            //     } else {
-                            //         $price = $sale_price;
-                            //     }
-                            // } else {
-                            //     $price = $regular_price;
-                            // }
                             // $subtotal += (float) $price; // Add the price to the subtotal
                         ?>
 
@@ -776,8 +768,6 @@ class wstr_domain_order_meta_boxes
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return $post_id;
         }
-
-
         // Check user's permissions.
         if (!current_user_can('edit_post', $post_id)) {
             return $post_id;
@@ -787,27 +777,13 @@ class wstr_domain_order_meta_boxes
             $order_status = sanitize_text_field($_POST['order_status']);
             update_post_meta($post_id, '_order_status', $order_status);
         }
-        if (isset($_POST['order_type'])) {
-            update_post_meta($post_id, '_order_type', $_POST['order_type']);
-        }
-        // $currency = $_SESSION['currency'] ?: 'EUR';
+
+        // $currency = $_SESSION['currency'] ?: 'USD';
         $currency = 'USD';
         update_post_meta($post_id, '_currency', $currency);
 
         $currency_symbol = get_wstr_currency_symbol($currency);
         update_post_meta($post_id, '_currency_symbol', $currency_symbol);
-
-        if ($currency != 'USD') {
-            // $currency_rates = get_option('wstr_currency_rates', []);
-            // $currency_rate = $currency_rates[$currency] ?? 1;
-            // if ($currency && $currency != 'USD') {
-            //     $currency_rate = wstr_truncate_number((float) $currency_rate);
-
-            //     // Calculate the prices in the specified currency
-            //     // $regular_price = $regular_price > 0 ? $regular_price * $currency_rate : 0;
-            // }
-            // return wstr_truncate_number($regular_price);
-        }
 
         $customer = sanitize_text_field($_POST['customer']);
         update_post_meta($post_id, '_customer', $customer);
@@ -900,11 +876,12 @@ class wstr_domain_order_meta_boxes
         if (isset($_POST['domain_ids'])) {
 
             $domain_ids = array_map('sanitize_text_field', $_POST['domain_ids']);
-
             update_post_meta($post_id, '_domain_ids', $domain_ids);
         }
 
         $get_domain_ids = get_post_meta($post_id, '_domain_ids', true);
+
+
 
         //payouts starts=======================
         if (isset($_POST['order_status']) && $_POST['order_status'] == 'completed') {
@@ -912,9 +889,8 @@ class wstr_domain_order_meta_boxes
             $table = $wpdb->prefix . 'wstr_payouts';
             $payouts = $wpdb->query($wpdb->prepare("DELETE FROM $table WHERE order_id = %d", $post_id));
         }
+
         // payouts ends =======================
-
-
         // handelling seller starts 
         $seller_id = [];
         $ordered_products = []; // Initialize array for ordered products
@@ -930,6 +906,7 @@ class wstr_domain_order_meta_boxes
                 'product_id' => $get_domain_id,
                 'seller_id'  => $author_id,
             ];
+
             // handeling products price
             $regular_price = get_post_meta($get_domain_id, '_regular_price', true);
             $sale_price = get_post_meta($get_domain_id, '_sale_price', true);
@@ -949,6 +926,7 @@ class wstr_domain_order_meta_boxes
                 $price = $regular_price;
             }
 
+
             // saving ordered product price to the order meta 
             $products_price[] = [
                 'product_id' => $get_domain_id,
@@ -959,7 +937,7 @@ class wstr_domain_order_meta_boxes
             // Deduct discount if availabe for each domain.
             // $order_total = get_post_meta($post_id, '_order_total', true);
             if (isset($_POST['order_status']) && $_POST['order_status'] == 'completed') {
-
+                // Deduct discount if availabe for each domain.
                 global $wstr_payouts;
                 $wstr_payouts->wstr_payouts(
                     $post_id,
@@ -974,7 +952,6 @@ class wstr_domain_order_meta_boxes
             // notifcations ends ========================
 
         }
-
 
         // Save the consolidated ordered products under a single meta key
         update_post_meta($post_id, '_ordered_products', $ordered_products);

@@ -46,7 +46,7 @@ if (!class_exists('wstr_rest_api')) {
 
         private function QueryWhoisServer($whoisserver, $domain)
         {
-            $port    = 43;
+            $port = 43;
             $timeout = 10;
             $fp = @fsockopen($whoisserver, $port, $errno, $errstr, $timeout) or die("Socket Error " . $errno . " - " . $errstr);
             //if($whoisserver == "whois.verisign-grs.com") $domain = "=".$domain; // whois.verisign-grs.com requires the equals sign ("=") or it returns any result containing the searched string.
@@ -85,16 +85,16 @@ if (!class_exists('wstr_rest_api')) {
                 $domain = substr($domain, 4); //remove www from domain
             if (preg_match("/^([-a-z0-9]{2,100}).([a-z.]{2,8})$/i", $domain)) {
                 $domain_parts = explode(".", $domain);
-                $tld          = strtolower(array_pop($domain_parts));
+                $tld = strtolower(array_pop($domain_parts));
                 if (!$server = $this->WHOIS_SERVERS[$tld][0]) {
                     return false;
                 }
                 $res = $this->QueryWhoisServer($server, $domain);
                 if (preg_match($this->WHOIS_SERVERS[$tld][1], $res, $match)) {
                     date_default_timezone_set('UTC');
-                    $time  = time() - strtotime($match[1]);
+                    $time = time() - strtotime($match[1]);
                     $years = floor($time / 31556926);
-                    $days  = floor(($time % 31556926) / 86400);
+                    $days = floor(($time % 31556926) / 86400);
                     if ($years == "1") {
                         $y = "1 year";
                     } else {
@@ -118,10 +118,12 @@ if (!class_exists('wstr_rest_api')) {
                 return false;
         }
 
+
+
         public function get_domain_da_pa($domain_name)
         {
 
-            $curl = curl_init();
+            // $curl = curl_init();
 
             // curl_setopt_array($curl, [
             //     CURLOPT_URL => 'https://domain-da-pa-check.p.rapidapi.com/?target=' . $domain_name,
@@ -154,14 +156,9 @@ if (!class_exists('wstr_rest_api')) {
             //         return $domainAuthority . '/' . $pageAuthority;
             //     }
             // }
-            return '10/10';
+            return 10 . '/' . 10;
         }
-        /**
-         * generating  domain description from gemini ai
-         * @param mixed $domain
-         * @param mixed $domain_length
-         * @return mixed
-         */
+
         public function get_desc($request)
         {
             $params = $request->get_params();
@@ -324,18 +321,48 @@ if (!class_exists('wstr_rest_api')) {
                 'permission_callback' => '__return_true'
             ));
 
+            register_rest_route('wstr/v1', '/bank-details/', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_user_bank_details'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+                'permission_callback' => '__return_true'
+            ));
+
+            register_rest_route('wstr/v1', '/paypal-details/', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_user_paypal_details'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+                'permission_callback' => '__return_true'
+            ));
+
             // for updating users 
             register_rest_route('wstr/v1', '/update-user/(?P<user_id>\d+)', array(
                 'methods' => 'POST',
                 'callback' => [$this, 'wstr_update_user_profile'],
                 'permission_callback' => '__return_true'
             ));
+
+            register_rest_route('wstr/v1', '/update-user-bank-details/(?P<user_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_update_user_bank_details'],
+                'permission_callback' => '__return_true'
+            ));
+
+            register_rest_route('wstr/v1', '/update-user-paypal-details/(?P<user_id>\d+)', array(
+                'methods' => 'POST',
+                'callback' => [$this, 'wstr_update_user_paypal_details'],
+                'permission_callback' => '__return_true'
+            ));
+
             register_rest_route('wstr/v1', '/orders/(?P<user_id>\d+)', array(
                 'methods' => 'GET',
                 'callback' => [$this, 'wstr_get_orders'],
                 'permission_callback' => '__return_true'
             ));
-
             register_rest_route('wstr/v1', '/domain_meta/(?P<domain_id>\d+)', array(
                 'methods' => 'POST',
                 'callback' => [$this, 'wstr_add_domain_meta'],
@@ -358,29 +385,10 @@ if (!class_exists('wstr_rest_api')) {
                 'callback' => [$this, 'wstr_get_user_profile'],
                 'permission_callback' => '__return_true'
             ));
-
             register_rest_route('wstr/v1', '/domain-registar/(?P<domain_name>[\w\.\-]+)', array(
                 'methods' => 'GET',
                 'callback' => [$this, 'wstr_get_domain_registar'],
                 'permission_callback' => '__return_true'
-            ));
-
-            register_rest_field('domain_order', 'meta', array(
-                'get_callback' => function ($data) {
-                    return get_post_meta($data['id'], '', '');
-                },
-            ));
-
-            register_rest_field('domain', 'meta', array(
-                'get_callback' => function ($data) {
-                    return get_post_meta($data['id'], '', '');
-                },
-            ));
-
-            register_meta('term', 'taxonomy_image_id', array(
-                'type' => 'string',
-                'single' => true,
-                'show_in_rest' => true
             ));
 
             register_rest_route('wstr/v1', '/become-seller/(?P<user_id>[\w\.\-]+)', array(
@@ -394,6 +402,7 @@ if (!class_exists('wstr_rest_api')) {
                 'callback' => [$this, 'wstr_2fa_verfication'],
                 'permission_callback' => '__return_true'
             ));
+
             register_rest_route('wstr/v1', '/logout-all-device/(?P<user_id>[\w\.\-]+)', array(
                 'methods' => 'POST',
                 'callback' => [$this, 'wstr_logout_all_device'],
@@ -417,62 +426,30 @@ if (!class_exists('wstr_rest_api')) {
                 'callback' => [$this, 'wstr_currency_api_callback'],
                 'permission_callback' => '__return_true'
             ));
-            // register_meta(
-            //     'domain',
-            //     '_enable_offers',
-            //     array(
-            //         'type' => 'string',
-            //         'single' => true,
-            //         'show_in_rest' => true,
-            //     )
-            // );
-            // register_rest_field('domain', '_enable_offers', [
-            //     'get_callback' => function ($post_arr) {
-            //         return get_post_meta($post_arr['id'], '_enable_offers', true);
-            //     },
-            //     'update_callback' => function ($meta_value, $post) {
-            //         update_post_meta($post->ID, '_enable_offers', sanitize_text_field($meta_value));
-            //     },
-            //     'schema' => [
-            //         'type' => 'string',
-            //         'description' => 'A custom meta field',
-            //         'context' => ['view', 'edit'],
-            //     ],
-            // ]);
 
-            register_rest_route('wstr/v1', '/bank-details/', array(
-                'methods' => 'GET',
-                'callback' => [$this, 'wstr_user_bank_details'],
-                'permission_callback' => function () {
-                    return is_user_logged_in();
-                },
-                'permission_callback' => '__return_true'
-            ));
-
-            register_rest_route('wstr/v1', '/paypal-details/', array(
-                'methods' => 'GET',
-                'callback' => [$this, 'wstr_user_paypal_details'],
-                'permission_callback' => function () {
-                    return is_user_logged_in();
-                },
-            ));
-
-
-            register_rest_route('wstr/v1', '/update-user-bank-details/(?P<user_id>\d+)', array(
-                'methods' => 'POST',
-                'callback' => [$this, 'wstr_update_user_bank_details'],
-                'permission_callback' => '__return_true'
-            ));
-
-            register_rest_route('wstr/v1', '/update-user-paypal-details/(?P<user_id>\d+)', array(
-                'methods' => 'POST',
-                'callback' => [$this, 'wstr_update_user_paypal_details'],
-                'permission_callback' => '__return_true'
-            ));
             register_rest_route('wstr/v1', '/cancel-subscription/', array(
                 'methods' => 'POST',
                 'callback' => [$this, 'wstr_cancel_subscription'],
                 'permission_callback' => '__return_true'
+            ));
+
+
+            register_rest_field('domain_order', 'meta', array(
+                'get_callback' => function ($data) {
+                    return get_post_meta($data['id'], '', '');
+                },
+            ));
+
+            register_rest_field('domain', 'meta', array(
+                'get_callback' => function ($data) {
+                    return get_post_meta($data['id'], '', '');
+                },
+            ));
+
+            register_meta('term', 'taxonomy_image_id', array(
+                'type' => 'string',
+                'single' => true,
+                'show_in_rest' => true
             ));
 
             register_rest_route('wstr/v1', '/offers/(?P<user_id>\d+)', array(
@@ -538,9 +515,9 @@ if (!class_exists('wstr_rest_api')) {
                 },
             ));
 
-            register_rest_route('wstr/v1', '/seller_order_details/(?P<user_id>\d+)', array(
+            register_rest_route('wstr/v1', '/get-preferred-payment-method/(?P<user_id>\d+)', array(
                 'methods' => 'GET',
-                'callback' => [$this, 'wstr_seller_order_details'],
+                'callback' => [$this, 'wstr_get_preferred_payment_method'],
                 'permission_callback' => function () {
                     return is_user_logged_in();
                 },
@@ -549,6 +526,14 @@ if (!class_exists('wstr_rest_api')) {
             register_rest_route('wstr/v1', '/community/(?P<user_id>\d+)', array(
                 'methods' => 'GET',
                 'callback' => [$this, 'wstr_from_community'],
+                'permission_callback' => function () {
+                    return is_user_logged_in();
+                },
+            ));
+
+            register_rest_route('wstr/v1', '/dashboard-commission/(?P<user_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => [$this, 'wstr_dashboard_commission'],
                 'permission_callback' => function () {
                     return is_user_logged_in();
                 },
@@ -658,7 +643,7 @@ if (!class_exists('wstr_rest_api')) {
                 $query_args = array(
                     'posts_per_page' => 8,
                     'post_type' => 'domain',
-                    'orderby' => 'rand', //rand
+                    // 'orderby' => 'rand', //rand
                     'order' => 'DESC',
                     'fields' => 'ids',
                     'meta_query' => array(
@@ -898,21 +883,20 @@ if (!class_exists('wstr_rest_api')) {
                 $domain_age = $this->get_domain_age($domain_name);
                 $da_pa = $this->get_domain_da_pa($domain_name);
 
-
                 $domain_explode = explode('.', $domain_name);
-                $domain_length = strlen(string: $domain_explode[0]);
+                $domain_length = strlen($domain_explode[0]);
                 $tld = $domain_explode[1];
 
                 // $domain_desc = $this->get_desc($domain_name, $domain_length);
                 $estimated_value = $this->wstr_get_domain_estimation($domain_name);
 
-                // $audio = $this->get_text_to_speech($domain_name);
+                $audio = $this->get_text_to_speech($domain_name);
 
                 $data[] = [
                     'age' => $domain_age,
-                    'da_pa' => $da_pa ?: '',
-                    'length' => $domain_length ?: '',
-                    'tld' => $tld ?: '',
+                    'da_pa' => $da_pa ? $da_pa : '',
+                    'length' => $domain_length ? $domain_length : '',
+                    'tld' => $tld ? $tld : '',
                     // 'description' => $domain_desc ? $domain_desc : '',
                     'estimated_value' => $estimated_value ? $estimated_value : ''
                     // 'audio' => $audio ? $audio : '',
@@ -921,7 +905,7 @@ if (!class_exists('wstr_rest_api')) {
 
 
             // Return the data in JSON formatzz
-            return new WP_REST_Response($data, status: 200);
+            return new WP_REST_Response($data, 200);
         }
 
         public function wstr_logged_in_user_callback($request)
@@ -931,7 +915,7 @@ if (!class_exists('wstr_rest_api')) {
             $user_image_id = (int) get_user_meta($GLOBALS['user_id'], 'ws_profile_pic', true);
             $user_image = '';
             if ($user_image_id) {
-                $user_image =  wp_get_attachment_url($user_image_id);
+                $user_image = wp_get_attachment_url($user_image_id);
             } else {
                 $user_image = get_avatar_url($user_details->data->ID);
             }
@@ -941,7 +925,6 @@ if (!class_exists('wstr_rest_api')) {
             $language = get_user_meta($GLOBALS['user_id'], '_language', true);
             $currency = get_user_meta($GLOBALS['user_id'], '_currency', true);
             $preferred_payment_method = get_user_meta($GLOBALS['user_id'], '_preferred_payment_method', true);
-
 
             $data[] = [
                 'id' => $user_details->data->ID ? $user_details->data->ID : '',
@@ -962,6 +945,31 @@ if (!class_exists('wstr_rest_api')) {
             ];
 
             // Return the data in JSON formatzz
+            return new WP_REST_Response($data, 200);
+        }
+
+
+        public function wstr_user_bank_details($request)
+        {
+            $data[] = [
+                'bank_name' => get_user_meta($GLOBALS['user_id'], '_bank_name', true) ?: '',
+                'account_number' => get_user_meta($GLOBALS['user_id'], '_bank_account_number', true) ?: '',
+                'account_name' => get_user_meta($GLOBALS['user_id'], '_bank_account_name', true) ?: '',
+                'bank_state' => get_user_meta($GLOBALS['user_id'], '_bank_state', true) ?: '',
+                'bank_city' => get_user_meta($GLOBALS['user_id'], '_bank_city', true) ?: '',
+                'bank_swift_code' => get_user_meta($GLOBALS['user_id'], '_bank_swift_code', true) ?: '',
+                'bank_country' => get_user_meta($GLOBALS['user_id'], '_bank_country', true) ?: '',
+            ];
+
+            return new WP_REST_Response($data, 200);
+        }
+
+        public function wstr_user_paypal_details($request)
+        {
+            $data[] = [
+                'paypal_email' => get_user_meta($GLOBALS['user_id'], '_paypal_email', true) ?: '',
+            ];
+
             return new WP_REST_Response($data, 200);
         }
 
@@ -1049,10 +1057,6 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('user_not_found', 'Sorry, user not found', array('status' => 404));
             }
-            $current_user = get_current_user_id();
-            // if ($current_user !== $user_id) {
-            //     return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
-            // }
 
             $args = [
                 'post_type' => 'domain_order',
@@ -1168,16 +1172,15 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('no_seller_id', 'Sorry, seller not found', array('status' => 404));
             }
             $args = [
-                'post_type'      => 'domain_order',
+                'post_type' => 'domain_order',
                 'posts_per_page' => -1,
-                'order' => 'DESC',
-                'orderby' => 'ID',
             ];
 
             if ($seller_id) {
                 $args['meta_query'] = [
                     [
-                        'key'     => '_seller',
+                        'key' => '_seller',
+
                         'value' => serialize(strval($seller_id)),
                         'compare' => 'LIKE',
                     ],
@@ -1212,17 +1215,13 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'User id is missing');
             }
-            $current_user = get_current_user_id();
-            // if ($current_user !== $user_id) {
-            //     return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
-            // }
 
             $user_details = get_user_by('id', $user_id);
 
             $user_image_id = (int) get_user_meta($user_id, 'ws_profile_pic', true);
             $user_image = '';
             if ($user_image_id) {
-                $user_image =  wp_get_attachment_url($user_image_id);
+                $user_image = wp_get_attachment_url($user_image_id);
             } else {
                 $user_image = get_avatar_url($user_details->data->ID);
             }
@@ -1242,6 +1241,7 @@ if (!class_exists('wstr_rest_api')) {
             return new WP_REST_Response($data, 200);
         }
 
+
         /**
          * Function for getting an domains registar information via api
          */
@@ -1255,9 +1255,10 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('missing_domain_name', 'domain name is missing');
             }
 
-            $r         = "whois";          // API request type
-            $apikey    = "75e2f2c1ceba1bd4e21d461001ce25f1";
+            $r = "whois";          // API request type
+            $apikey = "75e2f2c1ceba1bd4e21d461001ce25f1";        // your API key
 
+            // API call
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, "https://api.whoapi.com/?domain=$domain_name&r=$r&apikey=$apikey");
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -1285,11 +1286,6 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
-            $current_user = get_current_user_id();
-            // if ($current_user !== $user_id) {
-            //     return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
-            // }
-
 
             $body_params = $request->get_json_params();
 
@@ -1307,6 +1303,9 @@ if (!class_exists('wstr_rest_api')) {
             }
         }
 
+        /**
+         * Function for adding 2fa enabled data to the user meta
+         */
         public function wstr_2fa_verfication($request)
         {
             $user_id = $request->get_param('user_id');
@@ -1332,6 +1331,7 @@ if (!class_exists('wstr_rest_api')) {
                 return new WP_Error('update_failed', 'Failed to update 2FA settings.', ['status' => 500]);
             }
         }
+
         public function wstr_logout_all_device($request)
         {
             $user_id = $request->get_param('user_id');
@@ -1360,7 +1360,6 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'User id is missing');
             }
-
             $get_login_details = get_user_meta($user_id, 'session_tokens', true);
 
             $ip_addresses = [];
@@ -1371,23 +1370,23 @@ if (!class_exists('wstr_rest_api')) {
             }
             $ip_addresses = array_unique($ip_addresses);
 
-            $ip_addresses = ['166.196.75.52', '111.119.49.122'];
+            // $ip_addresses = ['166.196.75.52', '111.119.49.122'];
 
             $ip_location = [];
 
-            // if ($ip_addresses) {
-            //     foreach ($ip_addresses as $ip) {
-            //         $curl = curl_init();
-            //         curl_setopt_array($curl, array(
-            //             CURLOPT_RETURNTRANSFER => 1,
-            //             CURLOPT_URL => "http://ipinfo.io/{$ip}/json"
-            //         ));
-            //         $details = json_decode(curl_exec($curl));
-            //         curl_close($curl);
+            if ($ip_addresses) {
+                foreach ($ip_addresses as $ip) {
+                    $curl = curl_init();
+                    curl_setopt_array($curl, array(
+                        CURLOPT_RETURNTRANSFER => 1,
+                        CURLOPT_URL => "http://ipinfo.io/{$ip}/json"
+                    ));
+                    $details = json_decode(curl_exec($curl));
+                    curl_close($curl);
 
-            //         $ip_location[] = $details->city . ',' . $details->country;
-            //     }
-            // }
+                    $ip_location[] = $details->city . ',' . $details->country;
+                }
+            }
             return new WP_REST_Response($ip_location, 200);
             // var_dump($ip_addresses);
         }
@@ -1398,12 +1397,6 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
-
-            $current_user = get_current_user_id();
-            // if ($current_user !== $user_id) {
-            //     return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
-            // }
-
 
             $message = '';
             $preferences = '';
@@ -1473,30 +1466,6 @@ if (!class_exists('wstr_rest_api')) {
             return new WP_REST_Response($get_currencies, 200);
         }
 
-        public function wstr_user_bank_details($request)
-        {
-            $data[] = [
-                'bank_name' => get_user_meta($GLOBALS['user_id'], '_bank_name', true) ?: '',
-                'account_number' => get_user_meta($GLOBALS['user_id'], '_bank_account_number', true) ?: '',
-                'account_name' => get_user_meta($GLOBALS['user_id'], '_bank_account_name', true) ?: '',
-                'bank_state' => get_user_meta($GLOBALS['user_id'], '_bank_state', true) ?: '',
-                'bank_city' => get_user_meta($GLOBALS['user_id'], '_bank_city', true) ?: '',
-                'bank_swift_code' => get_user_meta($GLOBALS['user_id'], '_bank_swift_code', true) ?: '',
-                'bank_country' => get_user_meta($GLOBALS['user_id'], '_bank_country', true) ?: '',
-            ];
-
-            return new WP_REST_Response($data, 200);
-        }
-
-        public function wstr_user_paypal_details($request)
-        {
-            $data[] = [
-                'paypal_email' => get_user_meta($GLOBALS['user_id'], '_paypal_email', true) ?: '',
-            ];
-
-            return new WP_REST_Response($data, 200);
-        }
-
         public function wstr_update_user_bank_details($request)
         {
             $current_user_id = $GLOBALS['user_id'];
@@ -1504,13 +1473,11 @@ if (!class_exists('wstr_rest_api')) {
             if ($current_user_id !== $user_id) {
                 return new WP_Error('not_allowed', 'You can only update your own profile.', array('status' => 403));
             }
-
             $user_data = get_userdata($user_id);
             if (!$user_data) {
                 return new WP_Error('user_not_found', 'User not found.', array('status' => 404));
             }
-            $params = $request->get_json_params();
-
+            $params = $_POST;
             $bank_name = sanitize_text_field($params['bank_name']);
             $account_number = sanitize_text_field($params['account_number']);
             $account_name = sanitize_text_field($params['account_name']);
@@ -1518,7 +1485,6 @@ if (!class_exists('wstr_rest_api')) {
             $bank_city = sanitize_text_field($params['bank_city']);
             $bank_swift_code = sanitize_text_field($params['bank_swift_code']);
             $bank_country = sanitize_text_field($params['bank_country']);
-
 
             if (empty($bank_name) || empty($account_number) || empty($account_name) || empty($bank_state) || empty($bank_city)  || empty($bank_swift_code) || empty($bank_country)) {
                 return new WP_Error('empty_fields', 'Please fill in all fields.', array('status' => 400));
@@ -1530,7 +1496,8 @@ if (!class_exists('wstr_rest_api')) {
             update_user_meta($user_id, '_bank_city', $bank_city);
             update_user_meta($user_id, '_bank_swift_code', $bank_swift_code);
             update_user_meta($user_id, '_bank_country', $bank_country);
-            return new WP_REST_Response(array('message' => 'Bank details updated successfully'), 200);
+
+            return new WP_REST_Response(array('message' => 'User bank details updated successfully'), 200);
         }
         public function wstr_update_user_paypal_details($request)
         {
@@ -1543,15 +1510,13 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_data) {
                 return new WP_Error('user_not_found', 'User not found.', array('status' => 404));
             }
-            // $params = $_POST;
-            $params = $request->get_json_params();
-
+            $params = $_POST;
             $paypal_email = sanitize_email($params['paypal_email']);
             if (empty($paypal_email)) {
                 return new WP_Error('empty_fields', 'Please fill in all fields.', array('status' => 400));
             }
             update_user_meta($user_id, '_paypal_email', $paypal_email);
-            return new WP_REST_Response(array('message' => 'Paypal details updated successfully'), 200);
+            return new WP_REST_Response(array('message' => 'User paypal details updated successfully'), 200);
         }
 
         /**
@@ -1568,7 +1533,33 @@ if (!class_exists('wstr_rest_api')) {
             $params = $request->get_json_params();
 
             $subscription_id = sanitize_text_field($params['subscription_id']);
-            update_post_meta(5350, '_order_status', 'cancelled');
+
+            require_once get_template_directory() . '/stripe-php/init.php';
+            \Stripe\Stripe::setApiKey('sk_test_51OeakvCrvpNeIRxsOPkmj5UbZbLKVQiVgMtSZhTddCIGoB0DYmcNndZGzjhad5ZUsi0SiIT01JIXEdcY85tFP53o00G8rWAlDm');
+            $stripe = new \Stripe\StripeClient('sk_test_51OeakvCrvpNeIRxsOPkmj5UbZbLKVQiVgMtSZhTddCIGoB0DYmcNndZGzjhad5ZUsi0SiIT01JIXEdcY85tFP53o00G8rWAlDm');
+
+            try {
+                $cancellation_params = [];
+                $posts = get_posts([
+                    'post_type' => 'domain_order',
+                    'meta_key' => '_subscription_id',
+                    'meta_value' => $subscription_id,
+                    'numberposts' => -1,
+                    'fields' => 'ids'
+                ]);
+
+                if ($posts) {
+                    foreach ($posts as $post_id) {
+                        update_post_meta($post_id, '_cancelled', 1);
+                        update_post_meta($post_id, '_order_status', 'cancelled');
+                    }
+                }
+                return $stripe->subscriptions->cancel($subscription_id, $cancellation_params);
+            } catch (Exception $e) {
+                return new WP_Error('susbcription_cancel_error', $e->getMessage(), array('status' => 404));
+                // return new WP_REST_Response($e->getMessage(), 404); 
+            }
+
             return new WP_REST_Response('Subscription cancelled successfully', 200);
         }
 
@@ -1581,11 +1572,6 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
-            // $current_user = get_current_user_id();
-            // if ($current_user !== $user_id) {
-            //     return new WP_Error('unauthorized', 'Unauthorized', array('status' => 401));
-            // }
-
             global $wpdb;
             $offer = $wpdb->prefix . 'offers';
             $offers_array = [];
@@ -1609,7 +1595,6 @@ if (!class_exists('wstr_rest_api')) {
                 } else if (!$domain_image && !$logo_url) {
                     $image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
                 }
-
                 $offers_array[] = [
                     'buyer_id' => $offer->buyer_id,
                     'created_at' => $offer->created_at,
@@ -1641,8 +1626,6 @@ if (!class_exists('wstr_rest_api')) {
             if (!$offer_id) {
                 return new WP_Error('missing_offer_id', 'Missing offer id.');
             }
-
-
 
             $params = $request->get_json_params();
 
@@ -1709,8 +1692,6 @@ if (!class_exists('wstr_rest_api')) {
             if (!$user_id) {
                 return new WP_Error('missing_user_id', 'Missing user id.');
             }
-
-
             global $wpdb;
             $offer = $wpdb->prefix . 'offers';
             $offers_array = [];
@@ -1734,6 +1715,7 @@ if (!class_exists('wstr_rest_api')) {
                 } else if (!$domain_image && !$logo_url) {
                     $image = get_stylesheet_directory_uri() . '/assets/images/alternate-domain.png';
                 }
+
 
                 $buyer_image_id = (int) get_user_meta($offer->buyer_id, 'ws_profile_pic', true);
                 $buyer_image = '';
@@ -1815,6 +1797,7 @@ if (!class_exists('wstr_rest_api')) {
 
             // for notifications ends ===============================
 
+
             if ($type == 'accept') {
                 $wpdb->update(
                     $wpdb->prefix . 'offers',
@@ -1834,7 +1817,6 @@ if (!class_exists('wstr_rest_api')) {
                 }
                 global $notifcations;
                 $notifcations->wstr_notification_handler($user_by, $receiver_id, $notifications_type, $offer_id);
-
                 return new WP_REST_Response('Offer accepted successfully.', 200);
             }
             if ($type == 'decline') {
@@ -1873,30 +1855,53 @@ if (!class_exists('wstr_rest_api')) {
          */
         public function wstr_add_offers_to_the_card($request)
         {
-            global $wpdb;
-            $user_id = $request->get_param('user_id');
-            if (!$user_id) {
-                return new WP_Error('missing_user_id', 'Missing user id.');
+            try {
+                global $wpdb;
+                $user_id = $request->get_param('user_id');
+                if (!$user_id) {
+                    return new WP_Error('missing_user_id', 'Missing user id.');
+                }
+
+                $params = $request->get_json_params();
+                $offer_id = sanitize_text_field($params['offer_id']);
+                $domain_id = sanitize_text_field($params['domain_id']);
+                $amount = sanitize_text_field($params['amount']);
+                $type = sanitize_text_field($params['type']);
+                // $offer_amount = sanitize_text_field($params['offer_amount']);
+
+                $domain_status = get_post_meta($domain_id, '_stock_status', true);
+                // $domain_status = 'outofstock'
+
+                if ($domain_status != 'instock') {
+                    return new WP_Error('out_of_stock', 'Sorry, the domain is already sold.');
+                }
+
+                //save offer to domain meta
+                $curr_offers = get_post_meta($domain_id, 'offers', true) ?: [];
+                $curr_offers[$user_id] = ['amount' => $amount, 'currency' => $params['currency']];
+                update_post_meta($domain_id, 'offers', $curr_offers);
+
+                // $_SESSION['cart'] = [];
+
+                wstr_add_item_to_cart([
+                    'product_id' => $domain_id,
+                    'payment_option' => 'full',
+                    'installment_duration' => 1,
+                    'type' => 'offer'
+                ]);
+                // return $domain_status . '' . $user_id . '' . $offer_id . '' . $amount . '' . $type;
+                return 'cart_updated';
+            } catch (Exception $e) {
+                error_log('Error: ' . $e->getMessage());
+                error_log($e->getTraceAsString());
             }
-
-            $params = $request->get_json_params();
-            $offer_id = sanitize_text_field($params['offer_id']);
-            $domain_id = sanitize_text_field($params['domain_id']);
-            $amount = sanitize_text_field($params['amount']);
-            $type = sanitize_text_field($params['type']);
-            // $offer_amount = sanitize_text_field($params['offer_amount']);
-
-            $domain_status = get_post_meta($domain_id, '_stock_status', true);
-            // $domain_status = 'outofstock';
-
-            if ($domain_status != 'instock') {
-                return new WP_Error('out_of_stock', 'Sorry, the domain is already sold.');
-            }
-
-
-            return $domain_status . '' . $user_id . '' . $offer_id . '' . $amount . '' . $type;
         }
 
+        /**
+         * function for getting crypto detials
+         * @param mixed $request
+         * @return WP_REST_Response
+         */
         public function wstr_crypto_details($request)
         {
             $data[] = [
@@ -1906,6 +1911,11 @@ if (!class_exists('wstr_rest_api')) {
             return new WP_REST_Response($data, 200);
         }
 
+        /**
+         * function for updating crypto detials
+         * @param mixed $request
+         * @return WP_REST_Response
+         */
         public function wstr_update_crypto_details($request)
         {
             $current_user_id = $GLOBALS['user_id'];
@@ -1951,6 +1961,25 @@ if (!class_exists('wstr_rest_api')) {
             return new WP_REST_Response(array('message' => 'Payment method saved successfully.'), 200);
         }
 
+        public function wstr_get_preferred_payment_method($request)
+        {
+            $current_user_id = $GLOBALS['user_id'];
+            $user_id = (int) $request->get_param('user_id');
+            if ($current_user_id !== $user_id) {
+                return new WP_Error('not_allowed', 'Not allowed.', array('status' => 403));
+            }
+
+            $user_data = get_userdata($user_id);
+            if (!$user_data) {
+                return new WP_Error('user_not_found', 'User not found.', array('status' => 404));
+            }
+            $preferred_payment_method = get_user_meta($user_id, '_preferred_payment_method', true);
+            $data = [
+                'preferred_payment_method' => $preferred_payment_method ?: '',
+            ];
+            return new WP_REST_Response($data, 200);
+        }
+
         public function wstr_from_community($request)
         {
 
@@ -1974,8 +2003,6 @@ if (!class_exists('wstr_rest_api')) {
                         $buyers[] = $offer->buyer_id;
                     }
                 }
-            } else {
-                echo '<p>No offers found for the current user.</p>';
             }
 
             if ($buyers) {
@@ -1991,7 +2018,6 @@ if (!class_exists('wstr_rest_api')) {
             }
             $buyer_count = count($buyers);
             // offers section endss ===========================
-
 
             // View domain section starts =============
 
@@ -2029,211 +2055,71 @@ if (!class_exists('wstr_rest_api')) {
             return new WP_REST_Response($data, 200);
         }
 
-        public function wstr_seller_order_details($request)
+        public function wstr_dashboard_commission($request)
         {
-
             $current_user_id = $GLOBALS['user_id'];
-            $seller_id = (int) $request->get_param('user_id');
-            if ($current_user_id !== $seller_id) {
-                return new WP_Error('not_allowed', 'Not allowed', array('status' => 403));
+            $current_user = (int) $request->get_param('user_id');
+            if ($current_user_id !== $current_user) {
+                return new WP_Error('not_allowed', 'Not allowed.', array('status' => 403));
             }
 
-            $last_12_month = '';
-            for ($i = 1; $i <= 12; $i++) {
-                $last_12_month = date("Y-m", strtotime(date('Y-m-01') . " -$i months"));
+            $currency_value =  get_option('wstr_currency_rates', []);
+
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'wstr_payouts';
+            $results = $wpdb->get_results("SELECT amount, currency FROM $table_name WHERE seller_id = $current_user and type='commission'");
+            $payout_completeds = $wpdb->get_results("SELECT amount FROM $table_name WHERE seller_id = $current_user and type='payout' and status='paid'");
+            $payout_pendings = $wpdb->get_results("SELECT amount FROM $table_name WHERE seller_id = $current_user and type='payout' and status='pending' OR status='in-progress'");
+            $total_commission = 0;
+            // for dispalying total commission
+            $completed_amount = 0;
+            // $paid_count = count($payout_completeds) ?: 0;
+            if ($payout_completeds) {
+                foreach ($payout_completeds as $completed) {
+                    $completed_amount += floatval($completed->amount);
+                }
             }
 
-            $args = [
-                'post_type'      => 'domain_order',
-                'posts_per_page' => -1,
-                'order' => 'DESC',
-                'orderby' => 'ID',
-            ];
+            $pending_amount = 0;
+            if ($payout_pendings) {
+                foreach ($payout_pendings as $pending) {
+                    $pending_amount += floatval($pending->amount);
+                }
+            }
+            $data = [];
+            if ($results) {
+                foreach ($results as $result) {
+                    $amount = floatval($result->amount);
 
-            if ($seller_id) {
-                $args['meta_query'] = [
-                    [
-                        'key'     => '_seller',
-                        'value' => serialize(strval($seller_id)),
-                        'compare' => 'LIKE',
-                    ],
+                    $currency = $result->currency;
+                    // Convert to USD if not already in USD
+                    if ($currency !== 'USD' && isset($currency_value[$currency])) {
+
+                        $conversion_rate = floatval($currency_value[$currency]);
+                        $amount_in_usd = $amount / $conversion_rate; // Convert to USD
+                    } else {
+                        $amount_in_usd = $amount;
+                    }
+
+                    $total_commission += $amount_in_usd;
+                }
+
+                $total_pending  = $total_commission - $completed_amount;
+                // $withdrawable_amount = $total_pending - $pending_amount;
+
+                $pending_percentage = ($total_commission > 0) ? ($total_pending / $total_commission) * 100 : 0;
+                $paid_percentage = ($total_commission > 0) ? ($completed_amount / $total_commission) * 100 : 0;
+
+                $data[] = [
+                    'pending_amount' => $total_pending ? round($total_pending) : 0,
+                    'pending_percentage' => round($pending_percentage),
+                    'paid_percentage' => round($paid_percentage),
+                    'paid_amount' => round($completed_amount),
+
                 ];
             }
-
-            $query = new WP_Query($args);
-
-            $total_order_amount = 0;
-            $total_sales = 0; // Total sales for completed orders
-            $last_12_month_sales = 0;
-            $current_year_sales = 0;
-
-            $domain_solds = 0;
-            if ($query->have_posts()) {
-
-                while ($query->have_posts()) {
-                    $query->the_post(); // Set up global post data
-                    $order_id = get_the_ID();
-                    $order_products = get_post_meta($order_id, '_ordered_products', true);
-                    $status = get_post_meta(get_the_ID(), '_order_status', true); // Order status
-
-                    $seller_products = [];
-                    if ($order_products) {
-                        foreach ($order_products as $order_product) {
-                            if ($order_product['seller_id'] == $seller_id) {
-                                $seller_products[] = $order_product['product_id'];
-                            }
-                        }
-                    }
-
-                    // $products_price = get_post_meta($order_id, '_products_price', true);
-                    $products_price = get_post_meta($order_id, '_usd_products_price', true);
-                    $seller_products_prices = [];
-                    if ($products_price) {
-                        foreach ($products_price as $product_price) {
-                            if (in_array($product_price['product_id'], $seller_products)) {
-                                $seller_products_prices[] = $product_price['price'];
-                            }
-                        }
-                    }
-
-
-                    $currency_rates = get_option('wstr_currency_rates', []);
-                    $currency = get_post_meta($order_id, '_currency', true);
-                    $created_date = get_post_meta($order_id, '_date_created', true);
-
-                    foreach ($seller_products_prices as $price) {
-                        // Convert only if the currency is not USD
-                        if ($currency !== 'USD' && isset($currency_rates[$currency]) && $currency_rates[$currency] > 0) {
-                            $conversion_rate = $currency_rates[$currency];
-                            $price = $price / $conversion_rate; // Convert to USD
-                        }
-
-
-                        $total_order_amount += $price; // Total order amount
-
-                        // Add to total sales only if the status is completed
-                        if ($status == 'completed') {
-                            $total_sales += $price;
-                            $domain_solds++;
-                        }
-
-                        $current_date =  date("Y");
-
-                        if ($created_date >= $current_date) {
-                            $current_year_sales += $price;
-                        }
-                        // last 12 months sales 
-
-                        if ($last_12_month < $created_date) {
-                            $last_12_month_sales += $price;
-                        }
-                    }
-                }
-                // wp_reset_postdata(); // Reset global post data
-            }
-            /**
-             * domain count
-             */
-            $domain_args = array(
-                'post_type' => 'domain',
-                'post_status' => 'publish',
-                'author'        =>  $seller_id,
-                'posts_per_page' => -1
-            );
-
-            $domain_count = count(get_posts($domain_args));
-
-
-            $data = [
-                'total_order_amount' => round($total_order_amount),
-                'total_sales' =>  round($total_sales),
-                'average_monthly_sales' => $last_12_month_sales ? round($last_12_month_sales / 12) : 0,
-                'total_domains_sold' => $domain_solds,
-                'current_year_sales' => $current_year_sales,
-                'domain_for_sale' => $domain_count
-            ];
-
             return new WP_REST_Response($data, 200);
-            // Output results
-            // echo "Total Order Amount: $" . round($total_order_amount) . "<br>";
-            // echo "Total Sales (Completed Orders): $" . round($total_sales);
-            // echo "last 12months Sales : $" . round($last_12_month_sales / 12);
-            // echo 'Total domains sold:: ' . $domain_solds;
-            // echo 'Current year sales:: ' . $current_year_sales;
-            // echo 'Domain for sale: ' . $domain_count;
         }
     }
 }
 new wstr_rest_api();
-
-// add_action('wp_footer', 'wstr_from_community');
-function wstr_from_community()
-{
-    global $wpdb;
-    // offers section starts ===========================
-    $offer_table = $wpdb->prefix . 'offers';
-    $user_id = get_current_user_id();
-    // $user_id = 3;
-    $offers = $wpdb->get_results($wpdb->prepare("SELECT * FROM $offer_table WHERE seller_id = %d", $user_id));
-    $buyers = [];
-    $user_image = [];
-    if ($offers) {
-
-        foreach ($offers as $offer) {
-            if (!in_array($offer->buyer_id, $buyers)) {
-                $buyers[] = $offer->buyer_id;
-            }
-        }
-    } else {
-        echo '<p>No offers found for the current user.</p>';
-    }
-
-    if ($buyers) {
-        foreach ($buyers as $buyer) {
-            $user_image_id = (int) get_user_meta($buyer, 'ws_profile_pic', true);
-
-            if ($user_image_id) {
-                $user_image[] =  wp_get_attachment_url($user_image_id);
-            } else {
-                $user_image[] = get_avatar_url($buyer);
-            }
-        }
-    }
-    $buyer_count = count($buyers);
-    // offers section endss ===========================
-
-
-    // View domain section starts =============
-
-
-    $args = array(
-        'author'        =>  $user_id,
-        'orderby'       =>  'post_date',
-        'order'         =>  'ASC',
-        'posts_per_page' => -1, // no limit
-        'post_status' => 'publish',
-        'post_type' => 'domain',
-        'fields' => 'ids'
-    );
-
-
-    $total_views = 0;
-    $current_user_posts = get_posts($args);
-    foreach ($current_user_posts as $current_user_post) {
-        $views = (int)get_post_meta($current_user_post, 'ws_product_view_count', true);
-        if ($views) {
-            $total_views += $views;
-        }
-    }
-    // Format total views
-    if ($total_views >= 1000) {
-        $total_views = floor($total_views / 100) / 10 . 'k';
-    }
-
-    $data = [
-        'offered_images' => $user_image ?: '',
-        'buyer_count' => $buyer_count ?: '',
-        'total_view' => $total_views
-
-    ];
-}

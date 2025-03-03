@@ -1,8 +1,8 @@
 /* card blocks css */
 .ws-container {
-  max-width: 1400px;
+  max-width: 1440px;
   margin: auto;
-  /* padding: 20px; */
+  padding: 20px;
 }
 .ws-flex {
   display: flex;
@@ -12,10 +12,10 @@
   gap: 30px;
   flex-wrap: wrap;
   /* justify-content: center; */
-  justify-content: space-between;
+  /* justify-content: space-between; */
 }
 .ws-card-img {
-  height: 180px;
+  height: 225px;
 }
 .ws-cards-container-wrapper .ws-card-img img {
   max-width: 100%;
@@ -53,11 +53,30 @@
   /* justify-content: space-between; */
   align-items: end;
   gap: 15px;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
+  flex-wrap: nowrap;
   position: relative;
+}
+.ws-card-contents h5:not(.ws-cards-container-add-domain h5) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 130px !important;
 }
 .ws-card-likes {
   margin-left: auto;
+}
+.disable-favourite {
+  pointer-events: none;
+  opacity: 0.5;
+}
+@media screen and (max-width: 1600px) {
+  .sold-products-block .ws-card-likes {
+    margin: 0;
+    width: 100%;
+    display: flex;
+    justify-content: end;
+  }
 }
 .ws-card-likes h6 {
   border-radius: 5px;
@@ -71,6 +90,7 @@
   cursor: pointer;
   width: 55px;
   height: 30px;
+  justify-content: center;
 }
 .ws-card-inner-contents h5 a {
   font-size: 16px;
@@ -150,17 +170,37 @@
   text-align: center;
 }
 .ws_card_hover_charts {
-  display: none;
-  height: 180px;
+  /* display: none; */
+  /* height: 180px; */
+  height: 0;
+  opacity: 0;
+  visibility: hidden;
+  /* transition: opacity 0.5s ease-in-out; */
+  transition: opacity 0.25s ease-in;
+  transform: scale(0.95); /* Add slight scaling effect initially */
 }
 .ws-cards-container:hover .ws-card-img {
   display: none;
+}
+.ws-cards-container:hover .premium_icon {
+  display: none;
+}
+.ws-cards-container .circular-progress {
+  padding: 0;
+}
+.ws-cards-container:hover .circular-progress {
+  padding: 15px;
+  justify-content: center;
+  gap: 10px;
 }
 .ws-cards-container:hover .ws_card_hover_charts,
 .ws_home_trending_cards .ws-card-contents:hover .ws_card_hover_charts {
   display: flex;
   gap: 15px;
   padding: 15px;
+  height: 225px;
+  opacity: 1;
+  visibility: visible;
 }
 .ws-cards-container:hover,
 .ws-cards-container:hover .ws-card-contents {
@@ -174,10 +214,10 @@
 .ws-cards-container:hover .ws-card-contents {
   border: transparent;
 }
-.ws-cards-container:hover .ws-card-likes h6 span {
+/* .ws-cards-container:hover .ws-card-likes h6 span {
   display: none;
-}
-.ws-cards-container:hover .ws-card-likes h6 i {
+} */
+.ws-cards-container:hover .ws-card-likes h6 {
   background-color: #fff;
   padding: 6px;
   border-radius: 5px;
@@ -193,7 +233,8 @@
   object-fit: cover;
   border-radius: 10px;
 }
-.ws-card-contents .regular_price {
+.ws-card-contents .regular_price,
+.ws_card_price_wrapper .on_sale {
   color: #a5a3a3;
   text-decoration: line-through;
 }
@@ -315,6 +356,9 @@ div[role="progressbar"]::after:not(
 
   /* overflow: hidden; */
 }
+.swiper-wrapper .slick-track {
+  display: flex;
+}
 .swiper-container.ws-container {
   max-width: 100%;
 }
@@ -346,19 +390,45 @@ div[role="progressbar"]::after:not(
 .ws_home_trending_cards .ws-card-contents:hover .ws_card_hover_charts {
   height: auto;
 }
-/* .ws_trending_cards .ws-cards-container-wrapper .ws-card-contents {
-  animation: scroll-left 10s linear infinite;
+.ws_trending_cards .ws-cards-container-wrapper {
+  overflow: hidden;
+  position: relative;
+}
+.ws_trending_cards .scrolling {
+  display: flex;
+  width: 200%; /* Cover 2 full scroll widths */
+  animation: scroll-left 10s linear infinite; /* Smooth scrolling */
+  gap: 5px; /* Reduced gap between rows/cards for smoother appearance */
+}
+
+.ws_trending_cards .row-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Reduced row gap for neat layout */
+  flex-shrink: 0;
+}
+
+.ws_trending_cards .row {
+  display: flex;
+  gap: 5px; /* Reduced card gap for a tighter layout */
+  flex-shrink: 0;
+}
+
+.ws_trending_cards .row-2 {
+  padding-left: 60px; /* Maintain zigzag pattern */
 }
 
 @keyframes scroll-left {
-  from {
-    transform: translateX(0);
+  0% {
+    transform: translateX(0); /* Start from the left */
   }
-  to {
-    transform: translateX(-100%);
+  50% {
+    transform: translateX(-100%); /* Scroll to the left */
   }
-} */
-
+  100% {
+    transform: translateX(0); /* Loop back to the starting position */
+  }
+}
 .ws_home_trending_cards
   .ws-card-contents:hover
   .ws_home_trending_cards
@@ -396,10 +466,14 @@ div[role="progressbar"]::after:not(
 }
 .ws_home_trending_cards .ws-card-contents:hover .ws_card_hover_charts {
   padding: 10px 20px;
+  /* width: calc(100% + 2px);
+  left: -1px; */
+  width: calc(100% + 20px);
+  left: -10px;
 }
 .ws_home_trending_cards .ws-card-contents:hover .ws_home_trending_contents {
   background-color: #f3f5fa;
-  padding: 20px;
+  padding: 20px 10px;
   border-radius: 15px;
 }
 .ws_home_trending_cards .ws-card-contents:hover .ws-card-likes h6 {
@@ -418,11 +492,11 @@ div[role="progressbar"]::after:not(
 .ws_home_trending_cards .scrolling {
   display: flex;
   flex-wrap: wrap;
-  width: 200%;
+  width: 300%;
   animation: scroll 30s linear infinite;
   gap: 20px;
   align-content: flex-start;
-  animation: none;
+  /* animation: none; */
   gap: 45px 20px;
   padding-bottom: 50px;
 }
@@ -465,19 +539,27 @@ div[role="progressbar"]::after:not(
   box-shadow: 0.122px 0.993px 31px 0px rgba(0, 34, 79, 0.04);
   border-radius: 0 0 15px 15px;
 }
+.custom-img-ratio img {
+  aspect-ratio: 4/3;
+}
 @media (width <=1024px) {
   .ws-cards-container {
     width: calc(50% - 30px);
+  }
+  .ws-card-contents h5 {
+    width: 150px !important;
   }
 }
 @media (width <=767px) {
   .ws-cards-container {
     width: 100%;
   }
-
+  #buy-domain-main .ws-cards-container {
+    width: 100%;
+  }
   .ws_home_trending_cards .scrolling {
     flex-wrap: wrap;
-    width: 200%;
+    width: 300%;
     gap: 45px 20px;
   }
 
@@ -486,5 +568,92 @@ div[role="progressbar"]::after:not(
     width: fit-content;
     /* width: auto; */
     padding: 20px 10px;
+  }
+}
+
+/* trending cards */
+.ws_home_trending_cards .scrolling-animation {
+  position: absolute;
+  white-space: nowrap;
+  /* left: -10%; */
+}
+.ws_home_trending_cards .ws-cards-container-wrapper {
+  position: relative;
+  /* height: 580px; */
+  overflow: hidden;
+}
+
+.ws_home_trending_cards .ws-cards-container-wrapper {
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+  width: 100%;
+}
+
+.ws_home_trending_cards .ws-cards-container-wrapper .scrolling {
+  display: flex;
+  transform: translateX(-25%);
+  transition: transform 0.3s ease;
+}
+
+.ws_home_trending_cards .ws-cards-container-wrapper:active {
+  cursor: grabbing;
+}
+
+.ws_home_trending_cards .ws-card-contents {
+  flex: 0 0 auto;
+}
+@media screen and (max-width: 767px) {
+  .ws_home_trending_cards .ws-cards-container-wrapper {
+    height: 575px;
+    overflow: auto !important;
+    overflow-x: visible !important;
+    overflow-y: clip !important;
+    width: 200%;
+  }
+  .ws-card-contents h5 {
+    width: 130px;
+  }
+}
+@media screen and (max-width: 400px) {
+  .ws-card-contents h5 {
+    width: 100px !important;
+  }
+}
+.ws_home_trending_cards .ws-card-contents .ws-cards-container-wrapper {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.ws_home_trending_cards h5 {
+  width: 180px !important;
+}
+
+.ws_home_trending_cards .scrolling {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: scroll-left 40s linear infinite;
+  will-change: transform;
+  width: 200%; /* Ensure enough width for scroll */
+}
+
+.ws_home_trending_cards .scroll-row {
+  display: flex;
+  gap: 20px;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.ws_home_trending_cards .scroll-row > * {
+  flex: 0 0 auto;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
   }
 }

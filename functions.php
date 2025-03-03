@@ -114,6 +114,7 @@ include(get_stylesheet_directory() . '/includes/wstr_functions.php');
 include(get_stylesheet_directory() . '/includes/wstr_admin_menu.php');
 include(get_stylesheet_directory() . '/includes/wstr_notifications.php');
 include(get_stylesheet_directory() . '/includes/wstr_payouts.php');
+include(get_stylesheet_directory() . '/includes/wstr_contact_us.php');
 
 
 // font awesome
@@ -956,417 +957,7 @@ function wstr_get_seller_products_by_order_and_seller_id()
 }
 
 
-// contact form shortcode
-add_shortcode('contact_form', 'contact_form');
-function contact_form()
-{
-    $error = '';
-    $success = '';
-    if (isset($_POST['contact_us_submit'])) {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'contact_us';
-        $name = sanitize_text_field($_POST['first_name']) . ' ' . sanitize_text_field($_POST['last_name']);
-        $email = sanitize_text_field($_POST['email']);
-        $phone = sanitize_text_field($_POST['phone']);
-        $type = sanitize_text_field($_POST['inquiry_type']);
-        $message = sanitize_text_field($_POST['message']);
-        $time = current_time('mysql');
-        if (strlen($phone) > 15 || strlen($phone) < 7) {
-            $error = "Phone number is not valid.";
-        } else {
-            $data = [
-                'name' => $name,
-                'email' => $email,
-                'phone' => $phone,
-                'type' => $type,
-                'message' => $message,
-                'time' => $time
-            ];
-            $format = ['%s', '%s', '%s', '%s', '%s', '%s'];
-            $insert = $wpdb->insert($table_name, $data, $format);
-            if (!$insert) {
-                $error = "Something went wrong. Please try again later.";
-            } else {
 
-
-                $email_header = get_option('email_header', '');
-                $email_footer = get_option('email_footer', '');
-                $type_msg = '';
-                if ($type == 'domain') {
-                    $type_msg = 'Domain Inquiry';
-                } else if ($type == 'technical') {
-                    $type_msg = 'Technical Support';
-                } else if ($type == 'general') {
-                    $type_msg = 'General Questions';
-                } else if ($type == 'billing') {
-                    $type_msg = 'Billing & Payments';
-                } else {
-                    $type_msg = 'Others';
-                }
-                // $admin_email = get_option('admin_email');
-                $admin_email = 'jekowek850@myweblaw.com';
-
-                $email_body = '
-        <div class="wstr_email_template_main">
-            <div class="wstr_email_template_wrapper" style="font-family: \'Poppins\', serif;">
-                ' . $email_header . '
-                <h3 style="text-align: center; color: #333; margin-top:10px" >New Contact Us Submission</h3>
-                <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 16px; color: #555;">
-                    <tr>
-                        <th style="text-align: left; padding: 8px; background: #f4f4f4; border: 1px solid #ddd;">Field</th>
-                        <th style="text-align: left; padding: 8px; background: #f4f4f4; border: 1px solid #ddd;">Details</th>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;">Name</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($name) . '</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;">Email</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($email) . '</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;">Phone</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($phone) . '</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;">Type</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($type_msg) . '</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;">Message</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">' . nl2br(htmlspecialchars($message)) . '</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;">Time</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($time) . '</td>
-                    </tr>
-                </table>
-                <p style="text-align: center; margin: 20px 0; color: #888;">Thank you for using our service!</p>
-                ' . $email_footer . '
-            </div>
-        </div>';
-                // Construct the email template
-                wp_mail($admin_email, 'New Contact Us Submission', $email_body, ['Content-Type: text/html; charset=UTF-8']);
-
-
-                $success = "Your message has been sent successfully.";
-            }
-        }
-    }
-    ob_start();
-?>
-    <div class="contact-form-wrapper">
-        <h2>Get In Touch</h2>
-        <p class="sub-title">Have any questions? Don't hesitate to contact us!</p>
-        <p class="small-subtitle"><sup>"*" indicates required fields</sup></p>
-        <div class="refunded"><?php echo $error ?: '' ?> </div>
-        <div class="completed"><?php echo $success ?: '' ?> </div>
-        <form action="#" method="POST">
-            <div class="form-group select-group">
-                <input type="radio" id="general" name="inquiry_type" value="general">
-                <label for="general" class="select-option">
-                    <img decoding="async"
-                        src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/general-question-icon.png"
-                        alt="Icon">
-                    <div class="option-title">General Questions</div>
-                </label>
-
-                <input type="radio" id="domain" name="inquiry_type" value="domain">
-                <label for="domain" class="select-option">
-                    <img decoding="async"
-                        src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/domain-inquiry-icon.png"
-                        alt="Icon">
-                    <div class="option-title">Domain Inquiry</div>
-                </label>
-
-                <input type="radio" id="billing" name="inquiry_type" value="billing">
-                <label for="billing" class="select-option">
-                    <img decoding="async"
-                        src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/billing-icon.png" alt="Icon">
-                    <div class="option-title">Billing & Payments</div>
-                </label>
-
-                <input type="radio" id="technical" name="inquiry_type" value="technical">
-                <label for="technical" class="select-option">
-                    <img decoding="async"
-                        src="<?php echo get_stylesheet_directory_uri(); ?>/assets/images/technical-support-icon.png"
-                        alt="Icon">
-                    <div class="option-title">Technical Support</div>
-                </label>
-            </div>
-            <div class="form-group">
-                <div>
-                    <label for="first_name">First Name</label>
-                    <input type="text" id="first_name" name="first_name" placeholder="Name">
-                </div>
-                <div>
-                    <label for="last_name">Last Name</label>
-                    <input type="text" id="last_name" name="last_name" placeholder="Last Name">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div>
-                    <label for="phone">Your Phone</label>
-                    <input type="tel" id="phone" name="phone" placeholder="Phone">
-                </div>
-                <div>
-                    <label for="email">Your Email <sup>*</sup></label>
-                    <input type="email" id="email" name="email" placeholder="Email" required>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div>
-                    <label for="message">Message <sup>*</sup></label>
-                    <textarea id="message" name="message" placeholder="I would like to hear about.."
-                        required></textarea>
-                </div>
-            </div>
-
-            <div class="form-group captcha">
-                <div class="g-recaptcha" data-sitekey="6Lfyr2oqAAAAAO7lb3X_xT5TnNXJAqa3S6-5gQcv"></div>
-            </div>
-
-            <button type="submit" class="hover-white" name="contact_us_submit">Submit</button>
-        </form>
-    </div>
-
-    <style>
-        .contact-form-wrapper {
-            max-width: 900px;
-            margin: 50px auto;
-            background-color: rgb(255, 255, 255);
-            box-shadow: 0.122px 0.993px 31px 0px rgba(0, 34, 79, 0.04);
-            padding: 40px;
-            border-radius: 15px;
-        }
-
-        .contact-form-wrapper h2 {
-            margin-bottom: 10px;
-        }
-
-        .contact-form-wrapper .sub-title,
-        .contact-form-wrapper .small-subtitle {
-            color: #000;
-            margin: 10px 0;
-        }
-
-        .contact-form-wrapper .small-subtitle {
-            color: #f14793;
-        }
-
-        .contact-form-wrapper .form-group {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 25px;
-            gap: 15px;
-        }
-
-        .contact-form-wrapper .form-group div {
-            width: 100%;
-        }
-
-        .contact-form-wrapper .form-group label {
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .contact-form-wrapper .form-group input[type="text"],
-        .contact-form-wrapper .form-group input[type="tel"],
-        .contact-form-wrapper .form-group input[type="email"],
-        .contact-form-wrapper .form-group textarea {
-            width: 100%;
-            font-size: 14px;
-            background: #f8f7fc;
-            border-radius: 100px;
-            padding: 15px;
-            border: 1px solid #e1e7ff;
-            margin-top: 15px;
-        }
-
-        .contact-form-wrapper .form-group input[type="text"]:focus,
-        .contact-form-wrapper .form-group input[type="tel"]:focus,
-        .contact-form-wrapper .form-group input[type="email"]:focus,
-        .contact-form-wrapper .form-group textarea:focus {
-            background-color: #fff;
-            border: 2px solid #00d9f5;
-        }
-
-        .contact-form-wrapper .form-group.captcha {
-            justify-content: center;
-        }
-
-        .contact-form-wrapper .form-group textarea {
-            height: 200px;
-            resize: none;
-            width: 98% !important;
-            border-radius: 30px;
-        }
-
-        .contact-form-wrapper .form-group textarea {
-            margin-bottom: 15px;
-        }
-
-        .contact-form-wrapper e.select-group {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-
-        .contact-form-wrapper .select-option {
-            width: 48%;
-            border: 1px solid #ccc;
-            padding: 20px;
-            position: relative;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            border-radius: 30px;
-        }
-
-        /* Styling the image and text */
-        .contact-form-wrapper .select-option img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            margin-bottom: 5px;
-        }
-
-        .contact-form-wrapper .option-title {
-            font-size: 16px;
-            color: #00214c;
-            font-weight: 600;
-        }
-
-        /* Hide the radio button */
-        .contact-form-wrapper input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        /* Target the entire label when the radio button is checked */
-        .contact-form-wrapper input[type="radio"]:checked+label {
-            background-color: #00d9f5;
-            border-color: #00d9f5;
-            color: white;
-        }
-
-        .contact-form-wrapper .select-option {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            justify-content: center;
-            padding: 35px;
-        }
-
-        .contact-form-wrapper .select-group {
-            margin: 40px 0;
-        }
-
-        /* Ensure the select-option label gets the background when checked */
-        .contact-form-wrapper input[type="radio"]:checked+label.select-option,
-        .contact-form-wrapper .select-group label:hover {
-            background-color: #00d9f5;
-            color: white;
-            border-color: #00d9f5;
-        }
-
-        .contact-form-wrapper .select-group label:hover .option-title {
-            color: #fff;
-        }
-
-        .contact-form-wrapper input[type="radio"]:checked+label .option-title {
-            color: #fff;
-        }
-
-        .contact-form-wrapper .form-group.captcha {
-            align-items: center;
-        }
-
-        .contact-form-wrapper .form-group.captcha .g-recaptcha {
-            display: flex;
-            place-content: center;
-        }
-
-        .contact-form-wrapper .captcha label {
-            margin-left: 10px;
-            font-size: 14px;
-        }
-
-        .contact-form-wrapper label sup {
-            color: #f14793;
-        }
-
-        .contact-form-wrapper button[type="submit"] {
-            background-color: #00d9f5;
-            width: fit-content;
-            padding: 20px 60px;
-            display: flex;
-            justify-content: center;
-            color: #fff;
-            border-radius: 50px;
-            align-items: center;
-            border: 2px solid;
-            margin: auto;
-            cursor: pointer;
-            margin-top: 30px;
-            margin-bottom: 30px;
-            font-size: 16px;
-
-        }
-
-        @media screen and (max-width: 767px) {
-
-            .contact_men_image,
-            .contact_women_image {
-                position: static;
-                display: inline-block;
-
-            }
-
-            .contact_men_image {
-                width: 100%;
-                min-height: 250px;
-                display: flex;
-                align-items: center;
-                padding: 20px 0;
-
-            }
-
-            .contact_women_image {
-                position: absolute;
-                top: -35px;
-                right: 0px;
-                width: 60%;
-            }
-
-            .contact-form-wrapper .select-option {
-                padding: 20px;
-            }
-
-
-            .contact-form-wrapper .select-group {
-                flex-wrap: wrap;
-            }
-
-            .contact-form-wrapper .form-group label {
-                width: calc(50% - 10px);
-            }
-
-            .contact-form-wrapper .form-group {
-                flex-wrap: wrap;
-            }
-
-            .contact-form-wrapper {
-                padding: 30px;
-            }
-        }
-    </style>
-
-<?php
-    return ob_get_clean();
-}
 
 
 // add_action('wp_footer', function () {
@@ -1420,10 +1011,14 @@ function contact_form()
 
 function add_openai_script_to_footer()
 {
+    // sk - proj - MAduAuRg723hsXQcqoDsfe76frFF1j24V6o - d2UHwnHCbmVe - EoIVmVZwGXzFzXZvkIvqS3WdMT3BlbkFJTDz0CCEK3_6xFw9m0wOWSshM1gzV9aPWufH7udtT - Z43jOpQkC7fYKDUYbb0NfNMrAG1Xd2SwA
 ?>
-    <!-- <script>
+    <script>
+        jQuery(document).ready(function() {
+            fetchOpenAIResponse();
+        });
         async function fetchOpenAIResponse() {
-            const apiKey = "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"; // Replace with your OpenAI API key
+            const apiKey = " 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"; // Replace with your OpenAI API key
             const endpoint = "https://api.openai.com/v1/completions";
 
             const data = {
@@ -1452,12 +1047,12 @@ function add_openai_script_to_footer()
 
         // Trigger the function on page load
         document.addEventListener("DOMContentLoaded", fetchOpenAIResponse);
-    </script> -->
+    </script>
 
     <div id="openai-response" style="margin-top: 20px; font-weight: bold; font-size: 1.2em;"></div>
 <?php
 }
-// add_action('wp_footer', 'add_openai_script_to_footer');
+add_action('wp_footer', 'add_openai_script_to_footer');
 
 
 // add_action('wp_footer', 'wstr_seller_order_details');
@@ -1534,3 +1129,71 @@ function wstr_declined_offer_expired()
 /**
  * CRON FUNCTIONS ENDS============================================
  */
+
+
+add_action('wp_footer', 'commissions');
+function commissions()
+{
+
+    $current_user = get_current_user_id();
+
+
+    $currency_value =  get_option('wstr_currency_rates', []);
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'wstr_payouts';
+    $results = $wpdb->get_results("SELECT amount, currency FROM $table_name WHERE seller_id = $current_user and type='commission'");
+    $payout_completeds = $wpdb->get_results("SELECT amount FROM $table_name WHERE seller_id = $current_user and type='payout' and status='paid'");
+    $payout_pendings = $wpdb->get_results("SELECT amount FROM $table_name WHERE seller_id = $current_user and type='payout' and status='pending' OR status='in-progress'");
+    $total_commission = 0;
+    // for dispalying total commission
+    $completed_amount = 0;
+    $paid_count = count($payout_completeds) ?: 0;
+    if ($payout_completeds) {
+        foreach ($payout_completeds as $completed) {
+            $completed_amount += floatval($completed->amount);
+        }
+    }
+
+    $pending_amount = 0;
+    if ($payout_pendings) {
+        foreach ($payout_pendings as $pending) {
+            $pending_amount += floatval($pending->amount);
+        }
+    }
+    if ($results) {
+        foreach ($results as $result) {
+            $amount = floatval($result->amount);
+
+            $currency = $result->currency;
+            // Convert to USD if not already in USD
+            if ($currency !== 'USD' && isset($currency_value[$currency])) {
+
+                $conversion_rate = floatval($currency_value[$currency]);
+                $amount_in_usd = $amount / $conversion_rate; // Convert to USD
+            } else {
+                $amount_in_usd = $amount;
+            }
+
+            $total_commission += $amount_in_usd;
+        }
+
+        $total_pending  = $total_commission - $completed_amount;
+        $withdrawable_amount = $total_pending - $pending_amount;
+
+        $pending_percentage = ($total_commission > 0) ? ($total_pending / $total_commission) * 100 : 0;
+        var_dump($pending_percentage);
+        $paid_percentage = ($total_commission > 0) ? ($completed_amount / $total_commission) * 100 : 0;
+
+        $data = [
+            $total_commission => round($total_commission),
+            'pending_amount' => round($total_pending),
+            'pending_percentage' => round($pending_percentage),
+            'paid_percentage' => round($paid_percentage),
+            'paid_amount' => round($completed_amount),
+            // 'paid_count' => $paid_count,
+        ];
+        echo '<pre>';
+        var_dump($data);
+    }
+}

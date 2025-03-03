@@ -21,7 +21,7 @@ add_filter('manage_domain_posts_columns', 'misha_featured_image_column');
 function misha_featured_image_column($column_array)
 {
 
-
+    // I want to add my column at the beginning, so I use array_slice()
     // in other cases $column_array['featured_image'] = 'Featured Image' will be enough
     $column_array = array_slice($column_array, 0, 1, true)
         + array('featured_image' => 'Featured Image') // our new column for featured images
@@ -72,7 +72,7 @@ function wstr_add_custom_user_roles()
         'delete_posts' => false,
         // Add any other capabilities 
     ));
-    // remove_role('seller');
+
     // Add Seller role
     add_role('seller', __('Seller', 'webstarter'), array(
         'read' => true,
@@ -80,7 +80,7 @@ function wstr_add_custom_user_roles()
         'delete_posts' => true,
         'publish_posts' => true,
         'upload_files' => true,
-        'edit_others_posts' => true,
+        'edit_others_posts' => false,
         'delete_others_posts' => false,
 
         // 'read' => true,
@@ -90,6 +90,7 @@ function wstr_add_custom_user_roles()
         // 'upload_files' => true,
         'edit_others_domains' => true,
         'delete_others_domains' => false,
+        // Add any other capabilities you need
     ));
 }
 
@@ -126,7 +127,7 @@ function add_seller_domain_capabilities()
     }
 }
 
-// add_action('init', 'add_seller_domain_capabilities');
+add_action('init', 'add_seller_domain_capabilities');
 
 
 
@@ -161,6 +162,12 @@ add_filter('register_block_type_args', function ($settings, $name) {
 add_action('init', 'wstr_prevent_wp_login');
 function wstr_prevent_wp_login()
 {
+    if (!is_user_logged_in()) {
+        if ($_GET['reason'] == 'checkout') {
+            $_SESSION['redirect'] = 'checkout';
+        }
+    }
+
     global $pagenow;
 
     $allowed_actions = ['logout', 'lostpassword', 'rp', 'resetpass', 'postpass']; // allowing action 
@@ -172,45 +179,20 @@ function wstr_prevent_wp_login()
     }
 }
 
-// add_filter("login_redirect", function ($redirect_to, $requested_redirect_to, $user) {
-//     $page = get_home_url() . '/my-account';
-//     return $page;
-//     wp_redirect($page);
-//     $allowed_actions = ['logout', 'lostpassword', 'rp', 'resetpass', 'postpass']; // allowing action 
-//     // Check if the user is logged in successfully
-//     if (is_wp_error($user) || empty($user->ID)) {
-//         return $redirect_to; // Return default if the user is not logged in
-//     }
 
-//     if ($pagenow == 'wp-login.php' && (!isset($_GET['action']) || !in_array($_GET['action'], $allowed_actions))) {
-//         $user_id = $user->ID;
-//         // die(var_dump($pagenow));
-//         $twoFa_enabled = get_user_meta($user_id, '2fa_enabled', true);
-//         // Set the redirect URL to the my-account page with the user ID as a query parameter
+add_action('init', 'wstr_redirect_after_login', 999);
+function wstr_redirect_after_login()
+{
+    if (is_user_logged_in()) {
+        if (isset($_SESSION['redirect']) && !empty($_SESSION['redirect']) && $_SESSION['redirect'] == 'checkout') {
+            $redirect = $_SESSION['redirect'];
+            unset($_SESSION['redirect']);
+            wp_redirect(home_url('/' . $redirect));
+            exit;
+        }
+    }
+}
 
-//         // Check if the login is successful
-//         if (is_wp_error($user) || empty($user->ID)) {
-//             return $redirect_to; // Return default if login failed
-//         }
-
-//         if ($twoFa_enabled) {
-//             $user_details = get_user_by('id', 1);
-//             $user_email  = $user_details->data->user_email;
-
-//             $result = '';
-//             $length = 6;
-//             for ($i = 0; $i < $length; $i++) {
-//                 $result .= random_int(0, 9);
-//             }
-
-//             return home_url('/otp');
-//         } else {
-//             return home_url('/my-account');
-//         }
-//     }
-//     // Redirect to the my-account page
-
-// }, 10, 3);
 /**
  * passing login error codes as parameter
  */
@@ -220,10 +202,6 @@ add_filter('login_errors', function ($error) {
     wp_redirect('/my-account?reason=' . $err_codes[0]);
     return $error;
 });
-
-
-//  new changes 
-
 
 // for getting number of post in rest api
 add_filter('rest_domain_collection_params', function ($params, $post_type) {
@@ -255,32 +233,22 @@ function allow_rest_access_for_admins($result)
 }
 add_filter('rest_authentication_errors', 'allow_rest_access_for_admins');
 
-// function allow_public_post_creation($can_edit, $post, $user_id)
-// {
-//     // Bypass the capability check for creating new posts.
-//     if (is_user_logged_in()) {
-//         return true;
-//     }
-// }
-
-// add_filter('rest_domain_collection_params', 'allow_public_post_creation', 10, 3);
-
 
 add_action('rest_api_init', 'register_custom_meta_fields');
 function register_custom_meta_fields()
 {
     register_post_meta('domain', '_enable_offers', array(
-        'single'       => true,
-        'type'         => 'string',
-        'default'      => '',
+        'single' => true,
+        'type' => 'string',
+        'default' => '',
         'show_in_rest' => true,
         'auth_callback' => '__return_true'
     ));
 
     register_post_meta('domain', '_regular_price', array(
-        'single'       => true,
-        'type'         => 'string',
-        'default'      => '',
+        'single' => true,
+        'type' => 'string',
+        'default' => '',
         'show_in_rest' => true,
         'auth_callback' => '__return_true'
     ));
@@ -295,29 +263,49 @@ function rest_api_permissions($result)
     }
     return $result;
 }
-// add_filter('rest_domain_collection_params', 'rest_api_permissions');
+add_filter('rest_domain_collection_params', 'rest_api_permissions');
 
+/**
+ * redirect /domain to the /buy page
+ */
 
-// add_filter('rest_domain_query', 'allow_seller_draft_domains', 10, 2);
-function allow_seller_draft_domains($args, $request)
+function wstr_redirect_domain_page()
 {
-    // Check if the current user is logged in
+    // Check if the current request is for the /domain page
     if (is_user_logged_in()) {
-        $current_user = wp_get_current_user();
-
-        // Check if the user has the 'seller' role
-        if (in_array('seller', $current_user->roles)) {
-            // If the request doesn't specify a status, or if it's requesting drafts
-            if (!isset($args['post_status']) || $args['post_status'] === 'draft') {
-                // Allow access to draft posts
-                $args['post_status'] = 'draft';
-            }
+        if (trim($_SERVER['REQUEST_URI'], '/') === 'domain') {
+            wp_redirect(home_url('/buy'));
+            exit;
+        }
+        if (trim($_SERVER['REQUEST_URI'], '/') === 'login') {
+            wp_redirect(home_url('/my-account'));
+            exit;
+        }
+        // if (is_user_logged_in()) {
+        if (trim($_SERVER['REQUEST_URI'], '/') === 'register') {
+            wp_redirect(home_url('/my-account'));
+            exit;
         }
     }
-
-    return $args;
+    // }
 }
+add_action('template_redirect', 'wstr_redirect_domain_page');
 
+
+function filter_media_comment_status($open, $post_id)
+{
+    $post = get_post($post_id);
+    if ($post->post_type == 'attachment') {
+        return false;
+    }
+    return $open;
+}
+add_filter('comments_open', 'filter_media_comment_status', 10, 2);
+
+/**
+ * Avoiding accest to the admin dashboard for non admin
+ * @return void
+ */
 function redirect_non_admin_users()
 {
     if (is_admin() && !defined('DOING_AJAX')) {
@@ -333,6 +321,10 @@ function redirect_non_admin_users()
 }
 add_action('init', 'redirect_non_admin_users');
 
+/**
+ * Hiding dashboard header for non admin users
+ * @return void
+ */
 function hide_admin_bar_for_non_admins()
 {
     if (!current_user_can('administrator') && !is_admin()) {
@@ -340,6 +332,7 @@ function hide_admin_bar_for_non_admins()
     }
 }
 add_action('init', 'hide_admin_bar_for_non_admins');
+
 
 // Adds the new domains column to the users dashboard.
 function add_discord_column_to_users_dashboard($columns)

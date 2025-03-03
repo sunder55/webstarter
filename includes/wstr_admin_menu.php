@@ -28,14 +28,14 @@ class Wstr_admin_menu
             update_option('wstr_currency_codes', $currencies);
         }
 ?>
-        <div class="">
+        <div class="wstr_admin_menu_tab_navs">
             <button class="" onclick="openCity('wstrCurrency')">Muti Currency</button>
-            <button class="" onclick="openCity('Paris')">Paris</button>
-            <button class="" onclick="openCity('Tokyo')">Tokyo</button>
+            <button class="" onclick="openCity('recaptcha')">Google Recaptcha</button>
+            <!-- <button class="" onclick="openCity('Tokyo')">Tokyo</button> -->
         </div>
-        <div id="wstrCurrency" class="wstr-menu">
+        <div id="wstrCurrency" class="wstr-menu wstr_admin_menu">
             <form method="post">
-                <h4>Multi Currency Settings</h4>
+                <h3>Multi Currency Settings</h3>
                 <div id="selectCurrency">
                     <label for="currency">Select Currency</label>
                     <select id="currencyList" name="currencies[]" multiple="multiple">
@@ -251,16 +251,31 @@ class Wstr_admin_menu
                 <input type="submit" value="Add Currency">
             </form>
         </div>
+        <?php
+        if (isset($_POST['recaptcha_submit'])) {
+            $site_key = sanitize_text_field($_POST['google_site_key']);
+            $secret_key = sanitize_text_field($_POST['google_secret_key']);
 
-        <div id="Paris" class="wstr-menu" style="display:none">
-            <h2>Paris</h2>
-            <p>Paris is the capital of France.</p>
+            update_option('recaptcha_site_key', $site_key);
+            update_option('recaptcha_secret_key', $secret_key);
+        }
+        $site = get_option('recaptcha_site_key');
+        $secret = get_option('recaptcha_secret_key');
+        ?>
+        <div id="recaptcha" class="wstr-menu wstr_admin_menu" style="display:none">
+            <form method="post">
+                <h3>Google Recaptcha Setting</h3>
+                <label>Site Key: <input type="text" name="google_site_key" value="<?php echo $site ?: '' ?>"></label>
+                <label>Secret Key: <input type="text" name="google_secret_key" value="<?php echo $secret ?: '' ?>"></label>
+
+                <input type="submit" name='recaptcha_submit' value="submit">
+            </form>
         </div>
 
-        <div id="Tokyo" class="wstr-menu" style="display:none">
+        <!-- <div id="Tokyo" class="wstr-menu" style="display:none">
             <h2>Tokyo</h2>
             <p>Tokyo is the capital of Japan.</p>
-        </div>
+        </div> -->
 
 
     <?php
@@ -307,72 +322,90 @@ class Wstr_admin_menu
             )
         );
     ?>
-        <div class="main_contact_us">
+        <div class="main_contact_us admin_contact_us_wrap">
             <h3>Contact Us</h3>
-            <table border="1" class="widefat" id="contact-us-form">
-                <thead>
-                    <th>S.N</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Type</th>
-                    <th>Message</th>
-                    <th>Date</th>
-                </thead>
-                <tbody>
-                    <?php
-                    $i = $offset + 1; // Adjust the numbering based on the page
-                    foreach ($result as $contact_details) {
-                        $type = $contact_details->type;
-                    ?>
-                        <tr>
-                            <td><?php echo $i++; ?></td>
-                            <td><?php echo esc_html($contact_details->name); ?></td>
-                            <td><?php echo esc_html($contact_details->email); ?></td>
-                            <td><?php echo esc_html($contact_details->phone); ?></td>
-                            <td>
-                                <?php
-                                switch ($type) {
-                                    case 'domain':
-                                        echo 'Domain Inquiry';
-                                        break;
-                                    case 'technical':
-                                        echo 'Technical Support';
-                                        break;
-                                    case 'general':
-                                        echo 'General Questions';
-                                        break;
-                                    case 'billing':
-                                        echo 'Billing & Payments';
-                                        break;
-                                    default:
-                                        echo 'Others';
-                                        break;
-                                }
-                                ?>
-                            </td>
-                            <td><?php echo esc_html($contact_details->message); ?></td>
-                            <td><?php echo esc_html($contact_details->time); ?></td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-
-            <!-- Pagination -->
-            <div class="pagination-contact-us">
+            <div class="block_email">
                 <?php
-                $base_url = admin_url('admin.php?page=contact-us'); // Replace with your actual page slug
-                if ($total_pages > 1) {
-                    for ($page = 1; $page <= $total_pages; $page++) {
-                        if ($page == $current_page) {
-                            echo '<strong>' . $page . '</strong> ';
-                        } else {
-                            echo '<a href="' . esc_url(add_query_arg('paged', $page, $base_url)) . '">' . $page . '</a> ';
-                        }
+
+                if (isset($_POST['block_email_submit'])) {
+                    $suspicious_email = sanitize_textarea_field($_POST['suspicious_email']);
+                    update_option('_suspicious_email', $suspicious_email);
+                }
+
+                ?>
+                <form method="POST">
+                    <h5>Block Suspicious Email</h5>
+                    <?php $options = get_option('_suspicious_email'); ?>
+                    <textarea rows="4" cols="50" name="suspicious_email" id="suspicious_email" placeholder="example@gmail.com,test@gmail.com"><?php echo esc_textarea($options); ?></textarea>
+                    <button id="block_email" name="block_email_submit">Block Email</button>
+                </form>
+
+            </div>
+        </div>
+        <table border="1" class="widefat" id="contact-us-form">
+            <thead>
+                <th>S.N</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Type</th>
+                <th>Message</th>
+                <th>Date</th>
+            </thead>
+            <tbody>
+                <?php
+                $i = $offset + 1; // Adjust the numbering based on the page
+                foreach ($result as $contact_details) {
+                    $type = $contact_details->type;
+                ?>
+                    <tr>
+                        <td><?php echo $i++; ?></td>
+                        <td><?php echo esc_html($contact_details->name); ?></td>
+                        <td><?php echo esc_html($contact_details->email); ?></td>
+                        <td><?php echo esc_html($contact_details->phone); ?></td>
+                        <td>
+                            <?php
+                            switch ($type) {
+                                case 'domain':
+                                    echo 'Domain Inquiry';
+                                    break;
+                                case 'technical':
+                                    echo 'Technical Support';
+                                    break;
+                                case 'general':
+                                    echo 'General Questions';
+                                    break;
+                                case 'billing':
+                                    echo 'Billing & Payments';
+                                    break;
+                                default:
+                                    echo 'Others';
+                                    break;
+                            }
+                            ?>
+                        </td>
+                        <td><?php echo esc_html($contact_details->message); ?></td>
+                        <td><?php echo esc_html($contact_details->time); ?></td>
+                    </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="contact-pagination">
+            <?php
+            $base_url = admin_url('admin.php?page=contact-us'); // Replace with your actual page slug
+            if ($total_pages > 1) {
+                for ($page = 1; $page <= $total_pages; $page++) {
+                    if ($page == $current_page) {
+                        echo '<strong>' . $page . '</strong> ';
+                    } else {
+                        echo '<a href="' . esc_url(add_query_arg('paged', $page, $base_url)) . '">' . $page . '</a> ';
                     }
                 }
-                ?>
-            </div>
+            }
+            ?>
+        </div>
         </div>
     <?php
     }
@@ -395,19 +428,29 @@ class Wstr_get_user_detials
         }
     }
 
-
-
     public function get_user_wallet_banking($user)
     { ?>
 
         <?php
-        $bank_name =  get_user_meta($user->ID, '_bank_name', true);
-        $account_number =  get_user_meta($user->ID, '_bank_account_number', true);
-        $account_name =  get_user_meta($user->ID, '_bank_account_name', true);
-        $bank_state =  get_user_meta($user->ID, '_bank_state', true);
-        $bank_city =  get_user_meta($user->ID, '_bank_city', true);
-        $bank_swift_code =  get_user_meta($user->ID, '_bank_swift_code', true);
+        $bank_name = get_user_meta($user->ID, '_bank_name', true);
+        $account_number = get_user_meta($user->ID, '_bank_account_number', true);
+        $account_name = get_user_meta($user->ID, '_bank_account_name', true);
+        $bank_state = get_user_meta($user->ID, '_bank_state', true);
+        $bank_city = get_user_meta($user->ID, '_bank_city', true);
+        $bank_swift_code = get_user_meta($user->ID, '_bank_swift_code', true);
+
+        $preferred_payment_method = get_user_meta($user->ID, '_preferred_payment_method', true);
         ?>
+
+        <table class="form-table">
+            <tr>
+                <th><label for="walletid"><?php _e("Preferred Payment Method"); ?></label></th>
+                <td>
+                    <input type="text" value="<?php echo $preferred_payment_method ?: ''; ?>" class="regular-text" readonly="readonly" />
+                </td>
+            </tr>
+        </table>
+
         <h3><?php _e("Bank Information", "blank"); ?></h3>
         <table class="form-table">
             <tr>
@@ -474,7 +517,8 @@ class Wstr_get_user_detials
             <tr>
                 <th><label for="walletid"><?php _e("Wallet ID"); ?></label></th>
                 <td>
-                    <input type="text" value="<?php echo $crypto_wallet_id ?: ''; ?>" class="regular-text" readonly="readonly" />
+                    <input type="text" value="<?php echo $crypto_wallet_id ?: ''; ?>" class="regular-text"
+                        readonly="readonly" />
                 </td>
             </tr>
         </table>
@@ -483,3 +527,23 @@ class Wstr_get_user_detials
 
 
 new Wstr_get_user_detials();
+
+add_action('admin_menu', function () {
+    global $menu;
+    global $wpdb;
+
+    // Get the count of 'domain_order' posts with 'order_status' meta key set to 'pending'.
+    $pending_count = $wpdb->get_var(
+        "SELECT COUNT(*) FROM $wpdb->postmeta pm
+        INNER JOIN $wpdb->posts p ON pm.post_id = p.ID
+        WHERE pm.meta_key = '_order_status' AND pm.meta_value = 'pending' AND p.post_type = 'domain_order'AND p.post_status ='publish'"
+    );
+    var_dump($pending_count);
+
+    foreach ($menu as $key => $value) {
+        if ($menu[$key][2] == 'edit.php?post_type=domain_order') { // Find the CPT menu.
+            $menu[$key][0] .= $pending_count > 0 ? ' <span class="awaiting-mod">' . $pending_count . '</span>' : ""; // Add bubble.
+            return;
+        }
+    }
+});
