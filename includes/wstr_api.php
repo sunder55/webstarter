@@ -168,84 +168,163 @@ if (!class_exists('wstr_rest_api')) {
                 $domain_explode = explode('.', $domain_name);
                 $domain_length = strlen(string: $domain_explode[0]);
 
-                // require_once get_stylesheet_directory_uri().'/vendor/autoload.php';
-                require_once __DIR__ . '/vendor/autoload.php';
+                $apiKey = 'AIzaSyDh3-N-dB5s8AIToBplAbM0Z-hhI2foTPU'; // Replace with your actual API key
+                $model = 'gemini-1.5-flash'; // Use a valid model name
 
-                // $domain = $_POST['domain'];
-                // $domain_length = $_POST['domain_length'];
-                $client = new \GeminiAPI\Client('AIzaSyCYqZrBySHCfBH_L_1fcTflE8utK0zdJl4');
-                $response = $client->geminiPro()->generateContent(
-                    // new \GeminiAPI\Resources\Parts\TextPart('explain domain name -> ' . $domain)
-                    // new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name '.$domain.'. Include possible creative uses for the domain name, explaining why it is a good name and why its '.$domain_length.'-character length is advantageous. Provide specific examples and use a friendly and informative tone.')
-                    new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name ' . $domain_name . 'What are some possible creative uses for this ' . $domain_name . '?  Explain the benefits of ' . $domain_length . 'character domain in paragraph.Explain, why it is a good domain name?
-                    ')
-                );
-                $desc = $response->text();
-                return new WP_REST_Response($desc, 200);
-                wp_die();
+                $url = "https://generativelanguage.googleapis.com/v1/models/$model:generateContent?key=$apiKey";
+
+                $data = [
+                    "contents" => [
+                        [
+                            "parts" => [
+                                ["text" => "Generate a detailed description of the domain name '$domain_name'. What are some possible creative uses for this domain? Explain the benefits of a $domain_length-character domain in a paragraph. Why is it a good domain name?"]
+                            ]
+                        ]
+                    ]
+                ];
+
+                $options = [
+                    CURLOPT_URL => $url,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_POST => true,
+                    CURLOPT_HTTPHEADER => [
+                        "Content-Type: application/json"
+                    ],
+                    CURLOPT_POSTFIELDS => json_encode($data),
+                ];
+
+                $ch = curl_init();
+                curl_setopt_array($ch, $options);
+                $response = curl_exec($ch);
+                curl_close($ch);
+
+                // Decode the JSON response
+                $responseData = json_decode($response, true);
+
+                // Extract only the text content
+                $text = "No response received.";
+                if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+                    $text = $responseData['candidates'][0]['content']['parts'][0]['text'];
+                }
+
+                return new WP_REST_Response($text, 200);
             }
+
+            return new WP_REST_Response("Invalid request", 400);
+
+            // // require_once get_stylesheet_directory_uri().'/vendor/autoload.php';
+            // require_once __DIR__ . '/vendor/autoload.php';
+
+            // // $domain = $_POST['domain'];
+            // // $domain_length = $_POST['domain_length'];
+            // $client = new \GeminiAPI\Client('AIzaSyCYqZrBySHCfBH_L_1fcTflE8utK0zdJl4');
+            // $response = $client->geminiPro()->generateContent(
+            //     // new \GeminiAPI\Resources\Parts\TextPart('explain domain name -> ' . $domain)
+            //     // new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name '.$domain.'. Include possible creative uses for the domain name, explaining why it is a good name and why its '.$domain_length.'-character length is advantageous. Provide specific examples and use a friendly and informative tone.')
+            //     new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name ' . $domain_name . 'What are some possible creative uses for this ' . $domain_name . '?  Explain the benefits of ' . $domain_length . 'character domain in paragraph.Explain, why it is a good domain name?
+            //     ')
+            // );
+            // $desc = $response->text();
+            // return new WP_REST_Response($desc, 200);
+
+            // wp_die();
+
         }
 
         public function get_text_to_speech($text)
         {
-            $api_url = "https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB"; // Adjust the output format as needed
-            $request_payload = [
-                "text" => $text,
-                "voice_settings" => [
-                    "similarity_boost" => 0.5,
-                    "stability" => 0.5,
-                    "style" => 0.5,
-                    "use_speaker_boost" => true
-                ]
+            $men_voice = 'pNInz6obpgDQGcFmaJgB';
+            $lady_voice = '21m00Tcm4TlvDq8ikWAM';
+            $lady_voice = 'EXAVITQu4vr4xnSDxMaL';
+            $apiKey = "sk_2e46d158130a6d2aeb20e265006a80c653e008839f070710"; // Replace with your actual API key
+
+            $voices = [
+                'lady' => $lady_voice,
+                'men' => $men_voice
             ];
 
-            $apiKey = "sk_eedc67f1e1f786064f584e497acbe18c37cdb860905ca325"; // Replace with your actual API key
-            // $apiKey = "e33b60806d6db73e934768417380b324"; // Replace with your actual API key
+            $attachment_urls = [];
 
-            $curl = curl_init();
+            foreach ($voices as $voice_name => $voice_id) {
+                $api_url = "https://api.elevenlabs.io/v1/text-to-speech/{$voice_id}"; // Adjust the output format as needed
+                $request_payload = [
+                    "text" => $text,
+                    "voice_settings" => [
+                        "similarity_boost" => 0.5,
+                        "stability" => 0.5,
+                        "style" => 0.5,
+                        "use_speaker_boost" => true
+                    ]
+                ];
 
-            curl_setopt_array($curl, [
-                CURLOPT_URL => $api_url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "POST",
-                CURLOPT_POSTFIELDS => json_encode($request_payload),
-                CURLOPT_HTTPHEADER => [
-                    "Content-Type: application/json",
-                    "xi-api-key: " . $apiKey,
-                ],
-            ]);
+                // Increase the sound for lady voice
+                if ($voice_name == 'lady') {
+                    $request_payload["voice_settings"]["similarity_boost"] = 0.5;
+                    $request_payload["voice_settings"]["stability"] = 0.5;
+                    $request_payload["voice_settings"]["style"] = 0.5;
+                    $request_payload["voice_settings"]["use_speaker_boost"] = true;
+                }
 
-            $response = curl_exec($curl);
-            $err = curl_error($curl);
+                $curl = curl_init();
 
-            curl_close($curl);
+                curl_setopt_array($curl, [
+                    CURLOPT_URL => $api_url,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING => "",
+                    CURLOPT_MAXREDIRS => 10,
+                    CURLOPT_TIMEOUT => 30,
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST => "POST",
+                    CURLOPT_POSTFIELDS => json_encode($request_payload),
+                    CURLOPT_HTTPHEADER => [
+                        "Content-Type: application/json",
+                        "xi-api-key: " . $apiKey,
+                    ],
+                ]);
 
-            // if ($err) {
-            //     return "Error #:" . $err;
-            // } else {
-            //     // var_dump($response);
-            //     return $response;
-            // }
-            // Define file name and path
-            $upload_dir = wp_upload_dir();
-            $file_name = $text . '.wav';
-            $file_path = $upload_dir['path'] . '/' . $file_name;
-            $file_url = $upload_dir['url'] . '/' . $file_name;
+                $response = curl_exec($curl);
+                $err = curl_error($curl);
 
-            // Save audio data to the file
-            file_put_contents($file_path, $response);
+                curl_close($curl);
 
-            // Display HTML audio player with file path
-            $audio_player = '<audio controls>';
-            $audio_player .= '<source src="' . $file_url . '" type="audio/wav">';
-            $audio_player .= 'Your browser does not support the audio tag.';
-            $audio_player .= '</audio>';
+                // if ($err) {
+                //     return "Error #:" . $err;
+                // }
 
-            return $audio_player;
+                // Define file name and path
+                $upload_dir = wp_upload_dir();
+                $file_name = $text . '-' . $voice_name . '.wav';
+                $file_path = $upload_dir['path'] . '/' . $file_name;
+                $file_url = $upload_dir['url'] . '/' . $file_name;
+
+                // Save audio data to the file
+                file_put_contents($file_path, $response);
+
+                // Insert the file into the WordPress media library
+                $attachment = array(
+                    'guid' => $file_url,
+                    'post_mime_type' => 'audio/wav',
+                    'post_title' => sanitize_file_name($file_name),
+                    'post_content' => '',
+                    'post_status' => 'inherit'
+                );
+
+                $attachment_id = wp_insert_attachment($attachment, $file_path);
+                if ($attachment_id) {
+                    // Generate attachment metadata and update the attachment
+                    require_once(ABSPATH . 'wp-admin/includes/image.php');
+                    $attachment_data = wp_generate_attachment_metadata($attachment_id, $file_path);
+                    wp_update_attachment_metadata($attachment_id, $attachment_data);
+                    $attachment_url = wp_get_attachment_url($attachment_id);
+                    // Display HTML audio player with file path
+                    $attachment_urls[] = [
+                        'id' => $attachment_id,
+                        'url' => $attachment_url
+                    ];
+                }
+            }
+
+            return $attachment_urls;
         }
         /**
          * Function for getting current currency rate 
@@ -893,13 +972,13 @@ if (!class_exists('wstr_rest_api')) {
                 $audio = $this->get_text_to_speech($domain_name);
 
                 $data[] = [
-                    'age' => $domain_age,
-                    'da_pa' => $da_pa ? $da_pa : '',
-                    'length' => $domain_length ? $domain_length : '',
-                    'tld' => $tld ? $tld : '',
+                    'age' => $domain_age ?: '',
+                    'da_pa' => $da_pa ?: '',
+                    'length' => $domain_length ?: '',
+                    'tld' => $tld ?: '',
                     // 'description' => $domain_desc ? $domain_desc : '',
-                    'estimated_value' => $estimated_value ? $estimated_value : ''
-                    // 'audio' => $audio ? $audio : '',
+                    'estimated_value' => $estimated_value ?: '',
+                    'audio' => $audio ?: '',
                 ];
             }
 
@@ -2123,3 +2202,35 @@ if (!class_exists('wstr_rest_api')) {
     }
 }
 new wstr_rest_api();
+
+
+add_action('wp_footer', function () {
+
+    $domain_name = 'google.com';
+
+    $domain_explode = explode('.', $domain_name);
+    $domain_length = strlen(string: $domain_explode[0]);
+
+    //     // require_once get_stylesheet_directory_uri().'/vendor/autoload.php';
+    //     require_once __DIR__ . '/vendor/autoload.php';
+
+    //     // $domain = $_POST['domain'];
+    //     // $domain_length = $_POST['domain_length'];
+    //     // $client = new \GeminiAPI\Client('AIzaSyCYqZrBySHCfBH_L_1fcTflE8utK0zdJl4');
+    //     $client = new \GeminiAPI\Client('AIzaSyDh3-N-dB5s8AIToBplAbM0Z-hhI2foTPU');
+    //     $modelsResponse = $client->listModels();
+    //     var_dump($modelsResponse);
+    //     $response = $client->model('gemini-1.5-pro')->generateContent(
+    //     new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name ' . $domain_name)
+    // );
+    //     $response = $client->geminiPro()->generateContent(
+    //         // new \GeminiAPI\Resources\Parts\TextPart('explain domain name -> ' . $domain)
+    //         // new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name '.$domain.'. Include possible creative uses for the domain name, explaining why it is a good name and why its '.$domain_length.'-character length is advantageous. Provide specific examples and use a friendly and informative tone.')
+    //         new \GeminiAPI\Resources\Parts\TextPart('Generate a detailed description of the domain name ' . $domain_name . 'What are some possible creative uses for this ' . $domain_name . '?  Explain the benefits of ' . $domain_length . 'character domain in paragraph.Explain, why it is a good domain name?
+    //                     ')
+    //     );
+    //     // var_dump($response);
+    //     $desc = $response->text();
+
+
+});

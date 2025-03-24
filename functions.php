@@ -1018,7 +1018,7 @@ function add_openai_script_to_footer()
             fetchOpenAIResponse();
         });
         async function fetchOpenAIResponse() {
-            const apiKey = " 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"; // Replace with your OpenAI API key
+            // const apiKey = " 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"; // Replace with your OpenAI API key
             const endpoint = "https://api.openai.com/v1/completions";
 
             const data = {
@@ -1052,7 +1052,7 @@ function add_openai_script_to_footer()
     <div id="openai-response" style="margin-top: 20px; font-weight: bold; font-size: 1.2em;"></div>
 <?php
 }
-add_action('wp_footer', 'add_openai_script_to_footer');
+// add_action('wp_footer', 'add_openai_script_to_footer');
 
 
 // add_action('wp_footer', 'wstr_seller_order_details');
@@ -1131,7 +1131,7 @@ function wstr_declined_offer_expired()
  */
 
 
-add_action('wp_footer', 'commissions');
+// add_action('wp_footer', 'commissions');
 function commissions()
 {
 
@@ -1197,3 +1197,106 @@ function commissions()
         var_dump($data);
     }
 }
+
+
+function textToSpeech($text)
+{
+    $men_voice = 'pNInz6obpgDQGcFmaJgB';
+    $lady_voice = '21m00Tcm4TlvDq8ikWAM';
+    $lady_voice = 'EXAVITQu4vr4xnSDxMaL';
+    $apiKey = "sk_2e46d158130a6d2aeb20e265006a80c653e008839f070710"; // Replace with your actual API key
+
+    $voices = [
+        'lady' => $lady_voice,
+        'men' => $men_voice
+    ];
+
+    $attachment_urls = [];
+
+    foreach ($voices as $voice_name => $voice_id) {
+        $api_url = "https://api.elevenlabs.io/v1/text-to-speech/{$voice_id}"; // Adjust the output format as needed
+        $request_payload = [
+            "text" => $text,
+            "voice_settings" => [
+                "similarity_boost" => 0.5,
+                "stability" => 0.5,
+                "style" => 0.5,
+                "use_speaker_boost" => true
+            ]
+        ];
+
+        // Increase the sound for lady voice
+        if ($voice_name == 'lady') {
+            $request_payload["voice_settings"]["similarity_boost"] = 0.5;
+            $request_payload["voice_settings"]["stability"] = 0.5;
+            $request_payload["voice_settings"]["style"] = 0.5;
+            $request_payload["voice_settings"]["use_speaker_boost"] = true;
+        }
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $api_url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => json_encode($request_payload),
+            CURLOPT_HTTPHEADER => [
+                "Content-Type: application/json",
+                "xi-api-key: " . $apiKey,
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        return $response;
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        // if ($err) {
+        //     return "Error #:" . $err;
+        // }
+
+        // Define file name and path
+        $upload_dir = wp_upload_dir();
+        $file_name = $text . '-' . $voice_name . '.wav';
+        $file_path = $upload_dir['path'] . '/' . $file_name;
+        $file_url = $upload_dir['url'] . '/' . $file_name;
+
+        // Save audio data to the file
+        file_put_contents($file_path, $response);
+
+        // Insert the file into the WordPress media library
+        $attachment = array(
+            'guid' => $file_url,
+            'post_mime_type' => 'audio/wav',
+            'post_title' => sanitize_file_name($file_name),
+            'post_content' => '',
+            'post_status' => 'inherit'
+        );
+
+        $attachment_id = wp_insert_attachment($attachment, $file_path);
+        if ($attachment_id) {
+            // Generate attachment metadata and update the attachment
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+            $attachment_data = wp_generate_attachment_metadata($attachment_id, $file_path);
+            wp_update_attachment_metadata($attachment_id, $attachment_data);
+            $attachment_url = wp_get_attachment_url($attachment_id);
+            // Display HTML audio player with file path
+            $attachment_urls[] = [
+                'id' => $attachment_id,
+                'url' => $attachment_url
+            ];
+        }
+    }
+
+    return $attachment_urls;
+}
+
+
+// add_action('wp_footer', function () {
+//     var_dump(textToSpeech("see.com"));
+// });

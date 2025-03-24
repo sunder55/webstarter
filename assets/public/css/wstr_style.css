@@ -4695,3 +4695,16 @@ form.add_domain_form  svg {
     padding: 20px !important;
 
 }
+
+.ck-content p{
+  margin: 15px 0px;
+}
+
+
+.ck-content ul{
+  margin-left:20px;
+}
+
+.ck-content ul li{
+  margin-bottom: 10px;;
+}

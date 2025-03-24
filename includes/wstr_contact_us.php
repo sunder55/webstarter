@@ -15,6 +15,25 @@ class wstr_contact_us
         }
     }
 
+    public function get_client_ip()
+    {
+        $ipaddress = '';
+        if (isset($_SERVER['HTTP_CLIENT_IP']))
+            $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
+        else if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+            $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        else if (isset($_SERVER['HTTP_X_FORWARDED']))
+            $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
+        else if (isset($_SERVER['HTTP_FORWARDED_FOR']))
+            $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
+        else if (isset($_SERVER['HTTP_FORWARDED']))
+            $ipaddress = $_SERVER['HTTP_FORWARDED'];
+        else if (isset($_SERVER['REMOTE_ADDR']))
+            $ipaddress = $_SERVER['REMOTE_ADDR'];
+        else
+            $ipaddress = 'UNKNOWN';
+        return $ipaddress;
+    }
     public function wstr_handle_contact_form_submission()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['contact_us_submit'])) {
@@ -24,6 +43,16 @@ class wstr_contact_us
         $error = '';
         $success = '';
 
+        $suspicious_email = get_option('_suspicious_email');
+
+        if ($suspicious_email) {
+            $explode_email = array_map('trim', explode(',', $suspicious_email));
+            if (in_array($_POST['email'], $explode_email)) {
+                $error = 'Suspecious Activity Detected';
+                wp_safe_redirect(esc_url($_SERVER['REQUEST_URI']));
+                return;
+            }
+        }
         // Rate limiting
         $transient_key = 'contact_form_rate_limit_' . wp_hash($_SERVER['REMOTE_ADDR']);
         $attempts = get_transient($transient_key);
@@ -206,6 +235,7 @@ class wstr_contact_us
         delete_transient('wstr_contact_form_message'); // Clear message after displaying
         $error = $messages['error'] ?? '';
         $success = $messages['success'] ?? '';
+
 
 ?>
         <div class="contact-form-wrapper">
